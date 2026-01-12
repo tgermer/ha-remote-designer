@@ -1,5 +1,5 @@
 import type { ButtonDef } from "../app/remotes";
-import type { DesignState, TapType } from "../app/types";
+import type { DesignState } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 
 export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, showWatermark, watermarkText, watermarkOpacity }: { state: DesignState; button: ButtonDef; labelWidthMm: number; labelHeightMm: number; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number }) {
@@ -15,7 +15,6 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
 
     const wmEnabled = !!showWatermark && !!watermarkText;
     const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
-    const wmId = `wm_lbl_${button.id}_${Math.round(labelWidthMm * 10)}_${Math.round(labelHeightMm * 10)}`;
 
     return (
         <svg width={`${labelWidthMm}mm`} height={`${labelHeightMm}mm`} viewBox={`0 0 ${labelWidthMm} ${labelHeightMm}`} xmlns="http://www.w3.org/2000/svg">

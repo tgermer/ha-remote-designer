@@ -70,7 +70,6 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
     const wmEnabled = !!showWatermark && !!watermarkText;
     const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
-    const wmId = `wm_${Math.round(template.widthMm * 10)}_${Math.round(template.heightMm * 10)}`;
 
     return (
         <svg width={`${template.widthMm}mm`} height={`${template.heightMm}mm`} viewBox={`0 0 ${template.widthMm} ${template.heightMm}`} xmlns="http://www.w3.org/2000/svg">
