@@ -18,7 +18,8 @@ import JSZip from "jszip";
 // Load remote images from src/assets (png/svg/jpg/webp). Filenames must match the remote id.
 const remoteImageModules = import.meta.glob("./assets/**/*.{png,svg,jpg,jpeg,webp}", {
     eager: true,
-    as: "url",
+    query: "?url",
+    import: "default",
 });
 
 function getRemoteImageUrl(remoteId: string): string | undefined {

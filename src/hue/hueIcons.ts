@@ -1,7 +1,7 @@
 import { FEATURES } from "../app/featureFlags";
 
 // Loads all SVGs from src/hue/svgs/*.svg as raw strings
-const modules = import.meta.glob("./svgs/*.svg", { as: "raw", eager: true });
+const modules = import.meta.glob("./svgs/*.svg", { eager: true, query: "?raw", import: "default" });
 
 function filenameFromPath(path: string) {
     const parts = path.split("/");
