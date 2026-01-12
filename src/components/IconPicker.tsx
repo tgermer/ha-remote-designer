@@ -4,7 +4,7 @@ import { FEATURES } from "../app/featureFlags";
 import { hasHueIcon, listHueIcons } from "../hue/hueIcons";
 import { isSupportedHaIcon, renderHaIconAtMm } from "../render/renderHaIcon";
 
-const QUICK_MDI = ["mdi:lightbulb-on-outline", "mdi:lightbulb-off-outline", "mdi:brightness-5", "mdi:brightness-4", "mdi:weather-night", "mdi:palette-outline", "mdi:scene"];
+const QUICK_MDI = ["mdi:lightbulb-on-outline", "mdi:lightbulb-off-outline", "mdi:brightness-5", "mdi:brightness-4", "mdi:weather-night", "mdi:palette-outline", "mdi:roller-shade"];
 
 function IconPreview({ icon }: { icon: string }) {
     const t = icon.trim();
@@ -12,7 +12,7 @@ function IconPreview({ icon }: { icon: string }) {
 
     if (t.startsWith("mdi:")) {
         const d = getMdiPath(t);
-        if (!d) return <div style={{ fontSize: 12, opacity: 0.6 }}>?</div>;
+        if (!d) return <div className="iconpicker__previewFallback">?</div>;
         return (
             <svg width={22} height={22} viewBox="0 0 24 24" aria-label={t}>
                 <path d={d} />
@@ -21,7 +21,7 @@ function IconPreview({ icon }: { icon: string }) {
     }
 
     if (t.startsWith("hue:")) {
-        if (!FEATURES.HUE_ICONS || !hasHueIcon(t)) return <div style={{ fontSize: 12, opacity: 0.6 }}>?</div>;
+        if (!FEATURES.HUE_ICONS || !hasHueIcon(t)) return <div className="iconpicker__previewFallback">?</div>;
         return (
             <svg width={22} height={22} viewBox="0 0 24 24" aria-label={t}>
                 {renderHaIconAtMm({ icon: t, cx: 12, cy: 12, iconMm: 24 })}
@@ -29,7 +29,7 @@ function IconPreview({ icon }: { icon: string }) {
         );
     }
 
-    return <div style={{ fontSize: 12, opacity: 0.6 }}>?</div>;
+    return <div className="iconpicker__previewFallback">?</div>;
 }
 
 export function IconPicker({ value, onChange, placeholder }: { value: string | undefined; onChange: (next: string | undefined) => void; placeholder?: string }) {
@@ -37,7 +37,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     const [showHueBrowser, setShowHueBrowser] = useState(false);
     const [hueQuery, setHueQuery] = useState("");
 
-    const effectivePlaceholder = placeholder ?? (FEATURES.HUE_ICONS ? "mdi:... oder hue:..." : "mdi:...");
+    const effectivePlaceholder = placeholder ?? (FEATURES.HUE_ICONS ? "mdi:... or hue:..." : "mdi:...");
 
     const valid = useMemo(() => {
         const t = text.trim();
@@ -52,6 +52,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     }, [text]);
 
     const allHueIcons = useMemo(() => (FEATURES.HUE_ICONS ? listHueIcons() : []), []);
+
     const hueFiltered = useMemo(() => {
         if (!FEATURES.HUE_ICONS) return [];
         const q = hueQuery.trim().toLowerCase();
@@ -60,130 +61,114 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     }, [hueQuery, allHueIcons]);
 
     return (
-        <div style={{ display: "grid", gap: 8 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <input
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder={effectivePlaceholder}
-                    style={{
-                        padding: 8,
-                        width: "100%",
-                        border: `1px solid ${valid ? "#ccc" : "#d33"}`,
-                        borderRadius: 8,
-                    }}
-                />
+        <div className="iconpicker">
+            <div className="iconpicker__row">
+                <input className="iconpicker__input" value={text} onChange={(e) => setText(e.target.value)} placeholder={effectivePlaceholder} aria-invalid={!valid} />
 
                 {FEATURES.HUE_ICONS && (
-                    <button type="button" onClick={() => setShowHueBrowser((s) => !s)} style={{ padding: "8px 10px" }} title="Hue Icon Browser">
+                    <button type="button" className="iconpicker__btn" onClick={() => setShowHueBrowser((s) => !s)} title="Browse Hue Icons">
                         Hue
                     </button>
                 )}
 
-                <button type="button" onClick={() => onChange(undefined)} disabled={!value} style={{ padding: "8px 10px" }}>
-                    Löschen
+                <button type="button" className="iconpicker__btn" onClick={() => onChange(undefined)} disabled={!value}>
+                    Delete
                 </button>
             </div>
 
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <div style={{ width: 26, height: 26, display: "grid", placeItems: "center" }}>{text.trim() ? <IconPreview icon={text.trim()} /> : null}</div>
+            <div className="iconpicker__row iconpicker__row--secondary">
+                <div className="iconpicker__preview">{text.trim() ? <IconPreview icon={text.trim()} /> : null}</div>
 
-                <button type="button" onClick={() => onChange(text.trim() ? text.trim() : undefined)} disabled={!valid} style={{ padding: "8px 10px" }}>
-                    Übernehmen
+                <button type="button" className="iconpicker__btn" onClick={() => onChange(text.trim() ? text.trim() : undefined)} disabled={!valid}>
+                    Apply
                 </button>
 
                 {!valid && (
-                    <div style={{ fontSize: 12, color: "#d33" }}>
-                        Unbekanntes Icon. Unterstützt: <code>mdi:</code>
+                    <div className="iconpicker__error">
+                        Unknown icon. Supported: <code>mdi:</code>
                         {FEATURES.HUE_ICONS ? (
                             <>
                                 {" "}
-                                oder <code>hue:</code>
+                                or <code>hue:</code>
                             </>
                         ) : null}
                     </div>
                 )}
             </div>
 
-            {/* MDI Quick Suggestions */}
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {mdiSuggestions.map((s) => (
-                    <button
-                        key={s}
-                        type="button"
-                        onClick={() => {
-                            setText(s);
-                            onChange(s);
-                        }}
-                        style={{
-                            display: "flex",
-                            gap: 6,
-                            alignItems: "center",
-                            padding: "6px 8px",
-                            border: "1px solid #ddd",
-                            borderRadius: 999,
-                            background: "white",
-                        }}
-                    >
-                        <IconPreview icon={s} />
-                        <span style={{ fontSize: 12 }}>{s}</span>
-                    </button>
-                ))}
-            </div>
-
-            {/* Hue Browser */}
-            {FEATURES.HUE_ICONS && showHueBrowser && (
-                <div style={{ border: "1px solid #ddd", borderRadius: 12, padding: 10, background: "white" }}>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
-                        <strong style={{ fontSize: 13 }}>Hue Icons</strong>
-                        <span style={{ fontSize: 12, opacity: 0.7 }}>({allHueIcons.length})</span>
+            <section className="iconpicker__panel" aria-label="MDI icon browser">
+                <header className="iconpicker__panelHeader">
+                    <div className="iconpicker__panelTitle">
+                        <strong>MDI Icons</strong>
+                        <span className="iconpicker__panelCount">({mdiSuggestions.length})</span>
                     </div>
+                </header>
 
-                    <input
-                        value={hueQuery}
-                        onChange={(e) => setHueQuery(e.target.value)}
-                        placeholder='Suche z.B. "bulb", "spot", "ceiling"...'
-                        style={{
-                            padding: 8,
-                            width: "100%",
-                            border: "1px solid #ccc",
-                            borderRadius: 8,
-                            marginBottom: 10,
-                        }}
-                    />
+                <div className="iconpicker__grid" role="list">
+                    {mdiSuggestions.map((icon) => (
+                        <button
+                            key={icon}
+                            type="button"
+                            className="iconpicker__tile"
+                            onClick={() => {
+                                setText(icon);
+                                onChange(icon);
+                            }}
+                            title={icon}
+                            role="listitem"
+                        >
+                            <span className="iconpicker__tileIcon">
+                                <IconPreview icon={icon} />
+                            </span>
+                            <span className="iconpicker__tileText">{icon}</span>
+                        </button>
+                    ))}
+                </div>
+            </section>
 
-                    <div style={{ maxHeight: 220, overflow: "auto", display: "grid", gap: 6 }}>
+            {FEATURES.HUE_ICONS && showHueBrowser && (
+                <section className="iconpicker__panel" aria-label="Hue icon browser">
+                    <header className="iconpicker__panelHeader">
+                        <div className="iconpicker__panelTitle">
+                            <strong>Hue Icons</strong>
+                            <span className="iconpicker__panelCount">({allHueIcons.length})</span>
+                        </div>
+                        <button type="button" className="iconpicker__btn" onClick={() => setShowHueBrowser(false)} aria-label="Close Hue browser">
+                            Close
+                        </button>
+                    </header>
+
+                    <input className="iconpicker__search" value={hueQuery} onChange={(e) => setHueQuery(e.target.value)} placeholder='Search e.g. "bulb", "spot", "ceiling"...' />
+
+                    <div className="iconpicker__grid" role="list">
                         {hueFiltered.slice(0, 300).map((icon) => (
                             <button
                                 key={icon}
                                 type="button"
+                                className="iconpicker__tile"
                                 onClick={() => {
                                     setText(icon);
                                     onChange(icon);
                                 }}
-                                style={{
-                                    display: "flex",
-                                    gap: 8,
-                                    alignItems: "center",
-                                    padding: "6px 8px",
-                                    border: "1px solid #eee",
-                                    borderRadius: 10,
-                                    background: "white",
-                                    textAlign: "left",
-                                }}
+                                title={icon}
+                                role="listitem"
                             >
-                                <IconPreview icon={icon} />
-                                <span style={{ fontSize: 12 }}>{icon}</span>
+                                <span className="iconpicker__tileIcon">
+                                    <IconPreview icon={icon} />
+                                </span>
+                                <span className="iconpicker__tileText">{icon}</span>
                             </button>
                         ))}
-                        {hueFiltered.length > 300 && <div style={{ fontSize: 12, opacity: 0.7 }}>Mehr als 300 Treffer – Suchbegriff eingrenzen.</div>}
-                        {hueFiltered.length === 0 && (
-                            <div style={{ fontSize: 12, opacity: 0.7 }}>
-                                Keine Treffer. (Sind SVGs in <code>src/hue/svgs</code> vorhanden?)
-                            </div>
-                        )}
                     </div>
-                </div>
+
+                    {hueFiltered.length > 300 && <div className="iconpicker__hint">More than 300 results — refine your search.</div>}
+
+                    {hueFiltered.length === 0 && (
+                        <div className="iconpicker__hint">
+                            No results. (Are SVGs present in <code>src/hue/svgs</code>?)
+                        </div>
+                    )}
+                </section>
             )}
         </div>
     );

@@ -1,14 +1,35 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
-import "./index.css";
+import "./app.css";
+
 import type { DesignState, TapType } from "./app/types";
 import { REMOTES } from "./app/remotes";
 import { RemoteSvg } from "./render/RemoteSvg";
+import { ButtonLabelSvg } from "./render/buttonLabelSvg";
 import { IconPicker } from "./components/IconPicker";
+
 import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
-import JSZip from "jszip";
 import { svgTextToPngBlobMm, downloadBlob } from "./app/exportPng";
-import { ButtonLabelSvg } from "./render/buttonLabelSvg";
+
+import JSZip from "jszip";
+
+// Load remote images from src/assets (png/svg/jpg/webp). Filenames must match the remote id.
+const remoteImageModules = import.meta.glob("./assets/**/*.{png,svg,jpg,jpeg,webp}", {
+    eager: true,
+    as: "url",
+});
+
+function getRemoteImageUrl(remoteId: string): string | undefined {
+    const id = String(remoteId);
+    for (const [path, url] of Object.entries(remoteImageModules)) {
+        const file = path.split("/").pop() ?? "";
+        const base = file.replace(/\.(png|svg|jpe?g|webp)$/i, "");
+        if (base === id) return url as string;
+    }
+    return undefined;
+}
+
+/* ----------------------------- initial state ----------------------------- */
 
 const initial: DesignState = {
     remoteId: "hue_dimmer_v1",
@@ -31,6 +52,8 @@ const initial: DesignState = {
     },
 };
 
+/* ------------------------------- helpers -------------------------------- */
+
 function tapLabel(t: TapType) {
     if (t === "single") return "Tap";
     if (t === "double") return "Double Tap";
@@ -41,15 +64,12 @@ function nextFrame() {
     return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-export default function App() {
-    const [state, setState] = useState<DesignState>(() => {
-        const fromUrl = loadFromHash<DesignState>();
-        if (fromUrl && !(fromUrl.options as any)?.tapMarkerFill) {
-            return { ...fromUrl, options: { ...fromUrl.options, tapMarkerFill: "outline" } };
-        }
-        return fromUrl ?? initial;
-    });
+/* --------------------------------- App ---------------------------------- */
 
+export default function App() {
+    const [state, setState] = useState<DesignState>(() => loadFromHash<DesignState>() ?? initial);
+
+    /* persist state in URL */
     useEffect(() => {
         const t = window.setTimeout(() => saveToHash(state), 150);
         return () => window.clearTimeout(t);
@@ -57,7 +77,9 @@ export default function App() {
 
     const template = useMemo(() => REMOTES.find((r) => r.id === state.remoteId) ?? REMOTES[0], [state.remoteId]);
 
-    // Ensure buttonConfigs exist for current remote
+    const remoteImageUrl = getRemoteImageUrl(state.remoteId);
+
+    /* ensure button configs exist when switching remotes */
     useEffect(() => {
         setState((s) => {
             const next = { ...s, buttonConfigs: { ...s.buttonConfigs } };
@@ -66,19 +88,17 @@ export default function App() {
             }
             return next;
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [template.id]);
 
     const buttonIds = template.buttons.map((b) => b.id);
     const o = state.options;
 
-    const setIcon = (buttonId: string, tap: TapType, icon: string | undefined) => {
+    const setIcon = (buttonId: string, tap: TapType, icon?: string) => {
         setState((s) => {
             const prev = s.buttonConfigs[buttonId]?.icons ?? {};
-            const nextIcons: Partial<Record<TapType, string>> = { ...prev };
+            const nextIcons = { ...prev } as any;
             if (icon) nextIcons[tap] = icon;
-            else delete (nextIcons as any)[tap];
-
+            else delete nextIcons[tap];
             return {
                 ...s,
                 buttonConfigs: {
@@ -89,29 +109,60 @@ export default function App() {
         });
     };
 
-    // ---------------- SVG Export (Remote) ----------------
+    /* ------------------------------ share link ----------------------------- */
+
+    const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "failed">("idle");
+
+    const copyShareLink = async () => {
+        try {
+            // Ensure the URL hash contains the latest state before copying.
+            saveToHash(state);
+
+            // Read the updated URL (including the fresh hash).
+            const url = window.location.href;
+
+            await navigator.clipboard.writeText(url);
+            setShareStatus("copied");
+            window.setTimeout(() => setShareStatus("idle"), 2000);
+        } catch {
+            setShareStatus("failed");
+        }
+    };
+
+    /* ------------------------------ rest ----------------------------------- */
+
+    const resetToDefaults = () => {
+        // Remove the hash so it truly feels like “start from scratch”.
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+
+        // Reset UI state
+        setShareStatus("idle");
+        setExportButtonId(null);
+        setIsZipping(false);
+        setDpi(203);
+
+        // Reset the actual design state
+        setState(initial);
+    };
+
+    /* ------------------------------ exporting ------------------------------ */
+
     const exportRemoteHostRef = useRef<HTMLDivElement | null>(null);
+    const exportButtonHostRef = useRef<HTMLDivElement | null>(null);
 
     const exportRemoteSvg = () => {
         const svg = exportRemoteHostRef.current?.querySelector("svg");
         if (!svg) return;
-
-        const xml = serializeSvg(svg);
-        downloadTextFile(`${state.remoteId}-remote-buttons-only.svg`, xml, "image/svg+xml");
+        downloadTextFile(`${state.remoteId}-remote.svg`, serializeSvg(svg), "image/svg+xml");
     };
 
-    // ---------------- ZIP Export (Buttons PNG 40x30) ----------------
-    const [dpi, setDpi] = useState<number>(203);
+    const [dpi, setDpi] = useState(203);
     const [exportButtonId, setExportButtonId] = useState<string | null>(null);
-    const exportButtonHostRef = useRef<HTMLDivElement | null>(null);
     const [isZipping, setIsZipping] = useState(false);
 
-    const exportZipAllButtonsPng = async () => {
+    const exportZip = async () => {
         if (isZipping) return;
         setIsZipping(true);
-
-        const labelW = 40;
-        const labelH = 30;
 
         const zip = new JSZip();
         const folder = zip.folder(state.remoteId) ?? zip;
@@ -124,37 +175,37 @@ export default function App() {
             const svg = exportButtonHostRef.current?.querySelector("svg");
             if (!svg) continue;
 
-            const svgText = serializeSvg(svg);
-
-            const pngBlob = await svgTextToPngBlobMm({
-                svgText,
-                size: { widthMm: labelW, heightMm: labelH, dpi },
+            const png = await svgTextToPngBlobMm({
+                svgText: serializeSvg(svg),
+                size: { widthMm: 40, heightMm: 30, dpi },
             });
 
-            folder.file(`${id}.png`, pngBlob);
+            folder.file(`${id}.png`, png);
         }
 
         setExportButtonId(null);
-
-        const zipBlob = await zip.generateAsync({ type: "blob" });
-        downloadBlob(`${state.remoteId}-buttons-${labelW}x${labelH}mm-${dpi}dpi.zip`, zipBlob);
-
+        downloadBlob(`${state.remoteId}-labels.zip`, await zip.generateAsync({ type: "blob" }));
         setIsZipping(false);
     };
 
-    const currentExportButton = exportButtonId ? template.buttons.find((b) => b.id === exportButtonId) : null;
+    const exportButton = exportButtonId ? template.buttons.find((b) => b.id === exportButtonId) : null;
+
+    /* -------------------------------- render -------------------------------- */
 
     return (
-        <div style={{ padding: 16, display: "grid", gridTemplateColumns: "420px 1fr", gap: 16 }}>
-            {/* Left */}
-            <div style={{ display: "grid", gap: 12 }}>
-                <div style={{ border: "1px solid #ddd", borderRadius: 12, padding: 12, background: "white" }}>
-                    <div style={{ display: "grid", gap: 10 }}>
-                        <div style={{ fontWeight: 700 }}>Optionen</div>
+        <main className="app">
+            <section className="controls">
+                <header>
+                    <h1>Remote Label Designer</h1>
+                </header>
 
-                        <label style={{ display: "grid", gap: 6 }}>
-                            Remote
-                            <select value={state.remoteId} onChange={(e) => setState((s) => ({ ...s, remoteId: e.target.value as any }))} style={{ padding: 8, borderRadius: 8, border: "1px solid #ccc" }}>
+                {/* Remote */}
+                <fieldset>
+                    <legend>Remote</legend>
+                    <div className="modelRow">
+                        <label className="modelRow__label">
+                            Model
+                            <select value={state.remoteId} onChange={(e) => setState((s) => ({ ...s, remoteId: e.target.value as any }))}>
                                 {REMOTES.map((r) => (
                                     <option key={r.id} value={r.id}>
                                         {r.name}
@@ -162,68 +213,124 @@ export default function App() {
                                 ))}
                             </select>
                         </label>
-
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                            <button onClick={() => setState((s) => ({ ...s, tapsEnabled: ["single"] }))}>Single</button>
-                            <button onClick={() => setState((s) => ({ ...s, tapsEnabled: ["single", "double"] }))}>Single + Double</button>
-                            <button onClick={() => setState((s) => ({ ...s, tapsEnabled: ["single", "double", "long"] }))}>All</button>
-
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        await navigator.clipboard.writeText(window.location.href);
-                                    } catch {}
-                                }}
-                            >
-                                Share-Link kopieren
-                            </button>
-
-                            <button onClick={exportRemoteSvg}>Export SVG (Remote)</button>
-
-                            <label style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 8 }}>
-                                PNG DPI:
-                                <select value={dpi} onChange={(e) => setDpi(Number(e.target.value))}>
-                                    <option value={203}>203</option>
-                                    <option value={300}>300</option>
-                                </select>
-                            </label>
-
-                            <button onClick={exportZipAllButtonsPng} disabled={isZipping}>
-                                {isZipping ? "ZIP wird erstellt…" : "Export ZIP (PNGs 40×30)"}
-                            </button>
+                        <div className="modelRow__thumb" aria-label="Selected remote preview">
+                            {remoteImageUrl ? <img src={remoteImageUrl} alt={`${state.remoteId} preview`} /> : <span className="modelRow__thumbFallback">No image</span>}
                         </div>
+                    </div>
+                </fieldset>
 
-                        <label>
-                            <input type="checkbox" checked={o.showTapMarkersAlways} onChange={(e) => setState((s) => ({ ...s, options: { ...s.options, showTapMarkersAlways: e.target.checked } }))} /> Tap-Marker auch bei Einzel-Icon
+                {/* Tap modes */}
+                <fieldset>
+                    <legend>Tap Modes</legend>
+                    <div className="row">
+                        <button onClick={() => setState((s) => ({ ...s, tapsEnabled: ["single"] }))}>Single</button>
+                        <button onClick={() => setState((s) => ({ ...s, tapsEnabled: ["single", "double"] }))}>Single + Double</button>
+                        <button
+                            onClick={() =>
+                                setState((s) => ({
+                                    ...s,
+                                    tapsEnabled: ["single", "double", "long"],
+                                }))
+                            }
+                        >
+                            All
+                        </button>
+                    </div>
+                </fieldset>
+
+                {/* Options */}
+                <fieldset>
+                    <legend>Options</legend>
+                    <div className="options">
+                        <label className="option">
+                            <input
+                                type="checkbox"
+                                checked={o.showTapMarkersAlways}
+                                onChange={(e) =>
+                                    setState((s) => ({
+                                        ...s,
+                                        options: { ...s.options, showTapMarkersAlways: e.target.checked },
+                                    }))
+                                }
+                            />
+                            Show tap markers for single icon
                         </label>
 
-                        <label>
-                            <input type="checkbox" checked={o.showTapDividers} onChange={(e) => setState((s) => ({ ...s, options: { ...s.options, showTapDividers: e.target.checked } }))} /> Trennlinien bei Multi-Icons
+                        <label className="option">
+                            <input
+                                type="checkbox"
+                                checked={o.showTapDividers}
+                                onChange={(e) =>
+                                    setState((s) => ({
+                                        ...s,
+                                        options: { ...s.options, showTapDividers: e.target.checked },
+                                    }))
+                                }
+                            />
+                            Show dividers for multi icons
                         </label>
 
-                        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            Tap-Marker Stil:
-                            <select value={o.tapMarkerFill} onChange={(e) => setState((s) => ({ ...s, options: { ...s.options, tapMarkerFill: e.target.value as any } }))}>
+                        <label className="option">
+                            Tap marker style
+                            <select
+                                value={o.tapMarkerFill}
+                                onChange={(e) =>
+                                    setState((s) => ({
+                                        ...s,
+                                        options: { ...s.options, tapMarkerFill: e.target.value as any },
+                                    }))
+                                }
+                            >
                                 <option value="outline">Outline</option>
                                 <option value="filled">Filled</option>
                             </select>
                         </label>
 
-                        <label>
-                            <input type="checkbox" checked={o.showRemoteOutline} onChange={(e) => setState((s) => ({ ...s, options: { ...s.options, showRemoteOutline: e.target.checked } }))} /> Remote-Umriss
+                        <label className="option">
+                            <input
+                                type="checkbox"
+                                checked={o.showRemoteOutline}
+                                onChange={(e) =>
+                                    setState((s) => ({
+                                        ...s,
+                                        options: { ...s.options, showRemoteOutline: e.target.checked },
+                                    }))
+                                }
+                            />
+                            Show remote outline
                         </label>
 
-                        <label>
-                            <input type="checkbox" checked={o.showButtonOutlines} onChange={(e) => setState((s) => ({ ...s, options: { ...s.options, showButtonOutlines: e.target.checked } }))} /> Button-Umrandung
+                        <label className="option">
+                            <input
+                                type="checkbox"
+                                checked={o.showButtonOutlines}
+                                onChange={(e) =>
+                                    setState((s) => ({
+                                        ...s,
+                                        options: { ...s.options, showButtonOutlines: e.target.checked },
+                                    }))
+                                }
+                            />
+                            Show button outlines
                         </label>
 
-                        <label>
-                            <input type="checkbox" checked={o.autoIconSizing} onChange={(e) => setState((s) => ({ ...s, options: { ...s.options, autoIconSizing: e.target.checked } }))} /> Auto-Icon-Sizing
+                        <label className="option">
+                            <input
+                                type="checkbox"
+                                checked={o.autoIconSizing}
+                                onChange={(e) =>
+                                    setState((s) => ({
+                                        ...s,
+                                        options: { ...s.options, autoIconSizing: e.target.checked },
+                                    }))
+                                }
+                            />
+                            Auto icon sizing
                         </label>
 
                         {!o.autoIconSizing && (
-                            <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                Icon-Größe (mm):
+                            <label className="option">
+                                Fixed icon size (mm)
                                 <input
                                     type="number"
                                     min={4}
@@ -233,61 +340,99 @@ export default function App() {
                                     onChange={(e) =>
                                         setState((s) => ({
                                             ...s,
-                                            options: { ...s.options, fixedIconMm: Number(e.target.value) || 8 },
+                                            options: { ...s.options, fixedIconMm: Number(e.target.value) },
                                         }))
                                     }
-                                    style={{ width: 80 }}
                                 />
                             </label>
                         )}
                     </div>
-                </div>
+                </fieldset>
 
-                <div style={{ border: "1px solid #ddd", borderRadius: 12, padding: 12, background: "white" }}>
-                    <div style={{ fontWeight: 700, marginBottom: 10 }}>Tasten</div>
+                {/* Export */}
+                <fieldset>
+                    <legend>Export</legend>
 
-                    <div style={{ display: "grid", gap: 16 }}>
-                        {buttonIds.map((buttonId) => (
-                            <div key={buttonId} style={{ borderTop: "1px solid #eee", paddingTop: 12 }}>
-                                <div style={{ fontWeight: 700, marginBottom: 8 }}>{buttonId.toUpperCase()}</div>
+                    <p className="share">
+                        <button onClick={copyShareLink}>Copy share link</button>
+                        {shareStatus === "copied" && (
+                            <span className="share__status" role="status">
+                                Copied!
+                            </span>
+                        )}
+                    </p>
 
-                                {(["single", "double", "long"] as TapType[]).map((tap) => (
-                                    <div key={tap} style={{ marginBottom: 14 }}>
-                                        <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{tapLabel(tap)}</div>
-                                        <IconPicker value={state.buttonConfigs[buttonId]?.icons?.[tap]} onChange={(v) => setIcon(buttonId, tap, v)} />
-                                    </div>
-                                ))}
-                            </div>
-                        ))}
+                    {shareStatus === "failed" && (
+                        <div className="share__fallback">
+                            <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
+                            <input className="share__input" type="text" readOnly value={window.location.href} onFocus={(e) => e.currentTarget.select()} />
+                        </div>
+                    )}
+
+                    <p>
+                        <button type="button" onClick={resetToDefaults}>
+                            Start from scratch
+                        </button>
+                    </p>
+
+                    <p>
+                        <button onClick={exportRemoteSvg}>Export Remote SVG</button>
+                    </p>
+
+                    <div className="exportRow">
+                        <button onClick={exportZip} disabled={isZipping}>
+                            {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
+                        </button>
+
+                        <label className="exportRow__label">
+                            DPI
+                            <select value={dpi} onChange={(e) => setDpi(Number(e.target.value))}>
+                                <option value={203}>203</option>
+                                <option value={300}>300</option>
+                            </select>
+                        </label>
                     </div>
-                </div>
+                </fieldset>
+
+                {/* Buttons */}
+                <section>
+                    <h2>Buttons</h2>
+                    {buttonIds.map((id) => (
+                        <section key={id} className="button-config">
+                            <h3>{id.toUpperCase()} Button</h3>
+                            {(["single", "double", "long"] as TapType[]).map((tap) => (
+                                <div key={tap}>
+                                    <h4>{tapLabel(tap)}</h4>
+                                    <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => setIcon(id, tap, v)} />
+                                </div>
+                            ))}
+                        </section>
+                    ))}
+                </section>
+            </section>
+
+            {/* Preview */}
+            <aside className="preview">
+                <RemoteSvg template={template} state={state} />
+            </aside>
+
+            {/* Hidden export renderers */}
+            <div ref={exportRemoteHostRef} className="hidden">
+                <RemoteSvg
+                    template={template}
+                    state={state}
+                    overrides={{
+                        showRemoteOutline: false,
+                        showGuides: false,
+                        showButtonOutlines: true,
+                    }}
+                    exportMode={{ squareButtons: true }}
+                />
             </div>
 
-            {/* Right */}
-            <div
-                style={{
-                    position: "sticky",
-                    top: 16,
-                    alignSelf: "start",
-                    height: "fit-content",
-                    maxHeight: "calc(100vh - 32px)",
-                    overflow: "auto",
-                }}
-            >
-                <div style={{ border: "1px dashed #bbb", padding: 12, width: "fit-content", background: "white" }}>
-                    <RemoteSvg template={template} state={state} />
-                </div>
+            <div ref={exportButtonHostRef} className="hidden">
+                {exportButton && <ButtonLabelSvg state={state} button={exportButton} labelWidthMm={40} labelHeightMm={30} />}
             </div>
-
-            {/* Hidden: full remote export preset */}
-            <div ref={exportRemoteHostRef} style={{ position: "absolute", left: -100000, top: 0, width: 0, height: 0, overflow: "hidden" }}>
-                <RemoteSvg template={template} state={state} overrides={{ showRemoteOutline: false, showGuides: false, showButtonOutlines: true }} exportMode={{ squareButtons: true }} />
-            </div>
-
-            {/* Hidden: per-button label renderer */}
-            <div ref={exportButtonHostRef} style={{ position: "absolute", left: -100000, top: 0, width: 0, height: 0, overflow: "hidden" }}>
-                {currentExportButton ? <ButtonLabelSvg state={state} button={currentExportButton} labelWidthMm={40} labelHeightMm={30} /> : null}
-            </div>
-        </div>
+        </main>
     );
 }

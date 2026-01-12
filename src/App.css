@@ -1,0 +1,352 @@
+:root {
+  color-scheme: light;
+}
+
+/* App layout */
+.app {
+  display: grid;
+  grid-template-columns: 420px 1fr 260px;
+  gap: 1rem;
+  padding: 1rem;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Left column */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: auto;
+  padding-right: 0.5rem;
+  min-height: 0;
+}
+
+/* Preview */
+.preview {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+  background: white;
+  border: 1px dashed #bbb;
+  padding: 1rem;
+  width: fit-content;
+  max-height: calc(100vh - 2rem);
+  overflow: auto;
+}
+
+/* Grouping */
+fieldset {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 0.25rem;
+}
+
+label {
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
+}
+
+/* Rows */
+.row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+button {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #eee;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Options list */
+.options {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Buttons section */
+.button-config {
+  border-top: 1px solid #eee;
+  padding-top: 0.75rem;
+}
+
+.button-config h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.button-config h4 {
+  margin: 0.5rem 0 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+/* Hidden render targets (exports) */
+.hidden {
+  position: absolute;
+  left: -100000px;
+  top: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Share link feedback */
+.share {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.share__status {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.share__fallback {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.share__hint {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.share__input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* Subtle vertical scrollbar for controls */
+.controls::-webkit-scrollbar {
+  width: 10px;
+}
+.controls::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 8px;
+}
+.controls::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Improve spacing for long button lists */
+.controls section h2 {
+  margin: 0;
+}
+.controls section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* Icon Picker base */
+.iconpicker {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.iconpicker__row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.iconpicker__row--secondary {
+  align-items: center;
+}
+
+.iconpicker__input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.iconpicker__input[aria-invalid="true"] {
+  border-color: #d33;
+}
+
+.iconpicker__btn {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+}
+
+.iconpicker__preview {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+}
+
+.iconpicker__previewFallback {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.iconpicker__error {
+  font-size: 12px;
+  color: #d33;
+}
+
+/* Hue browser panel */
+.iconpicker__panel {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: #fff;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.iconpicker__panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.iconpicker__panelTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.iconpicker__panelCount {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.iconpicker__search {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.iconpicker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.5rem;
+  max-height: 260px;
+  overflow: auto;
+}
+
+.iconpicker__tile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+}
+
+.iconpicker__tile:hover {
+  background: #f6f6f6;
+}
+
+.iconpicker__tileIcon {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+}
+
+.iconpicker__tileText {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iconpicker__hint {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.exportRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.exportRow__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.exportRow__label select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.modelRow {
+  display: grid;
+  grid-template-columns: 1fr 64px;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.modelRow__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modelRow__thumb {
+  width: 64px;
+  /* height: 64px; */
+  /* border: 1px solid #ddd; */
+  border-radius: 5px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.modelRow__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.modelRow__thumbFallback {
+  font-size: 12px;
+  opacity: 0.7;
+}
