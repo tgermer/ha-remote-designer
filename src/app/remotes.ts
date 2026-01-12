@@ -1,4 +1,4 @@
-export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2";
+export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch";
 
 export type CornerRadiiMm = {
     tl?: number;
@@ -34,7 +34,7 @@ export type RemoteTemplate = {
 export const REMOTES: RemoteTemplate[] = [
     {
         id: "hue_dimmer_v1",
-        name: "Philips Hue Dimmer (v1)",
+        name: "Philips Hue Dimmer Switch (v1)",
         widthMm: 35,
         heightMm: 95,
         cornerMm: 2,
@@ -54,7 +54,7 @@ export const REMOTES: RemoteTemplate[] = [
     },
     {
         id: "hue_dimmer_v2",
-        name: "Philips Hue Dimmer (v2)",
+        name: "Philips Hue Dimmer Switch (v2)",
         widthMm: 35,
         heightMm: 95,
         cornerMm: 5,
@@ -63,6 +63,21 @@ export const REMOTES: RemoteTemplate[] = [
             { id: "up", xMm: 0, yMm: 28.5, wMm: 35, hMm: 19, rMm: 0 },
             { id: "down", xMm: 0, yMm: 47.5, wMm: 35, hMm: 19, rMm: 0 },
             { id: "hue", xMm: 0, yMm: 67, wMm: 35, hMm: 28, r: { tl: 0, tr: 0, br: 5, bl: 5 } },
+        ],
+    },
+    {
+        id: "ikea_bilresa_dual_switch",
+        name: "IKEA BILRESA Dual Switch",
+        // Placeholder measurements — adjust after measuring the real device
+        widthMm: 40,
+        heightMm: 70,
+        cornerMm: 20,
+        buttons: [
+            // Top rocker: outer corners rounded, bottom corners square
+            { id: "top", xMm: 3, yMm: 3, wMm: 34, hMm: 32.25, r: { tl: 40, tr: 40, br: 0, bl: 0 } },
+
+            // Bottom rocker: outer corners rounded, top corners square
+            { id: "bottom", xMm: 3, yMm: 35.25, wMm: 34, hMm: 32.25, r: { tl: 0, tr: 0, br: 40, bl: 40 } },
         ],
     },
 ];
