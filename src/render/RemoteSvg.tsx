@@ -63,11 +63,15 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; si
     return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
 }
 
-export function RemoteSvg({ template, state, overrides, exportMode }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean } }) {
+export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number }) {
     const options = { ...state.options, ...overrides };
     const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
 
     const enabledTaps = state.tapsEnabled.length ? state.tapsEnabled : (["single"] as TapType[]);
+
+    const wmEnabled = !!showWatermark && !!watermarkText;
+    const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
+    const wmId = `wm_${Math.round(template.widthMm * 10)}_${Math.round(template.heightMm * 10)}`;
 
     return (
         <svg width={`${template.widthMm}mm`} height={`${template.heightMm}mm`} viewBox={`0 0 ${template.widthMm} ${template.heightMm}`} xmlns="http://www.w3.org/2000/svg">
@@ -174,6 +178,14 @@ export function RemoteSvg({ template, state, overrides, exportMode }: { template
                     </g>
                 );
             })}
+
+            {wmEnabled ? (
+                <g opacity={wmOpacity} pointerEvents="none">
+                    <text x={template.widthMm / 2} y={template.heightMm / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(6, Math.min(18, template.widthMm / 4))} fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" fill="black" transform={`rotate(-75 ${template.widthMm / 2} ${template.heightMm / 2})`}>
+                        {watermarkText}
+                    </text>
+                </g>
+            ) : null}
         </svg>
     );
 }

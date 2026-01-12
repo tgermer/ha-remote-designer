@@ -3,7 +3,7 @@ import type { ButtonDef } from "../app/remotes";
 import type { DesignState, TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 
-export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm }: { state: DesignState; button: ButtonDef; labelWidthMm: number; labelHeightMm: number }) {
+export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, showWatermark, watermarkText, watermarkOpacity }: { state: DesignState; button: ButtonDef; labelWidthMm: number; labelHeightMm: number; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number }) {
     const cfg = state.buttonConfigs[button.id]?.icons ?? {};
     const taps = state.tapsEnabled.filter((t) => !!cfg[t]);
     const n = taps.length;
@@ -13,6 +13,10 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm }: {
 
     const markerMm = 3;
     const gapMm = 1;
+
+    const wmEnabled = !!showWatermark && !!watermarkText;
+    const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
+    const wmId = `wm_lbl_${button.id}_${Math.round(labelWidthMm * 10)}_${Math.round(labelHeightMm * 10)}`;
 
     return (
         <svg width={`${labelWidthMm}mm`} height={`${labelHeightMm}mm`} viewBox={`0 0 ${labelWidthMm} ${labelHeightMm}`} xmlns="http://www.w3.org/2000/svg">
@@ -51,6 +55,13 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm }: {
                         );
                     });
                 })()}
+            {wmEnabled ? (
+                <g opacity={wmOpacity} pointerEvents="none">
+                    <text x={labelWidthMm / 2} y={labelHeightMm / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(5, Math.min(12, labelWidthMm / 3))} fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" fill="black" transform={`rotate(-75 ${labelWidthMm / 2} ${labelHeightMm / 2})`}>
+                        {watermarkText}
+                    </text>
+                </g>
+            ) : null}
         </svg>
     );
 }

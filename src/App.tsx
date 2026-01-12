@@ -3,13 +3,15 @@ import "./app.css";
 
 import type { DesignState, TapType } from "./app/types";
 import { REMOTES } from "./app/remotes";
-import { RemoteSvg } from "./render/RemoteSvg";
+import { RemoteSvg } from "./render/remoteSvg";
 import { ButtonLabelSvg } from "./render/buttonLabelSvg";
 import { IconPicker } from "./components/IconPicker";
 
 import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
 import { svgTextToPngBlobMm, downloadBlob } from "./app/exportPng";
+
+import { FEATURES } from "./app/featureFlags";
 
 import JSZip from "jszip";
 
@@ -78,6 +80,10 @@ export default function App() {
     const template = useMemo(() => REMOTES.find((r) => r.id === state.remoteId) ?? REMOTES[0], [state.remoteId]);
 
     const remoteImageUrl = getRemoteImageUrl(state.remoteId);
+
+    const showWatermark = FEATURES.WATERMARK;
+    const watermarkText = "PREVIEW PREVIEW PREVIEW";
+    const watermarkOpacity = 0.2;
 
     /* ensure button configs exist when switching remotes */
     useEffect(() => {
@@ -413,7 +419,7 @@ export default function App() {
 
             {/* Preview */}
             <aside className="preview">
-                <RemoteSvg template={template} state={state} />
+                <RemoteSvg template={template} state={state} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
             </aside>
 
             {/* Hidden export renderers */}
@@ -421,6 +427,9 @@ export default function App() {
                 <RemoteSvg
                     template={template}
                     state={state}
+                    showWatermark={showWatermark}
+                    watermarkText={watermarkText}
+                    watermarkOpacity={watermarkOpacity}
                     overrides={{
                         showRemoteOutline: false,
                         showGuides: false,
@@ -431,7 +440,7 @@ export default function App() {
             </div>
 
             <div ref={exportButtonHostRef} className="hidden">
-                {exportButton && <ButtonLabelSvg state={state} button={exportButton} labelWidthMm={40} labelHeightMm={30} />}
+                {exportButton && <ButtonLabelSvg state={state} button={exportButton} labelWidthMm={40} labelHeightMm={30} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />}
             </div>
         </main>
     );
