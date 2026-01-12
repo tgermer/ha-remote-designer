@@ -1,9 +1,9 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import "./app.css";
 
 import type { DesignState, TapType } from "./app/types";
 import { REMOTES } from "./app/remotes";
-import { RemoteSvg } from "./render/remoteSvg";
+import { RemoteSvg } from "./render/RemoteSvg";
 import { ButtonLabelSvg } from "./render/buttonLabelSvg";
 import { IconPicker } from "./components/IconPicker";
 
