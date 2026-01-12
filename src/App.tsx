@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import "./index.css";
 import type { DesignState, TapType } from "./app/types";
 import { REMOTES } from "./app/remotes";
-import { RemoteSvg } from "./render/remoteSvg";
+import { RemoteSvg } from "./render/RemoteSvg";
 import { IconPicker } from "./components/IconPicker";
 import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
@@ -93,8 +93,7 @@ export default function App() {
     const exportRemoteHostRef = useRef<HTMLDivElement | null>(null);
 
     const exportRemoteSvg = () => {
-        const host = exportRemoteHostRef.current;
-        const svg = host?.querySelector("svg");
+        const svg = exportRemoteHostRef.current?.querySelector("svg");
         if (!svg) return;
 
         const xml = serializeSvg(svg);
@@ -204,15 +203,7 @@ export default function App() {
 
                         <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
                             Tap-Marker Stil:
-                            <select
-                                value={o.tapMarkerFill}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        options: { ...s.options, tapMarkerFill: e.target.value as "outline" | "filled" },
-                                    }))
-                                }
-                            >
+                            <select value={o.tapMarkerFill} onChange={(e) => setState((s) => ({ ...s, options: { ...s.options, tapMarkerFill: e.target.value as any } }))}>
                                 <option value="outline">Outline</option>
                                 <option value="filled">Filled</option>
                             </select>
@@ -263,7 +254,7 @@ export default function App() {
                                 {(["single", "double", "long"] as TapType[]).map((tap) => (
                                     <div key={tap} style={{ marginBottom: 14 }}>
                                         <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{tapLabel(tap)}</div>
-                                        <IconPicker value={state.buttonConfigs[buttonId]?.icons?.[tap]} onChange={(v) => setIcon(buttonId, tap, v)} placeholder="mdi:..." />
+                                        <IconPicker value={state.buttonConfigs[buttonId]?.icons?.[tap]} onChange={(v) => setIcon(buttonId, tap, v)} />
                                     </div>
                                 ))}
                             </div>
@@ -290,16 +281,7 @@ export default function App() {
 
             {/* Hidden: full remote export preset */}
             <div ref={exportRemoteHostRef} style={{ position: "absolute", left: -100000, top: 0, width: 0, height: 0, overflow: "hidden" }}>
-                <RemoteSvg
-                    template={template}
-                    state={state}
-                    overrides={{
-                        showRemoteOutline: false,
-                        showGuides: false,
-                        showButtonOutlines: true,
-                    }}
-                    exportMode={{ squareButtons: true }}
-                />
+                <RemoteSvg template={template} state={state} overrides={{ showRemoteOutline: false, showGuides: false, showButtonOutlines: true }} exportMode={{ squareButtons: true }} />
             </div>
 
             {/* Hidden: per-button label renderer */}

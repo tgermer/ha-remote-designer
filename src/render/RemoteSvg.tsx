@@ -3,6 +3,42 @@ import type { RemoteTemplate } from "../app/remotes";
 import type { DesignState, TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 
+type CornerRadii = { tl: number; tr: number; br: number; bl: number };
+
+function clampRadius(r: number, w: number, h: number) {
+    return Math.max(0, Math.min(r, w / 2, h / 2));
+}
+
+function roundedRectPath(x: number, y: number, w: number, h: number, r: CornerRadii) {
+    const tl = clampRadius(r.tl, w, h);
+    const tr = clampRadius(r.tr, w, h);
+    const br = clampRadius(r.br, w, h);
+    const bl = clampRadius(r.bl, w, h);
+
+    const x0 = x;
+    const y0 = y;
+    const x1 = x + w;
+    const y1 = y + h;
+
+    return [`M ${x0 + tl} ${y0}`, `H ${x1 - tr}`, tr ? `A ${tr} ${tr} 0 0 1 ${x1} ${y0 + tr}` : `L ${x1} ${y0}`, `V ${y1 - br}`, br ? `A ${br} ${br} 0 0 1 ${x1 - br} ${y1}` : `L ${x1} ${y1}`, `H ${x0 + bl}`, bl ? `A ${bl} ${bl} 0 0 1 ${x0} ${y1 - bl}` : `L ${x0} ${y1}`, `V ${y0 + tl}`, tl ? `A ${tl} ${tl} 0 0 1 ${x0 + tl} ${y0}` : `L ${x0} ${y0}`, "Z"].join(" ");
+}
+
+function getButtonRadiiMm(button: any, squareButtons?: boolean): CornerRadii {
+    if (squareButtons) return { tl: 0, tr: 0, br: 0, bl: 0 };
+
+    const uni = typeof button.rMm === "number" ? button.rMm : 0;
+    const tl = typeof button.r?.tl === "number" ? button.r.tl : uni;
+    const tr = typeof button.r?.tr === "number" ? button.r.tr : uni;
+    const br = typeof button.r?.br === "number" ? button.r.br : uni;
+    const bl = typeof button.r?.bl === "number" ? button.r.bl : uni;
+
+    return { tl, tr, br, bl };
+}
+
+function isUniformRadii(r: CornerRadii) {
+    return r.tl === r.tr && r.tr === r.br && r.br === r.bl;
+}
+
 function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; sizeMm?: number; fillMode?: "outline" | "filled" }) {
     const stroke = 0.35;
     const r = sizeMm / 2 - stroke;
@@ -35,13 +71,10 @@ export function RemoteSvg({ template, state, overrides, exportMode }: { template
 
     return (
         <svg width={`${template.widthMm}mm`} height={`${template.heightMm}mm`} viewBox={`0 0 ${template.widthMm} ${template.heightMm}`} xmlns="http://www.w3.org/2000/svg">
-            {/* Background */}
             <rect x="0" y="0" width={template.widthMm} height={template.heightMm} fill="white" />
 
-            {/* Remote outline */}
             {showRemoteOutline && <rect x="0.2" y="0.2" width={template.widthMm - 0.4} height={template.heightMm - 0.4} rx={template.cornerMm} fill="none" stroke="black" strokeWidth="0.4" />}
 
-            {/* Global guides */}
             {showGuides && (
                 <g opacity={0.35}>
                     <line x1={template.widthMm / 2} y1={0} x2={template.widthMm / 2} y2={template.heightMm} stroke="black" strokeWidth="0.2" />
@@ -49,7 +82,6 @@ export function RemoteSvg({ template, state, overrides, exportMode }: { template
                 </g>
             )}
 
-            {/* Buttons */}
             {template.buttons.map((b) => {
                 const cfg = state.buttonConfigs[b.id]?.icons ?? {};
                 const activeTaps = enabledTaps.filter((t) => !!cfg[t]);
@@ -58,9 +90,9 @@ export function RemoteSvg({ template, state, overrides, exportMode }: { template
                 const buttonCx = b.xMm + b.wMm / 2;
                 const buttonCy = b.yMm + b.hMm / 2;
 
-                const rx = exportMode?.squareButtons ? 0 : b.r?.tl ?? b.rMm ?? 0;
+                const radii = getButtonRadiiMm(b, exportMode?.squareButtons);
 
-                const outline = showButtonOutlines ? <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={rx} fill="none" stroke="black" strokeWidth="0.25" /> : null;
+                const outline = showButtonOutlines ? isUniformRadii(radii) ? <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={radii.tl} fill="none" stroke="black" strokeWidth="0.25" /> : <path d={roundedRectPath(b.xMm, b.yMm, b.wMm, b.hMm, radii)} fill="none" stroke="black" strokeWidth="0.25" /> : null;
 
                 const buttonGuides = showGuides ? (
                     <g opacity={0.25}>
@@ -78,7 +110,6 @@ export function RemoteSvg({ template, state, overrides, exportMode }: { template
                     );
                 }
 
-                // Single icon
                 if (n === 1) {
                     const tap = activeTaps[0];
                     const iconMm = autoIconSizing ? Math.max(5, Math.min(10, b.wMm - 2, b.hMm - 2)) : fixedIconMm;
@@ -93,12 +124,7 @@ export function RemoteSvg({ template, state, overrides, exportMode }: { template
                             <g key={b.id}>
                                 {outline}
                                 {buttonGuides}
-                                {renderHaIconAtMm({
-                                    icon: cfg[tap]!,
-                                    cx: buttonCx,
-                                    cy: topY + iconMm / 2,
-                                    iconMm,
-                                })}
+                                {renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: topY + iconMm / 2, iconMm })}
                                 <g transform={`translate(${buttonCx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
                                     <TapMarker tap={tap} fillMode={tapMarkerFill} />
                                 </g>
@@ -110,17 +136,11 @@ export function RemoteSvg({ template, state, overrides, exportMode }: { template
                         <g key={b.id}>
                             {outline}
                             {buttonGuides}
-                            {renderHaIconAtMm({
-                                icon: cfg[tap]!,
-                                cx: buttonCx,
-                                cy: buttonCy,
-                                iconMm,
-                            })}
+                            {renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: buttonCy, iconMm })}
                         </g>
                     );
                 }
 
-                // Multiple icons
                 const colW = b.wMm / n;
                 const markerMm = 3;
                 const gapMm = 1;
@@ -144,12 +164,7 @@ export function RemoteSvg({ template, state, overrides, exportMode }: { template
                             const cx = b.xMm + colW * (i + 0.5);
                             return (
                                 <g key={tap}>
-                                    {renderHaIconAtMm({
-                                        icon: cfg[tap]!,
-                                        cx,
-                                        cy: topY + iconMm / 2,
-                                        iconMm,
-                                    })}
+                                    {renderHaIconAtMm({ icon: cfg[tap]!, cx, cy: topY + iconMm / 2, iconMm })}
                                     <g transform={`translate(${cx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
                                         <TapMarker tap={tap} fillMode={tapMarkerFill} />
                                     </g>

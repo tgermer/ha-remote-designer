@@ -30,6 +30,7 @@ export type RemoteTemplate = {
     buttons: ButtonDef[];
 };
 
+// v2: placeholder values – measure and adjust later
 export const REMOTES: RemoteTemplate[] = [
     {
         id: "hue_dimmer_v1",
@@ -38,34 +39,30 @@ export const REMOTES: RemoteTemplate[] = [
         heightMm: 95,
         cornerMm: 2,
         buttons: [
-            // ON: oben rund, unten eckig
-            { id: "on", xMm: 1, yMm: 1, wMm: 33, hMm: 28, r: { tl: 2, tr: 2, br: 0, bl: 0 } },
+            // ON: top rounded, bottom square
+            { id: "on", xMm: 1, yMm: 1, wMm: 33, hMm: 28, r: { tl: 1.5, tr: 1.5, br: 0, bl: 0 } },
 
-            // UP: komplett eckig
-            { id: "up", xMm: 1, yMm: 30, wMm: 33, hMm: 16.5, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
+            // UP: square
+            { id: "up", xMm: 1, yMm: 30.25, wMm: 33, hMm: 16.5, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
 
-            // DOWN: komplett eckig
-            { id: "down", xMm: 1, yMm: 47.5, wMm: 33, hMm: 16.5, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
+            // DOWN: square
+            { id: "down", xMm: 1, yMm: 48.25, wMm: 33, hMm: 16.5, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
 
-            // OFF: oben eckig, unten rund
-            { id: "off", xMm: 1, yMm: 65, wMm: 33, hMm: 28, r: { tl: 0, tr: 0, br: 2, bl: 2 } },
+            // OFF: top square, bottom rounded
+            { id: "off", xMm: 1, yMm: 66, wMm: 33, hMm: 28, r: { tl: 0, tr: 0, br: 1.5, bl: 1.5 } },
         ],
     },
-
     {
         id: "hue_dimmer_v2",
         name: "Philips Hue Dimmer (v2)",
-        // Platzhalter – später messen
         widthMm: 35,
         heightMm: 95,
         cornerMm: 5,
         buttons: [
-            // V2 hat typischerweise: On, Dim Up, Dim Down, Hue/Scene
-            // IDs bewusst "stabil" und sprechend
-            { id: "on", xMm: 0, yMm: 0, wMm: 35, hMm: 28.5, r: { tl: 5, tr: 5, br: 0, bl: 0 } },
-            { id: "up", xMm: 0, yMm: 28.8, wMm: 35, hMm: 18.5, rMm: 0 },
-            { id: "down", xMm: 0, yMm: 47.4, wMm: 35, hMm: 18.5, rMm: 0 },
-            { id: "hue", xMm: 0, yMm: 66.2, wMm: 35, hMm: 28.5, r: { tl: 0, tr: 0, br: 5, bl: 5 } },
+            { id: "on", xMm: 0, yMm: 0, wMm: 35, hMm: 28, r: { tl: 5, tr: 5, br: 0, bl: 0 } },
+            { id: "up", xMm: 0, yMm: 28.5, wMm: 35, hMm: 19, rMm: 0 },
+            { id: "down", xMm: 0, yMm: 47.5, wMm: 35, hMm: 19, rMm: 0 },
+            { id: "hue", xMm: 0, yMm: 67, wMm: 35, hMm: 28, r: { tl: 0, tr: 0, br: 5, bl: 5 } },
         ],
     },
 ];
