@@ -84,7 +84,7 @@ export default function App() {
 
     // Admin gate for export controls
     const adminCode = new URLSearchParams(window.location.search).get("admin");
-    const isAdmin = adminCode === "1418";
+    const isAdmin = adminCode === "80933";
 
     const getShareUrl = () => {
         const url = new URL(window.location.href);
@@ -211,16 +211,15 @@ export default function App() {
 
     return (
         <main className="app">
+            <header className="header">
+                <h1>Remote Label Designer</h1>
+                {isAdmin ? (
+                    <span className="badge" aria-label="Admin mode">
+                        Admin
+                    </span>
+                ) : null}
+            </header>
             <section className="controls">
-                <header className="header">
-                    <h1>Remote Label Designer</h1>
-                    {isAdmin ? (
-                        <span className="badge" aria-label="Admin mode">
-                            Admin
-                        </span>
-                    ) : null}
-                </header>
-
                 {/* Remote */}
                 <fieldset>
                     <legend>Remote</legend>
@@ -498,6 +497,34 @@ export default function App() {
                 <RemoteSvg template={template} state={state} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
             </aside>
 
+            {/* Help */}
+            <section className="help" aria-label="Icon help">
+                <details className="help__details">
+                    <summary>Icon help & sources</summary>
+                    <div className="help__content">
+                        <p>
+                            This app supports all Material Design Icons (MDI). Browse and search icons here:{" "}
+                            <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">
+                                pictogrammers.com/library/mdi
+                            </a>
+                            .
+                        </p>
+
+                        <p>
+                            Hue icon previews are sourced from the <code>hass-hue-icons</code> project:{" "}
+                            <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
+                                github.com/arallsopp/hass-hue-icons
+                            </a>
+                            .
+                        </p>
+
+                        <p className="help__note">
+                            Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
             {/* Hidden export renderers */}
             <div ref={exportRemoteHostRef} className="hidden">
                 <RemoteSvg
@@ -518,6 +545,25 @@ export default function App() {
             <div ref={exportButtonHostRef} className="hidden">
                 {exportButton && <ButtonLabelSvg state={state} button={exportButton} labelWidthMm={40} labelHeightMm={30} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />}
             </div>
+
+            <footer className="footer" aria-label="Legal and credits">
+                <div className="footer__row">
+                    <span>© {new Date().getFullYear()} Tristan Germer</span>
+                    <span className="footer__sep">•</span>
+                    <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">
+                        MDI
+                    </a>
+                    <span className="footer__sep">•</span>
+                    <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
+                        hass-hue-icons
+                    </a>
+                </div>
+
+                <div className="footer__row footer__row--small">
+                    <span>Licenses: MIT (this app), Apache-2.0 (MDI & Hue icons). See NOTICE.</span>
+                    <p>“Philips” and “Philips Hue” are trademarks of Koninklijke Philips N.V. and/or Signify. The use of the Philips brand for Philips Hue is licensed to Signify. “Home Assistant” and the Home Assistant logo are trademarks of Home Assistant and/or its licensors. This project is not affiliated with, endorsed by, or sponsored by Philips, Signify, or Home Assistant.</p>
+                </div>
+            </footer>
         </main>
     );
 }

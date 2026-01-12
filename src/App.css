@@ -8,14 +8,15 @@ body {
 
 /* App layout */
 .app {
-  display: grid;
-  grid-template-columns: 420px 1fr 260px;
+  display: flex;
+  flex-wrap: wrap;
+  /* grid-template-columns: 420px 1fr 260px; */
   gap: 1rem;
   padding: 1rem;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  height: 100vh;
+  /* height: 100vh; */
   box-sizing: border-box;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 /* Left column */
@@ -47,6 +48,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  width: 100%;
 }
 
 .badge {
@@ -371,5 +373,60 @@ button:disabled {
 
 .modelRow__thumbFallback {
   font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Help section */
+.help {
+  position: sticky;
+  width: 400px;
+}
+.help__details {
+  /* border: 1px solid #ddd; */
+  border-radius: 10px;
+  /* padding: 0.5rem 0.75rem; */
+  background: #fff;
+}
+
+.help__details > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.help__content {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.help__note {
+  opacity: 0.85;
+  font-size: 0.9rem;
+}
+
+/* Footer */
+.footer {
+  width: 100%;
+  border-top: 1px solid #eee;
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.footer__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.footer__row--small {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.footer__sep {
   opacity: 0.7;
 }
