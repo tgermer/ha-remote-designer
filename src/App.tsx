@@ -70,6 +70,10 @@ function nextFrame() {
 /* --------------------------------- App ---------------------------------- */
 
 export default function App() {
+    useEffect(() => {
+        document.title = "Remote Label Designer for Home Automation";
+    }, []);
+
     const [state, setState] = useState<DesignState>(() => loadFromHash<DesignState>() ?? initial);
 
     /* persist state in URL */
@@ -212,7 +216,7 @@ export default function App() {
     return (
         <main className="app">
             <header className="header">
-                <h1>Remote Label Designer</h1>
+                <h1>Remote Label Designer for Home Automation</h1>
                 {isAdmin ? (
                     <span className="badge" aria-label="Admin mode">
                         Admin
