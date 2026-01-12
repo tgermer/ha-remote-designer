@@ -84,7 +84,7 @@ export default function App() {
 
     // Admin gate for export controls
     const adminCode = new URLSearchParams(window.location.search).get("admin");
-    const isAdmin = adminCode === "80933";
+    const isAdmin = adminCode === import.meta.env.VITE_ADMIN_SECRET;
 
     const getShareUrl = () => {
         const url = new URL(window.location.href);
