@@ -1,4 +1,3 @@
-import React from "react";
 import { getMdiPath } from "../app/mdi";
 
 export function MdiPath({ name }: { name: string }) {

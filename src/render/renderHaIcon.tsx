@@ -1,4 +1,3 @@
-import React from "react";
 import { getMdiPath } from "../app/mdi";
 import { MdiPath } from "../components/Icon";
 import { getHueSvg, hasHueIcon, isHueEnabled, isHueIcon } from "../hue/hueIcons";

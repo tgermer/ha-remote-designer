@@ -1,4 +1,3 @@
-import React from "react";
 import type { ButtonDef } from "../app/remotes";
 import type { DesignState, TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";

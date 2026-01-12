@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { getMdiPath } from "../app/mdi";
 import { FEATURES } from "../app/featureFlags";
 import { hasHueIcon, listHueIcons } from "../hue/hueIcons";
