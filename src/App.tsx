@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from "react";
-import "./app.css";
+import "./App.css";
 
 import type { DesignState, TapType } from "./app/types";
 import { REMOTES } from "./app/remotes";
