@@ -2,6 +2,10 @@
   color-scheme: light;
 }
 
+body {
+  color: #2F2F4F
+}
+
 /* App layout */
 .app {
   display: grid;
@@ -37,9 +41,27 @@
   overflow: auto;
 }
 
+/* Header + Admin Badge */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: thistle;
+}
+
 /* Grouping */
 fieldset {
-  border: 1px solid #ddd;
+  border: 1px solid thistle;
   border-radius: 8px;
   padding: 0.75rem;
 }
@@ -47,6 +69,7 @@ fieldset {
 legend {
   font-weight: 600;
   padding: 0 0.25rem;
+  color: #2F2F4F
 }
 
 label {
@@ -224,7 +247,7 @@ button:disabled {
 
 /* Hue browser panel */
 .iconpicker__panel {
-  border: 1px solid #ddd;
+  border: 1px solid thistle;
   border-radius: 12px;
   padding: 0.75rem;
   background: #fff;

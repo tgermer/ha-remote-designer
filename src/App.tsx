@@ -82,6 +82,16 @@ export default function App() {
 
     const remoteImageUrl = getRemoteImageUrl(state.remoteId);
 
+    // Admin gate for export controls
+    const adminCode = new URLSearchParams(window.location.search).get("admin");
+    const isAdmin = adminCode === "1418";
+
+    const getShareUrl = () => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("admin"); // never leak admin param
+        return url.toString();
+    };
+
     const showWatermark = FEATURES.WATERMARK;
     const watermarkText = "PREVIEW PREVIEW PREVIEW";
     const watermarkOpacity = 0.2;
@@ -126,7 +136,7 @@ export default function App() {
             saveToHash(state);
 
             // Read the updated URL (including the fresh hash).
-            const url = window.location.href;
+            const url = getShareUrl();
 
             await navigator.clipboard.writeText(url);
             setShareStatus("copied");
@@ -202,8 +212,13 @@ export default function App() {
     return (
         <main className="app">
             <section className="controls">
-                <header>
+                <header className="header">
                     <h1>Remote Label Designer</h1>
+                    {isAdmin ? (
+                        <span className="badge" aria-label="Admin mode">
+                            Admin
+                        </span>
+                    ) : null}
                 </header>
 
                 {/* Remote */}
@@ -226,21 +241,73 @@ export default function App() {
                     </div>
                 </fieldset>
 
-                {/* Tap modes */}
+                {/* Preview presets */}
                 <fieldset>
-                    <legend>Tap Modes</legend>
+                    <legend>Preview presets</legend>
                     <div className="row">
-                        <button onClick={() => setState((s) => ({ ...s, tapsEnabled: ["single"] }))}>Single</button>
-                        <button onClick={() => setState((s) => ({ ...s, tapsEnabled: ["single", "double"] }))}>Single + Double</button>
                         <button
+                            type="button"
+                            onClick={() =>
+                                setState((s) => ({
+                                    ...s,
+                                    tapsEnabled: ["single"],
+                                    options: {
+                                        ...s.options,
+                                        showTapMarkersAlways: true,
+                                        showTapDividers: false,
+                                    },
+                                }))
+                            }
+                        >
+                            Simple (Tap)
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setState((s) => ({
+                                    ...s,
+                                    tapsEnabled: ["single", "double"],
+                                    options: {
+                                        ...s.options,
+                                        showTapMarkersAlways: true,
+                                        showTapDividers: true,
+                                    },
+                                }))
+                            }
+                        >
+                            Tap + Double
+                        </button>
+                        <button
+                            type="button"
                             onClick={() =>
                                 setState((s) => ({
                                     ...s,
                                     tapsEnabled: ["single", "double", "long"],
+                                    options: {
+                                        ...s.options,
+                                        showTapMarkersAlways: true,
+                                        showTapDividers: true,
+                                    },
                                 }))
                             }
                         >
-                            All
+                            Tap + Double + Long
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setState((s) => ({
+                                    ...s,
+                                    tapsEnabled: ["single", "double", "long"],
+                                    options: {
+                                        ...s.options,
+                                        showTapMarkersAlways: false,
+                                        showTapDividers: true,
+                                    },
+                                }))
+                            }
+                        >
+                            Minimal (no markers)
                         </button>
                     </div>
                 </fieldset>
@@ -356,12 +423,13 @@ export default function App() {
                     </div>
                 </fieldset>
 
-                {/* Export */}
                 <fieldset>
-                    <legend>Export</legend>
+                    <legend>Share</legend>
 
                     <p className="share">
-                        <button onClick={copyShareLink}>Copy share link</button>
+                        <button type="button" onClick={copyShareLink}>
+                            Copy share link
+                        </button>
                         {shareStatus === "copied" && (
                             <span className="share__status" role="status">
                                 Copied!
@@ -372,7 +440,7 @@ export default function App() {
                     {shareStatus === "failed" && (
                         <div className="share__fallback">
                             <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
-                            <input className="share__input" type="text" readOnly value={window.location.href} onFocus={(e) => e.currentTarget.select()} />
+                            <input className="share__input" type="text" readOnly value={getShareUrl()} onFocus={(e) => e.currentTarget.select()} />
                         </div>
                     )}
 
@@ -381,25 +449,32 @@ export default function App() {
                             Start from scratch
                         </button>
                     </p>
-
-                    <p>
-                        <button onClick={exportRemoteSvg}>Export Remote SVG</button>
-                    </p>
-
-                    <div className="exportRow">
-                        <button onClick={exportZip} disabled={isZipping}>
-                            {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
-                        </button>
-
-                        <label className="exportRow__label">
-                            DPI
-                            <select value={dpi} onChange={(e) => setDpi(Number(e.target.value))}>
-                                <option value={203}>203</option>
-                                <option value={300}>300</option>
-                            </select>
-                        </label>
-                    </div>
                 </fieldset>
+
+                {/* Export (admin only) */}
+                {isAdmin ? (
+                    <fieldset>
+                        <legend>Export</legend>
+
+                        <p>
+                            <button onClick={exportRemoteSvg}>Export Remote SVG</button>
+                        </p>
+
+                        <div className="exportRow">
+                            <button onClick={exportZip} disabled={isZipping}>
+                                {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
+                            </button>
+
+                            <label className="exportRow__label">
+                                DPI
+                                <select value={dpi} onChange={(e) => setDpi(Number(e.target.value))}>
+                                    <option value={203}>203</option>
+                                    <option value={300}>300</option>
+                                </select>
+                            </label>
+                        </div>
+                    </fieldset>
+                ) : null}
 
                 {/* Buttons */}
                 <section>
