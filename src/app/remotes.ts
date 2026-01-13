@@ -80,4 +80,21 @@ export const REMOTES: RemoteTemplate[] = [
             { id: "bottom", xMm: 3, yMm: 35.25, wMm: 34, hMm: 32.25, r: { tl: 0, tr: 0, br: 40, bl: 40 } },
         ],
     },
+    {
+        id: "aqara_w100",
+        name: "Aqara Climate Sensor W100",
+        // Placeholder measurements — adjust after measuring the real device
+        widthMm: 82,
+        heightMm: 82,
+        cornerMm: 12,
+        buttons: [
+            // Top rocker: outer corners rounded, bottom corners square
+            { id: "plus", xMm: 61, yMm: 3, wMm: 17, hMm: 25, r: { tl: 0, tr: 10, br: 0, bl: 0 } },
+
+            { id: "center", xMm: 61, yMm: 28.5, wMm: 17, hMm: 25, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
+
+            // Bottom rocker: outer corners rounded, top corners square
+            { id: "minus", xMm: 61, yMm: 54, wMm: 17, hMm: 25, r: { tl: 0, tr: 0, br: 10, bl: 0 } },
+        ],
+    },
 ];
