@@ -4,14 +4,13 @@
 
 body {
   color: #2F2F4F;
-
   background-color: thistle;
-background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px),
-linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 1px),
-linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px);
-background-size:100px 100px, 100px 100px, 20px 20px, 20px 20px;
-background-position:-2px -2px, -2px -2px, -1px -1px, -1px -1px;
+  background-image: linear-gradient(rgba(255,255,255,0.2) 2px, transparent 2px),
+  linear-gradient(90deg, rgba(255,255,255,0.2) 2px, transparent 1px),
+  linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+  linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px);
+  background-size:100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position:-2px -2px, -2px -2px, -1px -1px, -1px -1px;
 }
 
 /* App layout */
@@ -447,4 +446,10 @@ button:disabled {
 
 .footer__sep {
   opacity: 0.7;
+}
+
+
+.iconpicker__btn--active {
+  background: #e9e9ff;
+  border-color: #bdbde6;
 }
