@@ -53,6 +53,7 @@ main {
   align-self: start;
   background: white;
   border: 1px dashed #bbb;
+  border-radius: 8px;
   padding: 1rem;
   width: fit-content;
   max-height: calc(100vh - 2rem);
@@ -376,7 +377,7 @@ button:disabled {
   /* height: 64px; */
   /* border: 1px solid #ddd; */
   border-radius: 5px;
-  background: #fff;
+  /* background: #fff; */
   display: grid;
   place-items: center;
   overflow: hidden;
