@@ -1,4 +1,4 @@
-export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch";
+export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100";
 
 export type CornerRadiiMm = {
     tl?: number;
