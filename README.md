@@ -1,15 +1,13 @@
 # Remote Label Designer for Home Automation  
 **aka: ha-remote-designer**
 
-Design printable button labels for physical smart-home remotes –  
-without graphic design tools.
+Design printable button labels for physical smart-home remotes –  without graphic design tools.
 
 ---
 
 ## Why this exists
 
-When you start using physical remotes in a smart-home setup, they quickly become
-more powerful than the manufacturer ever intended.
+When you start using physical remotes in a smart-home setup, they quickly become more powerful than the manufacturer ever intended.
 
 Single press.  
 Double press.  
@@ -30,8 +28,7 @@ Labeling sounds trivial, but in practice it isn’t:
 - Consistent sizing is hard
 - Printing at the correct scale is error-prone
 
-**Remote Label Designer** solves exactly this gap between automation logic
-and the physical remote in your hand.
+**Remote Label Designer** solves exactly this gap between automation logic and the physical remote in your hand.
 
 ---
 
@@ -166,17 +163,14 @@ If it helps you even a little, that’s already a win.
 
 This project is open source on purpose.
 
-The value of this tool is not the code itself,
-but solving a very practical, real-world problem:
-making physical smart-home remotes readable again.
+The value of this tool is not the code itself, but solving a very practical, real-world problem: making physical smart-home remotes readable again.
 
 Open sourcing the tool allows:
 - real-world feedback
 - community trust
 - experimentation across different ecosystems
 
-Future services (such as printed stickers or material-based solutions)
-are intentionally **out of scope** for this repository.
+Future services (such as printed stickers or material-based solutions) are intentionally **out of scope** for this repository.
 
 Open source code and optional paid services are not a contradiction.
 They solve different problems.
