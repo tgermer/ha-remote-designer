@@ -1,6 +1,8 @@
 # Remote Label Designer for Home Automation  
 **aka: ha-remote-designer**
 
+👉 **Try the tool:** https://ha-remote-designer.netlify.app/
+
 Design printable button labels for physical smart-home remotes –  without graphic design tools.
 
 ---
@@ -29,6 +31,21 @@ Labeling sounds trivial, but in practice it isn’t:
 - Printing at the correct scale is error-prone
 
 **Remote Label Designer** solves exactly this gap between automation logic and the physical remote in your hand.
+
+<img src="public/IMG_2019.jpeg" alt="Printed labels on a smart-home remote" width="400">
+
+*Real-life test print: generated labels printed, cut and applied to a physical remote.*
+
+---
+
+## Try it online
+
+You can try the current prototype directly in your browser:
+
+👉 https://ha-remote-designer.netlify.app/
+
+No installation required.
+No account needed.
 
 ---
 
@@ -126,6 +143,9 @@ Community feedback will decide.
 ---
 
 ## Feedback wanted
+
+Please test the tool first:
+👉 https://ha-remote-designer.netlify.app/
 
 This project lives or dies by real usage.
 
