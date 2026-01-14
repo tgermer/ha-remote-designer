@@ -30,6 +30,10 @@ Labeling sounds trivial, but in practice it isn’t:
 
 **Remote Label Designer** solves exactly this gap between automation logic and the physical remote in your hand.
 
+<img src="public/IMG_2019.jpeg" alt="Printed labels on a smart-home remote" width="400">
+
+*Real-life test print: generated labels printed, cut and applied to a physical remote.*
+
 ---
 
 ## What this tool does (current state)
