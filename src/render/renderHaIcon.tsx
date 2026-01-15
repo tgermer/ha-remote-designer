@@ -1,72 +1,96 @@
-import { getMdiPath } from "../app/mdi";
-import { MdiPath } from "../components/Icon";
-import { getHueSvg, hasHueIcon, isHueEnabled, isHueIcon } from "../hue/hueIcons";
+import { TapMarker } from "../components/TapMarker";
+import { renderHaIconAtMm } from "./renderHaIcon";
+import { TapType } from "../app/types";
 
-type ViewBox = { minX: number; minY: number; w: number; h: number };
+type ButtonLabelSvgProps = {
+    state: any;
+    cfg: Record<TapType, string | undefined>;
+    taps: TapType[];
+    bx: number;
+    by: number;
+    button: { wMm: number; hMm: number };
+};
 
-function parseViewBox(svg: string): ViewBox {
-    const m = svg.match(/viewBox\s*=\s*"([^"]+)"/i);
-    if (!m) return { minX: 0, minY: 0, w: 24, h: 24 };
-    const parts = m[1].trim().split(/\s+/).map(Number);
-    if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return { minX: 0, minY: 0, w: 24, h: 24 };
-    return { minX: parts[0], minY: parts[1], w: parts[2], h: parts[3] };
-}
+export function ButtonLabelSvg({ state, cfg, taps, bx, by, button }: ButtonLabelSvgProps) {
+    const labelWidthMm = 40;
+    const labelHeightMm = 30;
 
-function stripOuterSvg(svg: string): string {
-    return svg
-        .replace(/^[\s\S]*?<svg[^>]*>/i, "")
-        .replace(/<\/svg>\s*$/i, "")
-        .trim();
-}
+    const gapMm = 1;
+    const markerMm = 3;
 
-export function isSupportedHaIcon(icon: string): boolean {
-    if (icon.startsWith("mdi:")) return !!getMdiPath(icon);
-    if (isHueEnabled() && isHueIcon(icon)) return hasHueIcon(icon);
-    return false;
-}
+    const markerFill = state.options.markerFillMode;
 
-export function renderHaIconAtMm({ icon, cx, cy, iconMm }: { icon: string; cx: number; cy: number; iconMm: number }) {
-    // MDI (24x24)
-    if (icon.startsWith("mdi:")) {
-        if (!getMdiPath(icon)) return null;
-        return (
-            <g
-                transform={`
-          translate(${cx}, ${cy})
-          translate(${-iconMm / 2}, ${-iconMm / 2})
-          scale(${iconMm / 24})
-        `}
-                fill="black"
-            >
-                <MdiPath name={icon} />
-            </g>
-        );
-    }
+    return (
+        <svg width={labelWidthMm} height={labelHeightMm} viewBox={`0 0 ${labelWidthMm} ${labelHeightMm}`} xmlns="http://www.w3.org/2000/svg" shapeRendering="geometricPrecision">
+            {/* Label background */}
+            <rect width={labelWidthMm} height={labelHeightMm} fill="#eee" rx={3} ry={3} />
 
-    // Hue (preserve original svg styling as much as possible)
-    if (isHueEnabled() && isHueIcon(icon)) {
-        const svg = getHueSvg(icon);
-        if (!svg) return null;
+            {/* Button cut frame */}
+            <rect x={bx} y={by} width={button.wMm} height={button.hMm} fill="none" stroke="#aaa" strokeWidth={0.5} rx={3} ry={3} />
 
-        const vb = parseViewBox(svg);
-        const inner = stripOuterSvg(svg);
+            {/* Icons and tap markers inside button frame */}
+            {taps.length === 1 &&
+                (() => {
+                    const tap = taps[0] as TapType;
+                    const iconMm = state.options.autoIconSizing ? Math.max(5, Math.min(10, button.wMm - 2, button.hMm - 2)) : state.options.fixedIconMm;
 
-        const sx = iconMm / vb.w;
-        const sy = iconMm / vb.h;
+                    const buttonCx = bx + button.wMm / 2;
 
-        return (
-            <g
-                transform={`
-          translate(${cx}, ${cy})
-          translate(${-iconMm / 2}, ${-iconMm / 2})
-          scale(${sx} ${sy})
-          translate(${-vb.minX} ${-vb.minY})
-        `}
-                // DO NOT force fill/stroke; let the SVG define it.
-                dangerouslySetInnerHTML={{ __html: inner }}
-            />
-        );
-    }
+                    if (state.options.showTapMarkersAlways) {
+                        const groupH = iconMm + gapMm + markerMm;
+                        const topY = by + (button.hMm - groupH) / 2;
+                        const iconCy = topY + iconMm / 2;
+                        const markerCy = topY + iconMm + gapMm + markerMm / 2;
 
-    return null;
+                        return (
+                            <g>
+                                {renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: iconCy, iconMm })}
+                                <g transform={`translate(${buttonCx}, ${markerCy})`}>
+                                    <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} />
+                                </g>
+                            </g>
+                        );
+                    }
+
+                    const buttonCy = by + button.hMm / 2;
+                    return <g>{renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: buttonCy, iconMm })}</g>;
+                })()}
+
+            {taps.length > 1 &&
+                (() => {
+                    const n = taps.length;
+                    const colW = button.wMm / n;
+                    const iconMm = state.options.autoIconSizing ? Math.max(5, Math.min(9, colW - 2, button.hMm - markerMm - gapMm - 2)) : Math.min(state.options.fixedIconMm, colW - 2);
+
+                    const groupH = iconMm + gapMm + markerMm;
+                    const topY = by + (button.hMm - groupH) / 2;
+                    const iconCy = topY + iconMm / 2;
+                    const markerCy = topY + iconMm + gapMm + markerMm / 2;
+
+                    return taps.map((tap, i) => {
+                        const iconCx = bx + colW * (i + 0.5);
+                        return (
+                            <g key={tap}>
+                                {renderHaIconAtMm({
+                                    icon: cfg[tap]!,
+                                    cx: iconCx,
+                                    cy: iconCy,
+                                    iconMm,
+                                })}
+                                <g transform={`translate(${iconCx}, ${markerCy})`}>
+                                    <TapMarker tap={tap as TapType} fillMode={markerFill} sizeMm={markerMm} />
+                                </g>
+                            </g>
+                        );
+                    });
+                })()}
+
+            {/* Watermark */}
+            {state.options.showWatermark && (
+                <text x={labelWidthMm - 1} y={labelHeightMm - 1} fontSize={3} fill="#888" textAnchor="end" alignmentBaseline="baseline" pointerEvents="none">
+                    HA
+                </text>
+            )}
+        </svg>
+    );
 }
