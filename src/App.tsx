@@ -6,6 +6,8 @@ import { REMOTES } from "./app/remotes";
 import { RemoteSvg } from "./render/RemoteSvg";
 import { ButtonLabelSvg } from "./render/buttonLabelSvg";
 import { IconPicker } from "./components/IconPicker";
+import { SiteHeader } from "./components/SiteHeader";
+import { SiteFooter } from "./components/SiteFooter";
 
 import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
@@ -215,14 +217,7 @@ export default function App() {
 
     return (
         <main className="app">
-            <header className="header">
-                <h1>Remote Label Designer for Home Automation</h1>
-                {isAdmin ? (
-                    <span className="badge" aria-label="Admin mode">
-                        Admin
-                    </span>
-                ) : null}
-            </header>
+            <SiteHeader isAdmin={isAdmin} />
             <section className="controls">
                 {/* Remote */}
                 <fieldset>
@@ -550,24 +545,7 @@ export default function App() {
                 {exportButton && <ButtonLabelSvg state={state} button={exportButton} labelWidthMm={40} labelHeightMm={30} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />}
             </div>
 
-            <footer className="footer" aria-label="Legal and credits">
-                <div className="footer__row">
-                    <span>© {new Date().getFullYear()} Tristan Germer</span>
-                    <span className="footer__sep">•</span>
-                    <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">
-                        MDI
-                    </a>
-                    <span className="footer__sep">•</span>
-                    <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
-                        hass-hue-icons
-                    </a>
-                </div>
-
-                <div className="footer__row footer__row--small">
-                    <span>Licenses: MIT (this app), Apache-2.0 (MDI & Hue icons). See NOTICE.</span>
-                    <p>“Philips” and “Philips Hue” are trademarks of Koninklijke Philips N.V. and/or Signify. The use of the Philips brand for Philips Hue is licensed to Signify. “Home Assistant” and the Home Assistant logo are trademarks of Home Assistant and/or its licensors. This project is not affiliated with, endorsed by, or sponsored by Philips, Signify, or Home Assistant.</p>
-                </div>
-            </footer>
+            <SiteFooter />
         </main>
     );
 }
