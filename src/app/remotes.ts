@@ -35,34 +35,34 @@ export const REMOTES: RemoteTemplate[] = [
     {
         id: "hue_dimmer_v1",
         name: "Philips Hue Dimmer Switch (v1)",
-        widthMm: 35,
+        widthMm: 34,
         heightMm: 95,
         cornerMm: 2,
         buttons: [
             // ON: top rounded, bottom square
-            { id: "on", xMm: 1, yMm: 1, wMm: 33, hMm: 28, r: { tl: 1.5, tr: 1.5, br: 0, bl: 0 } },
+            { id: "on", xMm: 1.25, yMm: 1.8, wMm: 31.5, hMm: 27, r: { tl: 1.5, tr: 1.5, br: 0, bl: 0 } },
 
             // UP: square
-            { id: "up", xMm: 1, yMm: 30.25, wMm: 33, hMm: 16.5, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
+            { id: "up", xMm: 1.25, yMm: 30.6, wMm: 31.5, hMm: 16, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
 
             // DOWN: square
-            { id: "down", xMm: 1, yMm: 48.25, wMm: 33, hMm: 16.5, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
+            { id: "down", xMm: 1.25, yMm: 48.4, wMm: 31.5, hMm: 16, r: { tl: 0, tr: 0, br: 0, bl: 0 } },
 
             // OFF: top square, bottom rounded
-            { id: "off", xMm: 1, yMm: 66, wMm: 33, hMm: 28, r: { tl: 0, tr: 0, br: 1.5, bl: 1.5 } },
+            { id: "off", xMm: 1.25, yMm: 66.2, wMm: 31.5, hMm: 27, r: { tl: 0, tr: 0, br: 1.5, bl: 1.5 } },
         ],
     },
     {
         id: "hue_dimmer_v2",
         name: "Philips Hue Dimmer Switch (v2)",
-        widthMm: 35,
-        heightMm: 95,
-        cornerMm: 5,
+        widthMm: 34,
+        heightMm: 91,
+        cornerMm: 5.6,
         buttons: [
-            { id: "on", xMm: 0, yMm: 0, wMm: 35, hMm: 28, r: { tl: 5, tr: 5, br: 0, bl: 0 } },
-            { id: "up", xMm: 0, yMm: 28.5, wMm: 35, hMm: 19, rMm: 0 },
-            { id: "down", xMm: 0, yMm: 47.5, wMm: 35, hMm: 19, rMm: 0 },
-            { id: "hue", xMm: 0, yMm: 67, wMm: 35, hMm: 28, r: { tl: 0, tr: 0, br: 5, bl: 5 } },
+            { id: "on", xMm: 0, yMm: 0, wMm: 34, hMm: 28.5, r: { tl: 5.6, tr: 5.6, br: 0, bl: 0 } },
+            { id: "up", xMm: 0, yMm: 29.25, wMm: 34, hMm: 16.25, rMm: 0 },
+            { id: "down", xMm: 0, yMm: 45.5, wMm: 34, hMm: 16.25, rMm: 0 },
+            { id: "hue", xMm: 0, yMm: 62.5, wMm: 34, hMm: 28.5, r: { tl: 0, tr: 0, br: 5.6, bl: 5.6 } },
         ],
     },
     {
