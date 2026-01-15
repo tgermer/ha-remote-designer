@@ -542,7 +542,7 @@ export default function App() {
                         showGuides: false,
                         showButtonOutlines: true,
                     }}
-                    exportMode={{ squareButtons: true }}
+                    exportMode={{ squareButtons: false }}
                 />
             </div>
 
