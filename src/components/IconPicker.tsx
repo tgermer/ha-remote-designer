@@ -59,6 +59,9 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     const [mdiQuery, setMdiQuery] = useState("");
     const [hueQuery, setHueQuery] = useState("");
 
+    // Keep all browsers closed on initial page load. Only auto-open after user interaction.
+    const [hasInteracted, setHasInteracted] = useState(false);
+
     // Unique instance id for focus tracking and global focus event handler
     const [instanceId] = useState(() => `ip_${Math.random().toString(36).slice(2)}`);
 
@@ -93,6 +96,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
     // Auto-open panel based on early prefix while typing (m/mdi... or h/hue...)
     useEffect(() => {
+        if (!hasInteracted) return;
         const t = text.trim().toLowerCase();
 
         // Early open on single-letter prefixes
@@ -124,7 +128,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
             setBrowser("mdi");
             return;
         }
-    }, [text]);
+    }, [text, hasInteracted]);
 
     const mdiFiltered = useMemo(() => {
         const q = mdiQuery.trim().toLowerCase();
@@ -154,8 +158,12 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                 <input
                     className="iconpicker__input"
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={(e) => {
+                        setHasInteracted(true);
+                        setText(e.target.value);
+                    }}
                     onFocus={() => {
+                        setHasInteracted(true);
                         window.dispatchEvent(new CustomEvent("iconpicker:focus", { detail: instanceId }));
 
                         const t = text.trim().toLowerCase();
@@ -167,12 +175,28 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     aria-invalid={!valid}
                 />
 
-                <button type="button" className={`iconpicker__btn ${browser === "mdi" ? "iconpicker__btn--active" : ""}`} onClick={() => setBrowser((b) => (b === "mdi" ? null : "mdi"))} title="Browse MDI icons">
+                <button
+                    type="button"
+                    className={`iconpicker__btn ${browser === "mdi" ? "iconpicker__btn--active" : ""}`}
+                    onClick={() => {
+                        setHasInteracted(true);
+                        setBrowser((b) => (b === "mdi" ? null : "mdi"));
+                    }}
+                    title="Browse MDI icons"
+                >
                     MDI
                 </button>
 
                 {FEATURES.HUE_ICONS && (
-                    <button type="button" className={`iconpicker__btn ${browser === "hue" ? "iconpicker__btn--active" : ""}`} onClick={() => setBrowser((b) => (b === "hue" ? null : "hue"))} title="Browse Hue icons">
+                    <button
+                        type="button"
+                        className={`iconpicker__btn ${browser === "hue" ? "iconpicker__btn--active" : ""}`}
+                        onClick={() => {
+                            setHasInteracted(true);
+                            setBrowser((b) => (b === "hue" ? null : "hue"));
+                        }}
+                        title="Browse Hue icons"
+                    >
                         Hue
                     </button>
                 )}
@@ -181,6 +205,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     type="button"
                     className="iconpicker__btn"
                     onClick={() => {
+                        setHasInteracted(true);
                         setText("");
                         setBrowser(null);
                         setMdiQuery("");
