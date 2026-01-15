@@ -1,81 +1,189 @@
-import type { TapType } from "../app/types";
+import type { RemoteTemplate } from "../app/remotes";
+import type { DesignState, TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
-import { TapMarker } from "./RemoteSvg";
 
-const labelWidthMm = 40;
-const labelHeightMm = 30;
+type CornerRadii = { tl: number; tr: number; br: number; bl: number };
 
-export function ButtonLabelSvg({ button, state, taps, markerFill = "outline" }: { button: any; state: any; taps: TapType[]; markerFill?: "outline" | "filled" }) {
-    const markerMm = 3;
-    const gapMm = 1;
+function clampRadius(r: number, w: number, h: number) {
+    return Math.max(0, Math.min(r, w / 2, h / 2));
+}
 
-    const bx = 4;
-    const by = 3;
+function roundedRectPath(x: number, y: number, w: number, h: number, r: CornerRadii) {
+    const tl = clampRadius(r.tl, w, h);
+    const tr = clampRadius(r.tr, w, h);
+    const br = clampRadius(r.br, w, h);
+    const bl = clampRadius(r.bl, w, h);
 
-    const cfg = state.buttonConfigs[button.id]?.icons ?? {};
+    const x0 = x;
+    const y0 = y;
+    const x1 = x + w;
+    const y1 = y + h;
+
+    return [`M ${x0 + tl} ${y0}`, `H ${x1 - tr}`, tr ? `A ${tr} ${tr} 0 0 1 ${x1} ${y0 + tr}` : `L ${x1} ${y0}`, `V ${y1 - br}`, br ? `A ${br} ${br} 0 0 1 ${x1 - br} ${y1}` : `L ${x1} ${y1}`, `H ${x0 + bl}`, bl ? `A ${bl} ${bl} 0 0 1 ${x0} ${y1 - bl}` : `L ${x0} ${y1}`, `V ${y0 + tl}`, tl ? `A ${tl} ${tl} 0 0 1 ${x0 + tl} ${y0}` : `L ${x0} ${y0}`, "Z"].join(" ");
+}
+
+function getButtonRadiiMm(button: any, squareButtons?: boolean): CornerRadii {
+    if (squareButtons) return { tl: 0, tr: 0, br: 0, bl: 0 };
+
+    const uni = typeof button.rMm === "number" ? button.rMm : 0;
+    const tl = typeof button.r?.tl === "number" ? button.r.tl : uni;
+    const tr = typeof button.r?.tr === "number" ? button.r.tr : uni;
+    const br = typeof button.r?.br === "number" ? button.r.br : uni;
+    const bl = typeof button.r?.bl === "number" ? button.r.bl : uni;
+
+    return { tl, tr, br, bl };
+}
+
+function isUniformRadii(r: CornerRadii) {
+    return r.tl === r.tr && r.tr === r.br && r.br === r.bl;
+}
+
+function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; sizeMm?: number; fillMode?: "outline" | "filled" }) {
+    const stroke = 0.35;
+    const r = sizeMm / 2 - stroke;
+    const fill = fillMode === "filled" ? "black" : "none";
+
+    if (tap === "single") {
+        return <circle cx="0" cy="0" r={r} fill={fill} stroke="black" strokeWidth={stroke} />;
+    }
+
+    if (tap === "double") {
+        const dx = r + 0.6;
+        return (
+            <g>
+                <circle cx={-dx} cy="0" r={r} fill={fill} stroke="black" strokeWidth={stroke} />
+                <circle cx={dx} cy="0" r={r} fill={fill} stroke="black" strokeWidth={stroke} />
+            </g>
+        );
+    }
+
+    const h = sizeMm * 0.7;
+    const w = sizeMm * 2.3;
+    return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
+}
+
+export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number }) {
+    const options = { ...state.options, ...overrides };
+    const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
+
+    const enabledTaps = state.tapsEnabled.length ? state.tapsEnabled : (["single"] as TapType[]);
+
+    const wmEnabled = !!showWatermark && !!watermarkText;
+    const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
 
     return (
-        <svg width={`${labelWidthMm}mm`} height={`${labelHeightMm}mm`} viewBox={`0 0 ${labelWidthMm} ${labelHeightMm}`} xmlns="http://www.w3.org/2000/svg">
-            <rect width={labelWidthMm} height={labelHeightMm} fill="white" />
-            <rect x={bx} y={by} width={button.wMm} height={button.hMm} rx={button.rMm} ry={button.rMm} fill="none" stroke="black" strokeWidth="0.5" />
+        <svg width={`${template.widthMm}mm`} height={`${template.heightMm}mm`} viewBox={`0 0 ${template.widthMm} ${template.heightMm}`} xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width={template.widthMm} height={template.heightMm} fill="white" />
 
-            {taps.length === 0 && <></>}
+            {showRemoteOutline && <rect x="0.2" y="0.2" width={template.widthMm - 0.4} height={template.heightMm - 0.4} rx={template.cornerMm} fill="none" stroke="black" strokeWidth="0.4" />}
 
-            {taps.length === 1 &&
-                (() => {
-                    const tap = taps[0] as TapType;
-                    const iconMm = state.options.autoIconSizing ? Math.max(5, Math.min(10, button.wMm - 2, button.hMm - 2)) : state.options.fixedIconMm;
+            {showGuides && (
+                <g opacity={0.35}>
+                    <line x1={template.widthMm / 2} y1={0} x2={template.widthMm / 2} y2={template.heightMm} stroke="black" strokeWidth="0.2" />
+                    <line x1={0} y1={template.heightMm / 2} x2={template.widthMm} y2={template.heightMm / 2} stroke="black" strokeWidth="0.2" />
+                </g>
+            )}
 
-                    const buttonCx = bx + button.wMm / 2;
+            {template.buttons.map((b) => {
+                const cfg = state.buttonConfigs[b.id]?.icons ?? {};
+                const activeTaps = enabledTaps.filter((t) => !!cfg[t]);
+                const n = activeTaps.length;
 
-                    if (state.options.showTapMarkersAlways) {
+                const buttonCx = b.xMm + b.wMm / 2;
+                const buttonCy = b.yMm + b.hMm / 2;
+
+                const radii = getButtonRadiiMm(b, exportMode?.squareButtons);
+
+                const outline = showButtonOutlines ? isUniformRadii(radii) ? <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={radii.tl} fill="none" stroke="black" strokeWidth="0.25" /> : <path d={roundedRectPath(b.xMm, b.yMm, b.wMm, b.hMm, radii)} fill="none" stroke="black" strokeWidth="0.25" /> : null;
+
+                const buttonGuides = showGuides ? (
+                    <g opacity={0.25}>
+                        <line x1={buttonCx} y1={b.yMm} x2={buttonCx} y2={b.yMm + b.hMm} stroke="black" strokeWidth="0.2" />
+                        <line x1={b.xMm} y1={buttonCy} x2={b.xMm + b.wMm} y2={buttonCy} stroke="black" strokeWidth="0.2" />
+                    </g>
+                ) : null;
+
+                if (n === 0) {
+                    return (
+                        <g key={b.id}>
+                            {outline}
+                            {buttonGuides}
+                        </g>
+                    );
+                }
+
+                if (n === 1) {
+                    const tap = activeTaps[0];
+                    const iconMm = autoIconSizing ? Math.max(5, Math.min(10, b.wMm - 2, b.hMm - 2)) : fixedIconMm;
+
+                    if (showTapMarkersAlways) {
+                        const markerMm = 3;
+                        const gapMm = 1;
                         const groupH = iconMm + gapMm + markerMm;
-                        const topY = by + (button.hMm - groupH) / 2;
-                        const iconCy = topY + iconMm / 2;
-                        const markerCy = topY + iconMm + gapMm + markerMm / 2;
+                        const topY = b.yMm + (b.hMm - groupH) / 2;
 
                         return (
-                            <g>
-                                {renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: iconCy, iconMm })}
-                                <g transform={`translate(${buttonCx}, ${markerCy})`}>
-                                    <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} />
+                            <g key={b.id}>
+                                {outline}
+                                {buttonGuides}
+                                {renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: topY + iconMm / 2, iconMm })}
+                                <g transform={`translate(${buttonCx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
+                                    <TapMarker tap={tap} fillMode={tapMarkerFill} />
                                 </g>
                             </g>
                         );
                     }
 
-                    const buttonCy = by + button.hMm / 2;
-                    return <g>{renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: buttonCy, iconMm })}</g>;
-                })()}
+                    return (
+                        <g key={b.id}>
+                            {outline}
+                            {buttonGuides}
+                            {renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: buttonCy, iconMm })}
+                        </g>
+                    );
+                }
 
-            {taps.length > 1 &&
-                (() => {
-                    const n = taps.length;
-                    const colW = button.wMm / n;
-                    const iconMm = state.options.autoIconSizing ? Math.max(5, Math.min(9, colW - 2, button.hMm - markerMm - gapMm - 2)) : Math.min(state.options.fixedIconMm, colW - 2);
+                const colW = b.wMm / n;
+                const markerMm = 3;
+                const gapMm = 1;
+                const iconMm = autoIconSizing ? Math.max(5, Math.min(9, colW - 2, b.hMm - markerMm - gapMm - 2)) : Math.min(fixedIconMm, colW - 2);
 
-                    const groupH = iconMm + gapMm + markerMm;
-                    const topY = by + (button.hMm - groupH) / 2;
-                    const iconCy = topY + iconMm / 2;
-                    const markerCy = topY + iconMm + gapMm + markerMm / 2;
+                const groupH = iconMm + gapMm + markerMm;
+                const topY = b.yMm + (b.hMm - groupH) / 2;
 
-                    return taps.map((tap, i) => {
-                        const iconCx = bx + colW * (i + 0.5);
-                        return (
-                            <g key={tap}>
-                                {renderHaIconAtMm({
-                                    icon: cfg[tap]!,
-                                    cx: iconCx,
-                                    cy: iconCy,
-                                    iconMm,
-                                })}
-                                <g transform={`translate(${iconCx}, ${markerCy})`}>
-                                    <TapMarker tap={tap as TapType} fillMode={markerFill} sizeMm={markerMm} />
+                return (
+                    <g key={b.id}>
+                        {outline}
+                        {buttonGuides}
+
+                        {showTapDividers &&
+                            Array.from({ length: n - 1 }).map((_, i) => {
+                                const x = b.xMm + colW * (i + 1);
+                                return <line key={i} x1={x} y1={b.yMm + 0.8} x2={x} y2={b.yMm + b.hMm - 0.8} stroke="black" strokeWidth="0.2" opacity={0.6} />;
+                            })}
+
+                        {activeTaps.map((tap, i) => {
+                            const cx = b.xMm + colW * (i + 0.5);
+                            return (
+                                <g key={tap}>
+                                    {renderHaIconAtMm({ icon: cfg[tap]!, cx, cy: topY + iconMm / 2, iconMm })}
+                                    <g transform={`translate(${cx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
+                                        <TapMarker tap={tap} fillMode={tapMarkerFill} />
+                                    </g>
                                 </g>
-                            </g>
-                        );
-                    });
-                })()}
+                            );
+                        })}
+                    </g>
+                );
+            })}
+
+            {wmEnabled ? (
+                <g opacity={wmOpacity} pointerEvents="none">
+                    <text x={template.widthMm / 2} y={template.heightMm / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(6, Math.min(18, template.widthMm / 4))} fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" fill="black" transform={`rotate(-75 ${template.widthMm / 2} ${template.heightMm / 2})`}>
+                        {watermarkText}
+                    </text>
+                </g>
+            ) : null}
         </svg>
     );
 }
