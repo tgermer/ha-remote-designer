@@ -5,7 +5,7 @@ type SiteHeaderProps = {
     title?: string;
 };
 
-export function SiteHeader({ isAdmin = false, title = "Remote Label Designer for Home Automation" }) {
+export function SiteHeader({ isAdmin = false, title = "Remote Label Designer for Home Automation" }: SiteHeaderProps) {
     return (
         <header className={styles.header}>
             <h1>{title}</h1>
