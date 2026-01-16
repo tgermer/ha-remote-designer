@@ -449,13 +449,21 @@ export default function App() {
                     </p>
                 </fieldset>
 
+                <fieldset>
+                    <legend>Export</legend>
+
+                    <p>
+                        <button onClick={exportRemoteSvg}>Export as SVG</button>
+                    </p>
+                </fieldset>
+
                 {/* Export (admin only) */}
                 {isAdmin ? (
                     <fieldset>
-                        <legend>Export</legend>
+                        <legend>Admin Export</legend>
 
                         <p>
-                            <button onClick={exportRemoteSvg}>Export Remote SVG</button>
+                            <button onClick={exportRemoteSvg}>Export as SVG</button>
                         </p>
 
                         <div className="exportRow">
