@@ -84,7 +84,7 @@ export const REMOTES: RemoteTemplate[] = [
                 tapsEnabled: ["single", "double"],
                 buttonIcons: {
                     on: {
-                        single: "mdi:power",
+                        single: "mdi:dots-vertical",
                         double: "mdi:palette", // Scene on / next scene
                     },
                     up: {
