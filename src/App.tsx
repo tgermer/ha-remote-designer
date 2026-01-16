@@ -87,6 +87,42 @@ export default function App() {
 
     const template = useMemo(() => REMOTES.find((r) => r.id === state.remoteId) ?? REMOTES[0], [state.remoteId]);
 
+    const examples = template.examples ?? [];
+    const [selectedExampleId, setSelectedExampleId] = useState<string>(template.defaultExampleId ?? examples[0]?.id ?? "");
+
+    // When switching remotes, reset example selection to the default for that remote.
+    useEffect(() => {
+        setSelectedExampleId(template.defaultExampleId ?? template.examples?.[0]?.id ?? "");
+    }, [template.id]);
+
+    const selectedExample = examples.find((e) => e.id === selectedExampleId);
+
+    const [previewExampleOn, setPreviewExampleOn] = useState(false);
+
+    const previewState: DesignState = useMemo(() => {
+        if (!previewExampleOn || !selectedExample) return state;
+
+        // clone current state
+        const next: DesignState = {
+            ...state,
+            buttonConfigs: { ...state.buttonConfigs },
+            options: { ...state.options },
+            tapsEnabled: selectedExample.tapsEnabled,
+        };
+
+        // overlay example icons onto current config
+        for (const [buttonId, iconsByTap] of Object.entries(selectedExample.buttonIcons)) {
+            const existing = next.buttonConfigs[buttonId]?.icons ?? {};
+            next.buttonConfigs[buttonId] = { icons: { ...existing, ...iconsByTap } };
+        }
+
+        // preview-friendly defaults
+        next.options.showTapMarkersAlways = true;
+        next.options.showTapDividers = selectedExample.tapsEnabled.length > 1;
+
+        return next;
+    }, [previewExampleOn, selectedExample, state]);
+
     const remoteImageUrl = getRemoteImageUrl(state.remoteId);
 
     // Admin gate for export controls
@@ -240,76 +276,65 @@ export default function App() {
                     </div>
                 </fieldset>
 
-                {/* Preview presets */}
-                <fieldset>
-                    <legend>Preview presets</legend>
-                    <div className="row">
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setState((s) => ({
-                                    ...s,
-                                    tapsEnabled: ["single"],
-                                    options: {
-                                        ...s.options,
-                                        showTapMarkersAlways: true,
-                                        showTapDividers: false,
-                                    },
-                                }))
-                            }
-                        >
-                            Simple (Tap)
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setState((s) => ({
-                                    ...s,
-                                    tapsEnabled: ["single", "double"],
-                                    options: {
-                                        ...s.options,
-                                        showTapMarkersAlways: true,
-                                        showTapDividers: true,
-                                    },
-                                }))
-                            }
-                        >
-                            Tap + Double
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setState((s) => ({
-                                    ...s,
-                                    tapsEnabled: ["single", "double", "long"],
-                                    options: {
-                                        ...s.options,
-                                        showTapMarkersAlways: true,
-                                        showTapDividers: true,
-                                    },
-                                }))
-                            }
-                        >
-                            Tap + Double + Long
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setState((s) => ({
-                                    ...s,
-                                    tapsEnabled: ["single", "double", "long"],
-                                    options: {
-                                        ...s.options,
-                                        showTapMarkersAlways: false,
-                                        showTapDividers: true,
-                                    },
-                                }))
-                            }
-                        >
-                            Minimal (no markers)
-                        </button>
-                    </div>
-                </fieldset>
+                {/* Examples (per remote) */}
+                {examples.length ? (
+                    <fieldset>
+                        <legend>Examples</legend>
+
+                        <label className="modelRow__label">
+                            Choose an example for this remote
+                            <select value={selectedExampleId} onChange={(e) => setSelectedExampleId(e.target.value)}>
+                                {examples.map((ex) => (
+                                    <option key={ex.id} value={ex.id}>
+                                        {ex.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        {selectedExample?.description ? <p>{selectedExample.description}</p> : null}
+
+                        <div className="row">
+                            <div className="row">
+                                <button type="button" disabled={!selectedExample} onClick={() => setPreviewExampleOn((v) => !v)}>
+                                    {previewExampleOn ? "Stop preview" : "Preview"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    disabled={!selectedExample}
+                                    onClick={() => {
+                                        if (!selectedExample) return;
+
+                                        setState((s) => {
+                                            const next = { ...s, buttonConfigs: { ...s.buttonConfigs } };
+
+                                            next.tapsEnabled = selectedExample.tapsEnabled;
+
+                                            for (const [buttonId, iconsByTap] of Object.entries(selectedExample.buttonIcons)) {
+                                                const existing = next.buttonConfigs[buttonId]?.icons ?? {};
+                                                next.buttonConfigs[buttonId] = { icons: { ...existing, ...iconsByTap } };
+                                            }
+
+                                            next.options = {
+                                                ...next.options,
+                                                showTapMarkersAlways: true,
+                                                showTapDividers: selectedExample.tapsEnabled.length > 1,
+                                            };
+
+                                            return next;
+                                        });
+
+                                        // optional: once applied, stop preview
+                                        setPreviewExampleOn(false);
+                                    }}
+                                >
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                    </fieldset>
+                ) : null}
 
                 {/* Options */}
                 <fieldset>
@@ -516,7 +541,7 @@ export default function App() {
 
             {/* Preview */}
             <aside className="preview">
-                <RemoteSvg template={template} state={state} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} />
+                <RemoteSvg template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} />
             </aside>
 
             {/* Help */}

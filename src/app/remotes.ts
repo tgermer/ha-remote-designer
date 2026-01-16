@@ -1,3 +1,5 @@
+import type { TapType } from "./types";
+
 export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100";
 
 export type CornerRadiiMm = {
@@ -21,6 +23,14 @@ export type ButtonDef = {
     r?: CornerRadiiMm;
 };
 
+export type RemoteExample = {
+    id: string;
+    name: string;
+    description?: string;
+    tapsEnabled: TapType[];
+    buttonIcons: Record<string, Partial<Record<TapType, string>>>;
+};
+
 export type RemoteTemplate = {
     id: RemoteId;
     name: string;
@@ -28,6 +38,9 @@ export type RemoteTemplate = {
     heightMm: number;
     cornerMm: number;
     buttons: ButtonDef[];
+
+    examples?: RemoteExample[];
+    defaultExampleId?: string;
 };
 
 // v2: placeholder values – measure and adjust later
@@ -51,6 +64,67 @@ export const REMOTES: RemoteTemplate[] = [
             // OFF: top square, bottom rounded
             { id: "off", xMm: 1.25, yMm: 66.2, wMm: 31.5, hMm: 27, r: { tl: 0, tr: 0, br: 1.5, bl: 1.5 } },
         ],
+        examples: [
+            {
+                id: "factory",
+                name: "Factory labels",
+                description: "Default labeling matching the physical Hue dimmer switch",
+                tapsEnabled: ["single"],
+                buttonIcons: {
+                    on: { single: "mdi:power" },
+                    up: { single: "mdi:plus" },
+                    down: { single: "mdi:minus" },
+                    off: { single: "mdi:power-off" },
+                },
+            },
+            {
+                id: "scene_brightness",
+                name: "Scenes & Brightness",
+                description: "Single tap for power and brightness, double tap for scenes",
+                tapsEnabled: ["single", "double"],
+                buttonIcons: {
+                    on: {
+                        single: "mdi:power",
+                        double: "mdi:palette", // Scene on / next scene
+                    },
+                    up: {
+                        single: "mdi:brightness-5",
+                        double: "mdi:arrow-up-bold", // Faster / jump up
+                    },
+                    down: {
+                        single: "mdi:brightness-4",
+                        double: "mdi:arrow-down-bold",
+                    },
+                    off: {
+                        single: "mdi:power-off",
+                        double: "mdi:lightbulb-off-outline",
+                    },
+                },
+            },
+            {
+                id: "home_automation",
+                name: "Home automation",
+                description: "Turn the room on or off, apply predefined brightness and Kelvin presets, control curtains, or switch off the full room or selected lights",
+                tapsEnabled: ["single", "double", "long"],
+                buttonIcons: {
+                    on: {
+                        single: "mdi:lightbulb-group",
+                        long: "mdi:lightbulb-on-outline",
+                    },
+                    up: {
+                        single: "mdi:curtains",
+                    },
+                    down: {
+                        single: "mdi:curtains-closed",
+                    },
+                    off: {
+                        single: "mdi:lightbulb-group-off-outline",
+                        long: "mdi:lightbulb-off-outline",
+                    },
+                },
+            },
+        ],
+        defaultExampleId: "factory",
     },
     {
         id: "hue_dimmer_v2",
