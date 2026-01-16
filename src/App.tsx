@@ -51,6 +51,7 @@ const initial: DesignState = {
         showRemoteOutline: true,
         showButtonOutlines: true,
         showGuides: false,
+        showScaleBar: true,
         autoIconSizing: true,
         fixedIconMm: 8,
         tapMarkerFill: "outline",
@@ -418,6 +419,20 @@ export default function App() {
                                 />
                             </label>
                         )}
+
+                        <label className="option">
+                            <input
+                                type="checkbox"
+                                checked={o.showScaleBar}
+                                onChange={(e) =>
+                                    setState((s) => ({
+                                        ...s,
+                                        options: { ...s.options, showScaleBar: e.target.checked },
+                                    }))
+                                }
+                            />
+                            Show 1 cm scale bar (print check)
+                        </label>
                     </div>
                 </fieldset>
 
@@ -501,7 +516,7 @@ export default function App() {
 
             {/* Preview */}
             <aside className="preview">
-                <RemoteSvg template={template} state={state} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
+                <RemoteSvg template={template} state={state} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} />
             </aside>
 
             {/* Help */}
@@ -544,6 +559,7 @@ export default function App() {
                         showRemoteOutline: false,
                         showGuides: false,
                         showButtonOutlines: true,
+                        showScaleBar: o.showScaleBar,
                     }}
                     exportMode={{ squareButtons: false }}
                 />

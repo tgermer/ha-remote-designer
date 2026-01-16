@@ -66,14 +66,19 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
     const options = { ...state.options, ...overrides };
     const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
 
+    const showScaleBar = (options as any).showScaleBar === true;
+    // Extra bottom space for the 1 cm scale bar + text (export only)
+    const extraBottomMm = showScaleBar ? 16 : 0;
+    const canvasHeightMm = template.heightMm + extraBottomMm;
+
     const enabledTaps = state.tapsEnabled.length ? state.tapsEnabled : (["single"] as TapType[]);
 
     const wmEnabled = !!showWatermark && !!watermarkText;
     const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
 
     return (
-        <svg width={`${template.widthMm}mm`} height={`${template.heightMm}mm`} viewBox={`0 0 ${template.widthMm} ${template.heightMm}`} xmlns="http://www.w3.org/2000/svg">
-            <rect x="0" y="0" width={template.widthMm} height={template.heightMm} fill="white" />
+        <svg width={`${template.widthMm}mm`} height={`${canvasHeightMm}mm`} viewBox={`0 0 ${template.widthMm} ${canvasHeightMm}`} xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width={template.widthMm} height={canvasHeightMm} fill="white" />
 
             {showRemoteOutline && <rect x="0.2" y="0.2" width={template.widthMm - 0.4} height={template.heightMm - 0.4} rx={template.cornerMm} fill="none" stroke="black" strokeWidth="0.4" />}
 
@@ -179,9 +184,30 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
             {wmEnabled ? (
                 <g opacity={wmOpacity} pointerEvents="none">
-                    <text x={template.widthMm / 2} y={template.heightMm / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(6, Math.min(18, template.widthMm / 4))} fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" fill="black" transform={`rotate(-75 ${template.widthMm / 2} ${template.heightMm / 2})`}>
+                    <text x={template.widthMm / 2} y={template.heightMm / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(6, Math.min(18, template.widthMm / 4))} fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" fill="black" transform={`rotate(-30 ${template.widthMm / 2} ${template.heightMm / 2})`}>
                         {watermarkText}
                     </text>
+                </g>
+            ) : null}
+
+            {showScaleBar ? (
+                <g pointerEvents="none">
+                    {/* 1 cm scale bar (10 mm). Verify print scale. */}
+                    {(() => {
+                        // Place the bar 6mm below the remote (requested: extra spacing)
+                        const y = template.heightMm + 6;
+                        return (
+                            <>
+                                <line x1={2} y1={y} x2={12} y2={y} stroke="black" strokeWidth={0.4} strokeLinecap="round" />
+                                {/* end ticks */}
+                                <line x1={2} y1={y - 1.5} x2={2} y2={y + 1.5} stroke="black" strokeWidth={0.4} />
+                                <line x1={12} y1={y - 1.5} x2={12} y2={y + 1.5} stroke="black" strokeWidth={0.4} />
+                                <text x={2} y={y - 2.4} textAnchor="start" fontSize={2.6} fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" fill="black">
+                                    1 cm — print check
+                                </text>
+                            </>
+                        );
+                    })()}
                 </g>
             ) : null}
         </svg>

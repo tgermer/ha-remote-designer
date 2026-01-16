@@ -17,6 +17,8 @@ export type DesignOptions = {
     autoIconSizing: boolean;
     fixedIconMm: number;
 
+    showScaleBar: boolean;
+
     tapMarkerFill: "outline" | "filled";
 };
 
