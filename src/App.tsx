@@ -255,322 +255,324 @@ export default function App() {
     return (
         <main className="app">
             <SiteHeader isAdmin={isAdmin} />
-            <section className="controls">
-                {/* Remote */}
-                <fieldset>
-                    <legend>Remote</legend>
-                    <div className="modelRow">
-                        <label className="modelRow__label">
-                            Model
-                            <select value={state.remoteId} onChange={(e) => setState((s) => ({ ...s, remoteId: e.target.value as any }))}>
-                                {REMOTES.map((r) => (
-                                    <option key={r.id} value={r.id}>
-                                        {r.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                        <div className="modelRow__thumb" aria-label="Selected remote preview">
-                            {remoteImageUrl ? <img src={remoteImageUrl} alt={`${state.remoteId} preview`} /> : <span className="modelRow__thumbFallback">No image</span>}
-                        </div>
-                    </div>
-                </fieldset>
-
-                {/* Examples (per remote) */}
-                {examples.length ? (
+            <div className="workspace">
+                <section className="controls">
+                    {/* Remote */}
                     <fieldset>
-                        <legend>Examples</legend>
-
-                        <label className="modelRow__label">
-                            Choose an example for this remote
-                            <select value={selectedExampleId} onChange={(e) => setSelectedExampleId(e.target.value)}>
-                                {examples.map((ex) => (
-                                    <option key={ex.id} value={ex.id}>
-                                        {ex.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-
-                        {selectedExample?.description ? <p>{selectedExample.description}</p> : null}
-
-                        <div className="row">
-                            <div className="row">
-                                <button type="button" disabled={!selectedExample} onClick={() => setPreviewExampleOn((v) => !v)}>
-                                    {previewExampleOn ? "Stop preview" : "Preview"}
-                                </button>
-
-                                <button
-                                    type="button"
-                                    disabled={!selectedExample}
-                                    onClick={() => {
-                                        if (!selectedExample) return;
-
-                                        setState((s) => {
-                                            const next = { ...s, buttonConfigs: { ...s.buttonConfigs } };
-
-                                            next.tapsEnabled = selectedExample.tapsEnabled;
-
-                                            for (const [buttonId, iconsByTap] of Object.entries(selectedExample.buttonIcons)) {
-                                                const existing = next.buttonConfigs[buttonId]?.icons ?? {};
-                                                next.buttonConfigs[buttonId] = { icons: { ...existing, ...iconsByTap } };
-                                            }
-
-                                            next.options = {
-                                                ...next.options,
-                                                showTapMarkersAlways: true,
-                                                showTapDividers: selectedExample.tapsEnabled.length > 1,
-                                            };
-
-                                            return next;
-                                        });
-
-                                        // optional: once applied, stop preview
-                                        setPreviewExampleOn(false);
-                                    }}
-                                >
-                                    Apply
-                                </button>
+                        <legend>Remote</legend>
+                        <div className="modelRow">
+                            <label className="modelRow__label">
+                                Model
+                                <select value={state.remoteId} onChange={(e) => setState((s) => ({ ...s, remoteId: e.target.value as any }))}>
+                                    {REMOTES.map((r) => (
+                                        <option key={r.id} value={r.id}>
+                                            {r.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <div className="modelRow__thumb" aria-label="Selected remote preview">
+                                {remoteImageUrl ? <img src={remoteImageUrl} alt={`${state.remoteId} preview`} /> : <span className="modelRow__thumbFallback">No image</span>}
                             </div>
                         </div>
                     </fieldset>
-                ) : null}
 
-                {/* Options */}
-                <fieldset>
-                    <legend>Options</legend>
-                    <div className="options">
-                        <label className="option">
-                            <input
-                                type="checkbox"
-                                checked={o.showTapMarkersAlways}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        options: { ...s.options, showTapMarkersAlways: e.target.checked },
-                                    }))
-                                }
-                            />
-                            Show tap markers for single icon
-                        </label>
+                    {/* Examples (per remote) */}
+                    {examples.length ? (
+                        <fieldset>
+                            <legend>Examples</legend>
 
-                        <label className="option">
-                            <input
-                                type="checkbox"
-                                checked={o.showTapDividers}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        options: { ...s.options, showTapDividers: e.target.checked },
-                                    }))
-                                }
-                            />
-                            Show dividers for multi icons
-                        </label>
+                            <label className="modelRow__label">
+                                Choose an example for this remote
+                                <select value={selectedExampleId} onChange={(e) => setSelectedExampleId(e.target.value)}>
+                                    {examples.map((ex) => (
+                                        <option key={ex.id} value={ex.id}>
+                                            {ex.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
 
-                        <label className="option">
-                            Tap marker style
-                            <select
-                                value={o.tapMarkerFill}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        options: { ...s.options, tapMarkerFill: e.target.value as any },
-                                    }))
-                                }
-                            >
-                                <option value="outline">Outline</option>
-                                <option value="filled">Filled</option>
-                            </select>
-                        </label>
+                            {selectedExample?.description ? <p>{selectedExample.description}</p> : null}
 
-                        <label className="option">
-                            <input
-                                type="checkbox"
-                                checked={o.showRemoteOutline}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        options: { ...s.options, showRemoteOutline: e.target.checked },
-                                    }))
-                                }
-                            />
-                            Show remote outline
-                        </label>
+                            <div className="row">
+                                <div className="row">
+                                    <button type="button" disabled={!selectedExample} onClick={() => setPreviewExampleOn((v) => !v)}>
+                                        {previewExampleOn ? "Stop preview" : "Preview"}
+                                    </button>
 
-                        <label className="option">
-                            <input
-                                type="checkbox"
-                                checked={o.showButtonOutlines}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        options: { ...s.options, showButtonOutlines: e.target.checked },
-                                    }))
-                                }
-                            />
-                            Show button outlines
-                        </label>
+                                    <button
+                                        type="button"
+                                        disabled={!selectedExample}
+                                        onClick={() => {
+                                            if (!selectedExample) return;
 
-                        <label className="option">
-                            <input
-                                type="checkbox"
-                                checked={o.autoIconSizing}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        options: { ...s.options, autoIconSizing: e.target.checked },
-                                    }))
-                                }
-                            />
-                            Auto icon sizing
-                        </label>
+                                            setState((s) => {
+                                                const next = { ...s, buttonConfigs: { ...s.buttonConfigs } };
 
-                        {!o.autoIconSizing && (
+                                                next.tapsEnabled = selectedExample.tapsEnabled;
+
+                                                for (const [buttonId, iconsByTap] of Object.entries(selectedExample.buttonIcons)) {
+                                                    const existing = next.buttonConfigs[buttonId]?.icons ?? {};
+                                                    next.buttonConfigs[buttonId] = { icons: { ...existing, ...iconsByTap } };
+                                                }
+
+                                                next.options = {
+                                                    ...next.options,
+                                                    showTapMarkersAlways: true,
+                                                    showTapDividers: selectedExample.tapsEnabled.length > 1,
+                                                };
+
+                                                return next;
+                                            });
+
+                                            // optional: once applied, stop preview
+                                            setPreviewExampleOn(false);
+                                        }}
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    ) : null}
+
+                    {/* Options */}
+                    <fieldset>
+                        <legend>Options</legend>
+                        <div className="options">
                             <label className="option">
-                                Fixed icon size (mm)
                                 <input
-                                    type="number"
-                                    min={4}
-                                    max={14}
-                                    step={0.5}
-                                    value={o.fixedIconMm}
+                                    type="checkbox"
+                                    checked={o.showTapMarkersAlways}
                                     onChange={(e) =>
                                         setState((s) => ({
                                             ...s,
-                                            options: { ...s.options, fixedIconMm: Number(e.target.value) },
+                                            options: { ...s.options, showTapMarkersAlways: e.target.checked },
                                         }))
                                     }
                                 />
+                                Show tap markers for single icon
                             </label>
-                        )}
 
-                        <label className="option">
-                            <input
-                                type="checkbox"
-                                checked={o.showScaleBar}
-                                onChange={(e) =>
-                                    setState((s) => ({
-                                        ...s,
-                                        options: { ...s.options, showScaleBar: e.target.checked },
-                                    }))
-                                }
-                            />
-                            Show 1 cm scale bar (print check)
-                        </label>
-                    </div>
-                </fieldset>
+                            <label className="option">
+                                <input
+                                    type="checkbox"
+                                    checked={o.showTapDividers}
+                                    onChange={(e) =>
+                                        setState((s) => ({
+                                            ...s,
+                                            options: { ...s.options, showTapDividers: e.target.checked },
+                                        }))
+                                    }
+                                />
+                                Show dividers for multi icons
+                            </label>
 
-                <fieldset>
-                    <legend>Share</legend>
+                            <label className="option">
+                                Tap marker style
+                                <select
+                                    value={o.tapMarkerFill}
+                                    onChange={(e) =>
+                                        setState((s) => ({
+                                            ...s,
+                                            options: { ...s.options, tapMarkerFill: e.target.value as any },
+                                        }))
+                                    }
+                                >
+                                    <option value="outline">Outline</option>
+                                    <option value="filled">Filled</option>
+                                </select>
+                            </label>
 
-                    <p className="share">
-                        <button type="button" onClick={copyShareLink}>
-                            Copy share link
-                        </button>
-                        {shareStatus === "copied" && (
-                            <span className="share__status" role="status">
-                                Copied!
-                            </span>
-                        )}
-                    </p>
+                            <label className="option">
+                                <input
+                                    type="checkbox"
+                                    checked={o.showRemoteOutline}
+                                    onChange={(e) =>
+                                        setState((s) => ({
+                                            ...s,
+                                            options: { ...s.options, showRemoteOutline: e.target.checked },
+                                        }))
+                                    }
+                                />
+                                Show remote outline
+                            </label>
 
-                    {shareStatus === "failed" && (
-                        <div className="share__fallback">
-                            <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
-                            <input className="share__input" type="text" readOnly value={getShareUrl()} onFocus={(e) => e.currentTarget.select()} />
+                            <label className="option">
+                                <input
+                                    type="checkbox"
+                                    checked={o.showButtonOutlines}
+                                    onChange={(e) =>
+                                        setState((s) => ({
+                                            ...s,
+                                            options: { ...s.options, showButtonOutlines: e.target.checked },
+                                        }))
+                                    }
+                                />
+                                Show button outlines
+                            </label>
+
+                            <label className="option">
+                                <input
+                                    type="checkbox"
+                                    checked={o.autoIconSizing}
+                                    onChange={(e) =>
+                                        setState((s) => ({
+                                            ...s,
+                                            options: { ...s.options, autoIconSizing: e.target.checked },
+                                        }))
+                                    }
+                                />
+                                Auto icon sizing
+                            </label>
+
+                            {!o.autoIconSizing && (
+                                <label className="option">
+                                    Fixed icon size (mm)
+                                    <input
+                                        type="number"
+                                        min={4}
+                                        max={14}
+                                        step={0.5}
+                                        value={o.fixedIconMm}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, fixedIconMm: Number(e.target.value) },
+                                            }))
+                                        }
+                                    />
+                                </label>
+                            )}
+
+                            <label className="option">
+                                <input
+                                    type="checkbox"
+                                    checked={o.showScaleBar}
+                                    onChange={(e) =>
+                                        setState((s) => ({
+                                            ...s,
+                                            options: { ...s.options, showScaleBar: e.target.checked },
+                                        }))
+                                    }
+                                />
+                                Show 1 cm scale bar (print check)
+                            </label>
                         </div>
-                    )}
+                    </fieldset>
 
-                    <p>
-                        <button type="button" onClick={resetToDefaults}>
-                            Start from scratch
-                        </button>
-                    </p>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Export</legend>
-
-                    <p>
-                        <button onClick={exportRemoteSvg}>Export as SVG</button>
-                    </p>
-                </fieldset>
-
-                {/* Export (admin only) */}
-                {isAdmin ? (
                     <fieldset>
-                        <legend>Admin Export</legend>
+                        <legend>Share</legend>
+
+                        <p className="share">
+                            <button type="button" onClick={copyShareLink}>
+                                Copy share link
+                            </button>
+                            {shareStatus === "copied" && (
+                                <span className="share__status" role="status">
+                                    Copied!
+                                </span>
+                            )}
+                        </p>
+
+                        {shareStatus === "failed" && (
+                            <div className="share__fallback">
+                                <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
+                                <input className="share__input" type="text" readOnly value={getShareUrl()} onFocus={(e) => e.currentTarget.select()} />
+                            </div>
+                        )}
+
+                        <p>
+                            <button type="button" onClick={resetToDefaults}>
+                                Start from scratch
+                            </button>
+                        </p>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Export</legend>
 
                         <p>
                             <button onClick={exportRemoteSvg}>Export as SVG</button>
                         </p>
-
-                        <div className="exportRow">
-                            <button onClick={exportZip} disabled={isZipping}>
-                                {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
-                            </button>
-
-                            <label className="exportRow__label">
-                                DPI
-                                <select value={dpi} onChange={(e) => setDpi(Number(e.target.value))}>
-                                    <option value={203}>203</option>
-                                    <option value={300}>300</option>
-                                </select>
-                            </label>
-                        </div>
                     </fieldset>
-                ) : null}
 
-                {/* Buttons */}
-                <section>
-                    <h2>Buttons</h2>
-                    {buttonIds.map((id) => (
-                        <section key={id} className="button-config">
-                            <h3>{id.toUpperCase()} Button</h3>
-                            {(["single", "double", "long"] as TapType[]).map((tap) => (
-                                <div key={tap}>
-                                    <h4>{tapLabel(tap)}</h4>
-                                    <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => setIcon(id, tap, v)} />
-                                </div>
-                            ))}
-                        </section>
-                    ))}
+                    {/* Export (admin only) */}
+                    {isAdmin ? (
+                        <fieldset>
+                            <legend>Admin Export</legend>
+
+                            <p>
+                                <button onClick={exportRemoteSvg}>Export as SVG</button>
+                            </p>
+
+                            <div className="exportRow">
+                                <button onClick={exportZip} disabled={isZipping}>
+                                    {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
+                                </button>
+
+                                <label className="exportRow__label">
+                                    DPI
+                                    <select value={dpi} onChange={(e) => setDpi(Number(e.target.value))}>
+                                        <option value={203}>203</option>
+                                        <option value={300}>300</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </fieldset>
+                    ) : null}
+
+                    {/* Buttons */}
+                    <section>
+                        <h2>Buttons</h2>
+                        {buttonIds.map((id) => (
+                            <section key={id} className="button-config">
+                                <h3>{id.toUpperCase()} Button</h3>
+                                {(["single", "double", "long"] as TapType[]).map((tap) => (
+                                    <div key={tap}>
+                                        <h4>{tapLabel(tap)}</h4>
+                                        <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => setIcon(id, tap, v)} />
+                                    </div>
+                                ))}
+                            </section>
+                        ))}
+                    </section>
                 </section>
-            </section>
 
-            {/* Preview */}
-            <aside className="preview">
-                <RemoteSvg template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} />
-            </aside>
+                {/* Preview */}
+                <aside className="preview">
+                    <RemoteSvg template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} />
+                </aside>
 
-            {/* Help */}
-            <section className="help" aria-label="Icon help">
-                <details className="help__details">
-                    <summary>Icon help & sources</summary>
-                    <div className="help__content">
-                        <p>
-                            This app supports all Material Design Icons (MDI). Browse and search icons here:{" "}
-                            <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">
-                                pictogrammers.com/library/mdi
-                            </a>
-                            .
-                        </p>
+                {/* Help */}
+                <section className="help" aria-label="Icon help">
+                    <details className="help__details">
+                        <summary>Icon help & sources</summary>
+                        <div className="help__content">
+                            <p>
+                                This app supports all Material Design Icons (MDI). Browse and search icons here:{" "}
+                                <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">
+                                    pictogrammers.com/library/mdi
+                                </a>
+                                .
+                            </p>
 
-                        <p>
-                            Hue icon previews are sourced from the <code>hass-hue-icons</code> project:{" "}
-                            <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
-                                github.com/arallsopp/hass-hue-icons
-                            </a>
-                            .
-                        </p>
+                            <p>
+                                Hue icon previews are sourced from the <code>hass-hue-icons</code> project:{" "}
+                                <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
+                                    github.com/arallsopp/hass-hue-icons
+                                </a>
+                                .
+                            </p>
 
-                        <p className="help__note">
-                            Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.
-                        </p>
-                    </div>
-                </details>
-            </section>
+                            <p className="help__note">
+                                Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </div>
 
             {/* Hidden export renderers */}
             <div ref={exportRemoteHostRef} className="hidden">
