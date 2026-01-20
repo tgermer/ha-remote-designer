@@ -38,13 +38,8 @@ function getRemoteImageUrl(remoteId: string): string | undefined {
 
 const initial: DesignState = {
     remoteId: "hue_dimmer_v1",
-    tapsEnabled: ["single", "double", "long"],
-    buttonConfigs: {
-        on: { icons: { single: "mdi:lightbulb-on-outline" } },
-        up: { icons: { single: "mdi:brightness-5" } },
-        down: { icons: { single: "mdi:brightness-4" } },
-        off: { icons: { single: "mdi:lightbulb-off-outline" } },
-    },
+    tapsEnabled: ["single"],
+    buttonConfigs: {},
     options: {
         showTapMarkersAlways: true,
         showTapDividers: true,
@@ -272,7 +267,23 @@ export default function App() {
                         <div className="modelRow">
                             <label className="modelRow__label">
                                 Model
-                                <select value={state.remoteId} onChange={(e) => setState((s) => ({ ...s, remoteId: e.target.value as any }))}>
+                                <select
+                                    value={state.remoteId}
+                                    onChange={(e) => {
+                                        const nextRemoteId = e.target.value as any;
+
+                                        // Clear mappings when switching remotes (prevents accidental carry-over)
+                                        setState((s) => ({
+                                            ...s,
+                                            remoteId: nextRemoteId,
+                                            tapsEnabled: ["single"],
+                                            buttonConfigs: {},
+                                        }));
+
+                                        // Stop any example preview when switching remotes
+                                        setPreviewExampleOn(false);
+                                    }}
+                                >
                                     {REMOTES.map((r) => (
                                         <option key={r.id} value={r.id}>
                                             {r.name}
