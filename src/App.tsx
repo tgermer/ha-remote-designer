@@ -271,12 +271,21 @@ export default function App() {
 
     const setIcon = (buttonId: string, tap: TapType, icon?: string) => {
         setState((s) => {
+            // If user sets a double/long icon, auto-enable that tap mode globally
+            let nextTapsEnabled = s.tapsEnabled;
+            if (icon && !s.tapsEnabled.includes(tap)) {
+                nextTapsEnabled = [...s.tapsEnabled, tap];
+            }
+
             const prev = s.buttonConfigs[buttonId]?.icons ?? {};
             const nextIcons = { ...prev } as any;
+
             if (icon) nextIcons[tap] = icon;
             else delete nextIcons[tap];
+
             return {
                 ...s,
+                tapsEnabled: nextTapsEnabled,
                 buttonConfigs: {
                     ...s.buttonConfigs,
                     [buttonId]: { icons: nextIcons },
@@ -490,14 +499,16 @@ export default function App() {
                             <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. Living room dimmer" />
                         </label>
 
-                        <div className="row">
-                            <button type="button" onClick={saveCurrentDesign} disabled={!saveName.trim()}>
-                                Save current
-                            </button>
-                            <button type="button" onClick={refreshSavedDesigns}>
-                                Refresh
-                            </button>
-                        </div>
+                        <p>
+                            <div className="row">
+                                <button type="button" onClick={saveCurrentDesign} disabled={!saveName.trim()}>
+                                    Save current
+                                </button>
+                                <button type="button" onClick={refreshSavedDesigns}>
+                                    Refresh
+                                </button>
+                            </div>
+                        </p>
 
                         <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
                             Your saved remotes
@@ -511,14 +522,16 @@ export default function App() {
                             </select>
                         </label>
 
-                        <div className="row">
-                            <button type="button" onClick={loadSelectedDesign} disabled={!selectedSavedId}>
-                                Load
-                            </button>
-                            <button type="button" onClick={deleteSelectedDesign} disabled={!selectedSavedId}>
-                                Delete
-                            </button>
-                        </div>
+                        <p>
+                            <div className="row">
+                                <button type="button" onClick={loadSelectedDesign} disabled={!selectedSavedId}>
+                                    Load
+                                </button>
+                                <button type="button" onClick={deleteSelectedDesign} disabled={!selectedSavedId}>
+                                    Delete
+                                </button>
+                            </div>
+                        </p>
 
                         <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>Saved in your browser (localStorage). It remains after reloads, but will be removed if you clear site data.</p>
                     </fieldset>
