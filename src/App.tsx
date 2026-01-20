@@ -44,7 +44,7 @@ type SavedDesign = {
     updatedAt: number;
 };
 
-const SAVED_KEY = "ha-remote-labeler:saved-designs:v1";
+const SAVED_KEY = "ha-remote-designer:saved-designs:v1";
 
 function safeParseSavedDesigns(raw: string | null): SavedDesign[] {
     if (!raw) return [];
@@ -111,7 +111,7 @@ export default function App() {
 
     const [state, setState] = useState<DesignState>(() => loadFromHash<DesignState>() ?? initial);
 
-    // ----------------------------- Saved designs UI state -----------------------------
+    /* ----------------------------- Saved designs UI state ----------------------------- */
     const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
     const [saveName, setSaveName] = useState<string>("");
     const [selectedSavedId, setSelectedSavedId] = useState<string>("");
@@ -504,15 +504,12 @@ export default function App() {
                                 <button type="button" onClick={saveCurrentDesign} disabled={!saveName.trim()}>
                                     Save current
                                 </button>
-                                <button type="button" onClick={refreshSavedDesigns}>
-                                    Refresh
-                                </button>
                             </div>
                         </p>
 
                         <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
                             Your saved remotes
-                            <select value={selectedSavedId} onChange={(e) => setSelectedSavedId(e.target.value)}>
+                            <select value={selectedSavedId} onChange={(e) => setSelectedSavedId(e.target.value)} onFocus={refreshSavedDesigns}>
                                 <option value="">(none)</option>
                                 {savedDesigns.map((d) => (
                                     <option key={d.id} value={d.id}>
