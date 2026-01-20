@@ -143,6 +143,25 @@ export const REMOTES: RemoteTemplate[] = [
             { id: "down", xMm: 0, yMm: 45.5, wMm: 34, hMm: 16.25, rMm: 0 },
             { id: "hue", xMm: 0, yMm: 62.5, wMm: 34, hMm: 28.5, r: { tl: 0, tr: 0, br: 5.6, bl: 5.6 } },
         ],
+        examples: [
+            {
+                id: "factory",
+                name: "Factory labels",
+                description: "Default labeling matching the physical Hue dimmer switch V2",
+                tapsEnabled: ["single"],
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                },
+                buttonIcons: {
+                    on: { single: "mdi:power" },
+                    up: { single: "mdi:weather-sunset-up" },
+                    down: { single: "mdi:weather-sunset-down" },
+                    hue: { single: "hue:logo" },
+                },
+            },
+        ],
+        defaultExampleId: "factory",
     },
     {
         id: "ikea_bilresa_dual_switch",
@@ -191,5 +210,6 @@ export const REMOTES: RemoteTemplate[] = [
                 },
             },
         ],
+        defaultExampleId: "factory",
     },
 ];
