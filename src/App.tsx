@@ -116,9 +116,18 @@ export default function App() {
             next.buttonConfigs[buttonId] = { icons: { ...existing, ...iconsByTap } };
         }
 
-        // preview-friendly defaults
-        next.options.showTapMarkersAlways = true;
-        next.options.showTapDividers = selectedExample.tapsEnabled.length > 1;
+        // Apply example-specific options first (e.g. hide single-tap marker for Aqara factory)
+        if (selectedExample.options) {
+            next.options = { ...next.options, ...selectedExample.options };
+        }
+
+        // Sensible defaults ONLY if the example did not specify them
+        if (selectedExample.options?.showTapMarkersAlways === undefined) {
+            next.options.showTapMarkersAlways = true;
+        }
+        if (selectedExample.options?.showTapDividers === undefined) {
+            next.options.showTapDividers = selectedExample.tapsEnabled.length > 1;
+        }
 
         return next;
     }, [previewExampleOn, selectedExample, state]);
@@ -317,11 +326,23 @@ export default function App() {
                                                     next.buttonConfigs[buttonId] = { icons: { ...existing, ...iconsByTap } };
                                                 }
 
-                                                next.options = {
-                                                    ...next.options,
-                                                    showTapMarkersAlways: true,
-                                                    showTapDividers: selectedExample.tapsEnabled.length > 1,
-                                                };
+                                                // Start with current options
+                                                let nextOptions = { ...next.options };
+
+                                                // Merge example-specific options
+                                                if (selectedExample.options) {
+                                                    nextOptions = { ...nextOptions, ...selectedExample.options };
+                                                }
+
+                                                // Defaults only if not explicitly set by the example
+                                                if (selectedExample.options?.showTapMarkersAlways === undefined) {
+                                                    nextOptions.showTapMarkersAlways = true;
+                                                }
+                                                if (selectedExample.options?.showTapDividers === undefined) {
+                                                    nextOptions.showTapDividers = selectedExample.tapsEnabled.length > 1;
+                                                }
+
+                                                next.options = nextOptions;
 
                                                 return next;
                                             });

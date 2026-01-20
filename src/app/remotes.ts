@@ -29,6 +29,7 @@ export type RemoteExample = {
     description?: string;
     tapsEnabled: TapType[];
     buttonIcons: Record<string, Partial<Record<TapType, string>>>;
+    options?: Partial<DesignState["options"]>;
 };
 
 export type RemoteTemplate = {
@@ -70,6 +71,10 @@ export const REMOTES: RemoteTemplate[] = [
                 name: "Factory labels",
                 description: "Default labeling matching the physical Hue dimmer switch",
                 tapsEnabled: ["single"],
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                },
                 buttonIcons: {
                     on: { single: "mdi:power" },
                     up: { single: "mdi:plus" },
@@ -169,6 +174,22 @@ export const REMOTES: RemoteTemplate[] = [
 
             // Bottom rocker: outer corners rounded, top corners square
             { id: "minus", xMm: 61, yMm: 54, wMm: 17, hMm: 25, r: { tl: 0, tr: 0, br: 10, bl: 0 } },
+        ],
+        examples: [
+            {
+                id: "factory",
+                name: "Factory labels",
+                description: "Default labeling matching the physical Aquara W100",
+                tapsEnabled: ["single"],
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                },
+                buttonIcons: {
+                    plus: { single: "mdi:plus" },
+                    minus: { single: "mdi:minus" },
+                },
+            },
         ],
     },
 ];
