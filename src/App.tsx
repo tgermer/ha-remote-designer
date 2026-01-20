@@ -34,6 +34,43 @@ function getRemoteImageUrl(remoteId: string): string | undefined {
     return undefined;
 }
 
+/* ----------------------------- Saved designs (localStorage) ----------------------------- */
+
+type SavedDesign = {
+    id: string;
+    name: string;
+    state: DesignState;
+    createdAt: number;
+    updatedAt: number;
+};
+
+const SAVED_KEY = "ha-remote-labeler:saved-designs:v1";
+
+function safeParseSavedDesigns(raw: string | null): SavedDesign[] {
+    if (!raw) return [];
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? (parsed as SavedDesign[]) : [];
+    } catch {
+        return [];
+    }
+}
+
+function readSavedDesigns(): SavedDesign[] {
+    return safeParseSavedDesigns(window.localStorage.getItem(SAVED_KEY));
+}
+
+function writeSavedDesigns(items: SavedDesign[]) {
+    window.localStorage.setItem(SAVED_KEY, JSON.stringify(items));
+}
+
+function newId(): string {
+    // crypto.randomUUID is supported in modern browsers, fallback for older ones.
+    const uuid = typeof crypto !== "undefined" && typeof (crypto as any).randomUUID === "function" ? (crypto as any).randomUUID() : null;
+
+    return uuid ?? `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
 /* ----------------------------- initial state ----------------------------- */
 
 const initial: DesignState = {
@@ -73,6 +110,81 @@ export default function App() {
     }, []);
 
     const [state, setState] = useState<DesignState>(() => loadFromHash<DesignState>() ?? initial);
+
+    // ----------------------------- Saved designs UI state -----------------------------
+    const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
+    const [saveName, setSaveName] = useState<string>("");
+    const [selectedSavedId, setSelectedSavedId] = useState<string>("");
+
+    // Load saved designs once on mount
+    useEffect(() => {
+        const items = readSavedDesigns().sort((a, b) => b.updatedAt - a.updatedAt);
+        setSavedDesigns(items);
+        if (items.length) setSelectedSavedId(items[0].id);
+    }, []);
+
+    const refreshSavedDesigns = () => {
+        const items = readSavedDesigns().sort((a, b) => b.updatedAt - a.updatedAt);
+        setSavedDesigns(items);
+
+        if (items.length && !items.some((x) => x.id === selectedSavedId)) {
+            setSelectedSavedId(items[0].id);
+        }
+        if (!items.length) setSelectedSavedId("");
+    };
+
+    const saveCurrentDesign = () => {
+        const name = saveName.trim();
+        if (!name) return;
+
+        const now = Date.now();
+        const existing = readSavedDesigns();
+
+        // If name exists, update it (nice UX)
+        const idx = existing.findIndex((d) => d.name.toLowerCase() === name.toLowerCase());
+
+        if (idx >= 0) {
+            const updated: SavedDesign = {
+                ...existing[idx],
+                name,
+                state,
+                updatedAt: now,
+            };
+            const next = [...existing];
+            next[idx] = updated;
+            writeSavedDesigns(next);
+            setSelectedSavedId(updated.id);
+        } else {
+            const created: SavedDesign = {
+                id: newId(),
+                name,
+                state,
+                createdAt: now,
+                updatedAt: now,
+            };
+            writeSavedDesigns([created, ...existing]);
+            setSelectedSavedId(created.id);
+        }
+
+        setSaveName("");
+        refreshSavedDesigns();
+    };
+
+    const loadSelectedDesign = () => {
+        const items = readSavedDesigns();
+        const found = items.find((d) => d.id === selectedSavedId);
+        if (!found) return;
+
+        setState(found.state);
+        setPreviewExampleOn(false);
+    };
+
+    const deleteSelectedDesign = () => {
+        if (!selectedSavedId) return;
+        const next = readSavedDesigns().filter((d) => d.id !== selectedSavedId);
+        writeSavedDesigns(next);
+        refreshSavedDesigns();
+    };
 
     /* persist state in URL */
     useEffect(() => {
@@ -368,6 +480,48 @@ export default function App() {
                             </div>
                         </fieldset>
                     ) : null}
+
+                    {/* Saved designs (localStorage) */}
+                    <fieldset>
+                        <legend>Saved remotes</legend>
+
+                        <label className="modelRow__label">
+                            Name
+                            <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. Living room dimmer" />
+                        </label>
+
+                        <div className="row">
+                            <button type="button" onClick={saveCurrentDesign} disabled={!saveName.trim()}>
+                                Save current
+                            </button>
+                            <button type="button" onClick={refreshSavedDesigns}>
+                                Refresh
+                            </button>
+                        </div>
+
+                        <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
+                            Your saved remotes
+                            <select value={selectedSavedId} onChange={(e) => setSelectedSavedId(e.target.value)}>
+                                <option value="">(none)</option>
+                                {savedDesigns.map((d) => (
+                                    <option key={d.id} value={d.id}>
+                                        {d.name} — {d.state.remoteId}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+
+                        <div className="row">
+                            <button type="button" onClick={loadSelectedDesign} disabled={!selectedSavedId}>
+                                Load
+                            </button>
+                            <button type="button" onClick={deleteSelectedDesign} disabled={!selectedSavedId}>
+                                Delete
+                            </button>
+                        </div>
+
+                        <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>Saved in your browser (localStorage). It remains after reloads, but will be removed if you clear site data.</p>
+                    </fieldset>
 
                     {/* Options */}
                     <fieldset>
