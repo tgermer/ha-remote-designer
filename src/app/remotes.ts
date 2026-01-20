@@ -1,4 +1,4 @@
-import type { TapType } from "./types";
+import type { TapType, DesignOptions } from "./types";
 
 export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100";
 
@@ -29,7 +29,7 @@ export type RemoteExample = {
     description?: string;
     tapsEnabled: TapType[];
     buttonIcons: Record<string, Partial<Record<TapType, string>>>;
-    options?: Partial<DesignState["options"]>;
+    options?: Partial<DesignOptions>;
 };
 
 export type RemoteTemplate = {
