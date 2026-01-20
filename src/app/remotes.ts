@@ -147,7 +147,7 @@ export const REMOTES: RemoteTemplate[] = [
             {
                 id: "factory",
                 name: "Factory labels",
-                description: "Default labeling matching the physical Hue dimmer switch V2",
+                description: "Default labeling matching the physical Hue dimmer switch v2",
                 tapsEnabled: ["single"],
                 options: {
                     showTapMarkersAlways: false,
