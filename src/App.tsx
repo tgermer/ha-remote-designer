@@ -71,6 +71,21 @@ function newId(): string {
     return uuid ?? `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+function normalizeName(name: string) {
+    return name.trim().toLowerCase();
+}
+
+function nameExistsForRemote(items: SavedDesign[], remoteId: string, name: string, ignoreId?: string) {
+    const n = normalizeName(name);
+    return items.some((d) => d.state.remoteId === remoteId && normalizeName(d.name) === n && d.id !== ignoreId);
+}
+
+function withTimestamp(name: string) {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${name} (${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())})`;
+}
+
 /* ----------------------------- initial state ----------------------------- */
 
 const initial: DesignState = {
@@ -113,8 +128,38 @@ export default function App() {
 
     /* ----------------------------- Saved designs UI state ----------------------------- */
     const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
+
+    // Name input for saving (also used for rename)
     const [saveName, setSaveName] = useState<string>("");
+    const [saveNameError, setSaveNameError] = useState<string>("");
+
+    // Dropdown selection
     const [selectedSavedId, setSelectedSavedId] = useState<string>("");
+
+    // The currently loaded design (document) we are editing
+    const [activeSavedId, setActiveSavedId] = useState<string | null>(null);
+    const [loadedSnapshot, setLoadedSnapshot] = useState<DesignState | null>(null);
+    const [loadedName, setLoadedName] = useState<string>("");
+
+    const refreshSavedDesigns = () => {
+        const items = readSavedDesigns().sort((a, b) => b.updatedAt - a.updatedAt);
+        setSavedDesigns(items);
+
+        // Keep dropdown selection valid
+        if (items.length && selectedSavedId && !items.some((x) => x.id === selectedSavedId)) {
+            setSelectedSavedId(items[0].id);
+        }
+        if (!items.length) {
+            setSelectedSavedId("");
+        }
+
+        // Keep active document valid
+        if (activeSavedId && !items.some((x) => x.id === activeSavedId)) {
+            setActiveSavedId(null);
+            setLoadedSnapshot(null);
+            setLoadedName("");
+        }
+    };
 
     // Load saved designs once on mount
     useEffect(() => {
@@ -123,52 +168,10 @@ export default function App() {
         if (items.length) setSelectedSavedId(items[0].id);
     }, []);
 
-    const refreshSavedDesigns = () => {
-        const items = readSavedDesigns().sort((a, b) => b.updatedAt - a.updatedAt);
-        setSavedDesigns(items);
-
-        if (items.length && !items.some((x) => x.id === selectedSavedId)) {
-            setSelectedSavedId(items[0].id);
-        }
-        if (!items.length) setSelectedSavedId("");
-    };
-
-    const saveCurrentDesign = () => {
-        const name = saveName.trim();
-        if (!name) return;
-
-        const now = Date.now();
-        const existing = readSavedDesigns();
-
-        // If name exists, update it (nice UX)
-        const idx = existing.findIndex((d) => d.name.toLowerCase() === name.toLowerCase());
-
-        if (idx >= 0) {
-            const updated: SavedDesign = {
-                ...existing[idx],
-                name,
-                state,
-                updatedAt: now,
-            };
-            const next = [...existing];
-            next[idx] = updated;
-            writeSavedDesigns(next);
-            setSelectedSavedId(updated.id);
-        } else {
-            const created: SavedDesign = {
-                id: newId(),
-                name,
-                state,
-                createdAt: now,
-                updatedAt: now,
-            };
-            writeSavedDesigns([created, ...existing]);
-            setSelectedSavedId(created.id);
-        }
-
-        setSaveName("");
-        refreshSavedDesigns();
-    };
+    // Dirty check: any change to state or the name compared to the loaded design
+    const stateSig = useMemo(() => JSON.stringify(state), [state]);
+    const loadedSig = useMemo(() => (loadedSnapshot ? JSON.stringify(loadedSnapshot) : ""), [loadedSnapshot]);
+    const hasUnsavedChanges = activeSavedId !== null && (stateSig !== loadedSig || saveName.trim() !== loadedName.trim());
 
     const loadSelectedDesign = () => {
         const items = readSavedDesigns();
@@ -177,12 +180,92 @@ export default function App() {
 
         setState(found.state);
         setPreviewExampleOn(false);
+
+        setActiveSavedId(found.id);
+        setLoadedSnapshot(found.state);
+        setLoadedName(found.name);
+        setSaveName(found.name);
+        setSaveNameError("");
+    };
+
+    const saveAsNewDesign = () => {
+        const name = saveName.trim();
+        if (!name) return;
+
+        const now = Date.now();
+        const existing = readSavedDesigns();
+
+        // If the name already exists for this remote model, auto-append a timestamp.
+        const finalName = nameExistsForRemote(existing, state.remoteId, name) ? withTimestamp(name) : name;
+        setSaveNameError("");
+
+        const created: SavedDesign = {
+            id: newId(),
+            name: finalName,
+            state,
+            createdAt: now,
+            updatedAt: now,
+        };
+
+        writeSavedDesigns([created, ...existing]);
+
+        // make it the active document
+        setSelectedSavedId(created.id);
+        setActiveSavedId(created.id);
+        setLoadedSnapshot(state);
+        setLoadedName(finalName);
+        setSaveName(finalName);
+
+        refreshSavedDesigns();
+    };
+
+    const saveActiveDesign = () => {
+        if (!activeSavedId) return;
+        const name = saveName.trim();
+        if (!name) return;
+
+        const now = Date.now();
+        const existing = readSavedDesigns();
+        const idx = existing.findIndex((d) => d.id === activeSavedId);
+        if (idx < 0) return;
+
+        // Block renaming to an existing name for the same remote model.
+        if (nameExistsForRemote(existing, state.remoteId, name, activeSavedId)) {
+            setSaveNameError("Name already exists for this remote model. Choose another name or use Save as.");
+            return;
+        }
+        setSaveNameError("");
+
+        const updated: SavedDesign = {
+            ...existing[idx],
+            name,
+            state,
+            updatedAt: now,
+        };
+
+        const next = [...existing];
+        next[idx] = updated;
+        writeSavedDesigns(next);
+
+        setLoadedSnapshot(state);
+        setLoadedName(name);
+        setSelectedSavedId(activeSavedId);
+
+        refreshSavedDesigns();
     };
 
     const deleteSelectedDesign = () => {
         if (!selectedSavedId) return;
         const next = readSavedDesigns().filter((d) => d.id !== selectedSavedId);
         writeSavedDesigns(next);
+
+        // If we deleted the active document, clear it
+        if (activeSavedId === selectedSavedId) {
+            setActiveSavedId(null);
+            setLoadedSnapshot(null);
+            setLoadedName("");
+        }
+
         refreshSavedDesigns();
     };
 
@@ -496,16 +579,29 @@ export default function App() {
 
                         <label className="modelRow__label">
                             Name
-                            <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. Living room dimmer" />
+                            <input
+                                type="text"
+                                value={saveName}
+                                onChange={(e) => {
+                                    setSaveName(e.target.value);
+                                    if (saveNameError) setSaveNameError("");
+                                }}
+                                placeholder="e.g. Living room dimmer"
+                            />
                         </label>
+                        {saveNameError ? <p style={{ margin: 0, fontSize: "0.85rem", color: "#b00020" }}>{saveNameError}</p> : null}
 
                         <p>
                             <div className="row">
-                                <button type="button" onClick={saveCurrentDesign} disabled={!saveName.trim()}>
-                                    Save current
+                                <button type="button" onClick={saveActiveDesign} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
+                                    Save
+                                </button>
+                                <button type="button" onClick={saveAsNewDesign} disabled={!saveName.trim()}>
+                                    Save as
                                 </button>
                             </div>
                         </p>
+                        {activeSavedId && <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>{hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}</p>}
 
                         <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
                             Your saved remotes
