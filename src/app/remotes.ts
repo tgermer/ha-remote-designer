@@ -73,7 +73,7 @@ export const REMOTES: RemoteTemplate[] = [
                 tapsEnabled: ["single"],
                 options: {
                     showTapMarkersAlways: false,
-                    showTapDividers: true,
+                    showTapDividers: false,
                 },
                 buttonIcons: {
                     on: { single: "mdi:power" },
@@ -151,7 +151,7 @@ export const REMOTES: RemoteTemplate[] = [
                 tapsEnabled: ["single"],
                 options: {
                     showTapMarkersAlways: false,
-                    showTapDividers: true,
+                    showTapDividers: false,
                 },
                 buttonIcons: {
                     on: { single: "mdi:power" },
@@ -202,7 +202,7 @@ export const REMOTES: RemoteTemplate[] = [
                 tapsEnabled: ["single"],
                 options: {
                     showTapMarkersAlways: false,
-                    showTapDividers: true,
+                    showTapDividers: false,
                 },
                 buttonIcons: {
                     plus: { single: "mdi:plus" },

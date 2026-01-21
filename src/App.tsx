@@ -277,6 +277,10 @@ export default function App() {
 
     const template = useMemo(() => REMOTES.find((r) => r.id === state.remoteId) ?? REMOTES[0], [state.remoteId]);
 
+    const remoteNameById = useMemo(() => {
+        return new Map(REMOTES.map((r) => [r.id, r.name] as const));
+    }, []);
+
     const examples = template.examples ?? [];
     const [selectedExampleId, setSelectedExampleId] = useState<string>(template.defaultExampleId ?? examples[0]?.id ?? "");
 
@@ -609,7 +613,7 @@ export default function App() {
                                 <option value="">(none)</option>
                                 {savedDesigns.map((d) => (
                                     <option key={d.id} value={d.id}>
-                                        {d.name} — {d.state.remoteId}
+                                        {d.name} — {remoteNameById.get(d.state.remoteId as any) ?? d.state.remoteId}
                                     </option>
                                 ))}
                             </select>
