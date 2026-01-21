@@ -477,6 +477,9 @@ export default function App() {
 
     /* -------------------------------- render -------------------------------- */
 
+    // Removed effect: Keep the dropdown selection in sync with the name field
+    // (handled only onBlur of the name field now)
+
     return (
         <main className="app">
             <SiteHeader isAdmin={isAdmin} />
@@ -503,6 +506,14 @@ export default function App() {
 
                                         // Stop any example preview when switching remotes
                                         setPreviewExampleOn(false);
+
+                                        // Clear saved-design editing context (Name field etc.)
+                                        setSaveName("");
+                                        setSaveNameError("");
+                                        setActiveSavedId(null);
+                                        setLoadedSnapshot(null);
+                                        setLoadedName("");
+                                        setSelectedSavedId("");
                                     }}
                                 >
                                     {REMOTES.map((r) => (
@@ -607,6 +618,15 @@ export default function App() {
                                 onChange={(e) => {
                                     setSaveName(e.target.value);
                                     if (saveNameError) setSaveNameError("");
+                                }}
+                                onBlur={() => {
+                                    const n = saveName.trim();
+                                    if (!n) return;
+
+                                    // If the typed name matches an existing saved design for this remote model,
+                                    // select it in the dropdown (but do not clear selection when empty).
+                                    const match = savedDesigns.find((d) => d.state.remoteId === state.remoteId && normalizeName(d.name) === normalizeName(n));
+                                    if (match) setSelectedSavedId(match.id);
                                 }}
                                 placeholder="e.g. Living room dimmer"
                             />
