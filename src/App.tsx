@@ -417,6 +417,19 @@ export default function App() {
         setState(initial);
     };
 
+    const resetCurrentRemote = () => {
+        setPreviewExampleOn(false);
+        setSaveNameError("");
+
+        setState((s) => ({
+            ...s,
+            // keep the currently selected model
+            remoteId: s.remoteId,
+            tapsEnabled: ["single"],
+            buttonConfigs: {},
+        }));
+    };
+
     /* ------------------------------ exporting ------------------------------ */
 
     const exportRemoteHostRef = useRef<HTMLDivElement | null>(null);
@@ -502,6 +515,11 @@ export default function App() {
                             <div className="modelRow__thumb" aria-label="Selected remote preview">
                                 {remoteImageUrl ? <img src={remoteImageUrl} alt={`${state.remoteId} preview`} /> : <span className="modelRow__thumbFallback">No image</span>}
                             </div>
+                        </div>
+                        <div className="row">
+                            <button type="button" onClick={resetCurrentRemote}>
+                                Reset current remote
+                            </button>
                         </div>
                     </fieldset>
 
