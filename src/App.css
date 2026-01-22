@@ -39,7 +39,6 @@ main {
   grid-template-columns: minmax(0, 500px) max-content minmax(0, 360px);
   gap: 1rem;
   align-items: start;
-  overflow-x: auto;
 }
 
 .header,
