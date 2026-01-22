@@ -20,6 +20,9 @@ export type DesignOptions = {
     showScaleBar: boolean;
 
     tapMarkerFill: "outline" | "filled";
+
+    labelOutlineColor: string;
+    labelOutlineStrokeMm: number;
 };
 
 export type DesignState = {

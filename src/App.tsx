@@ -130,6 +130,8 @@ const initial: DesignState = {
         autoIconSizing: true,
         fixedIconMm: 8,
         tapMarkerFill: "outline",
+        labelOutlineColor: "#ccc",
+        labelOutlineStrokeMm: 0.1,
     },
 };
 
@@ -775,6 +777,37 @@ export default function App() {
                                     }
                                 />
                                 Show button outlines
+                            </label>
+
+                            <label className="option">
+                                Label outline color
+                                <input
+                                    type="color"
+                                    value={o.labelOutlineColor}
+                                    onChange={(e) =>
+                                        setState((s) => ({
+                                            ...s,
+                                            options: { ...s.options, labelOutlineColor: e.target.value },
+                                        }))
+                                    }
+                                />
+                            </label>
+
+                            <label className="option">
+                                Label outline stroke (mm)
+                                <input
+                                    type="number"
+                                    min={0.05}
+                                    max={2}
+                                    step={0.05}
+                                    value={o.labelOutlineStrokeMm}
+                                    onChange={(e) =>
+                                        setState((s) => ({
+                                            ...s,
+                                            options: { ...s.options, labelOutlineStrokeMm: Number(e.target.value) },
+                                        }))
+                                    }
+                                />
                             </label>
 
                             <label className="option">

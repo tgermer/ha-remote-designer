@@ -74,6 +74,9 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
 
     const radii = getButtonRadii(button);
 
+    const outlineColor = state.options.labelOutlineColor || "#ccc";
+    const outlineStroke = typeof state.options.labelOutlineStrokeMm === "number" ? state.options.labelOutlineStrokeMm : 0.1;
+
     const markerMm = 3;
     const gapMm = 1;
     const markerFill = state.options.tapMarkerFill;
@@ -86,7 +89,7 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
             <rect x="0" y="0" width={labelWidthMm} height={labelHeightMm} fill="white" />
 
             {/* Button cut frame (with radii) */}
-            {isUniformRadii(radii) ? <rect x={bx} y={by} width={button.wMm} height={button.hMm} rx={radii.tl} ry={radii.tl} fill="none" stroke="black" strokeWidth={0.25} /> : <path d={roundedRectPath(bx, by, button.wMm, button.hMm, radii)} fill="none" stroke="black" strokeWidth={0.25} />}
+            {isUniformRadii(radii) ? <rect x={bx} y={by} width={button.wMm} height={button.hMm} rx={radii.tl} ry={radii.tl} fill="none" stroke={outlineColor} strokeWidth={outlineStroke} /> : <path d={roundedRectPath(bx, by, button.wMm, button.hMm, radii)} fill="none" stroke={outlineColor} strokeWidth={outlineStroke} />}
 
             {/* Icons + markers inside the button frame */}
             {n === 1 &&

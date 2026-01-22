@@ -66,6 +66,9 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
     const options = { ...state.options, ...overrides };
     const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
 
+    const outlineColor = options.labelOutlineColor ?? "#ccc";
+    const outlineStrokeMm = typeof options.labelOutlineStrokeMm === "number" ? options.labelOutlineStrokeMm : 0.1;
+
     const showScaleBar = (options as any).showScaleBar === true;
     // Extra bottom space for the 1 cm scale bar + text (export only)
     const extraBottomMm = showScaleBar ? 16 : 0;
@@ -99,8 +102,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
                 const radii = getButtonRadiiMm(b, exportMode?.squareButtons);
 
-                const outline = showButtonOutlines ? isUniformRadii(radii) ? <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={radii.tl} fill="none" stroke="black" strokeWidth="0.25" /> : <path d={roundedRectPath(b.xMm, b.yMm, b.wMm, b.hMm, radii)} fill="none" stroke="black" strokeWidth="0.25" /> : null;
-
+                const outline = showButtonOutlines ? isUniformRadii(radii) ? <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={radii.tl} fill="none" stroke={outlineColor} strokeWidth={outlineStrokeMm} /> : <path d={roundedRectPath(b.xMm, b.yMm, b.wMm, b.hMm, radii)} fill="none" stroke={outlineColor} strokeWidth={outlineStrokeMm} /> : null;
                 const buttonGuides = showGuides ? (
                     <g opacity={0.25}>
                         <line x1={buttonCx} y1={b.yMm} x2={buttonCx} y2={b.yMm + b.hMm} stroke="black" strokeWidth="0.2" />
