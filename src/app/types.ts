@@ -32,3 +32,5 @@ export type DesignState = {
     buttonConfigs: Record<string, ButtonConfig>;
     options: DesignOptions;
 };
+
+export const TAP_ORDER: TapType[] = ["single", "double", "long"];

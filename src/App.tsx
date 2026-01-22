@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import "./App.css";
 
-import type { DesignState, TapType } from "./app/types";
+import { TAP_ORDER, type DesignState, type TapType } from "./app/types";
 import { REMOTES } from "./app/remotes";
 import { RemoteSvg } from "./render/RemoteSvg";
 import { ButtonLabelSvg } from "./render/buttonLabelSvg";
@@ -939,34 +939,36 @@ export default function App() {
                         {buttonIds.map((id) => (
                             <section key={id} className="button-config">
                                 <h3>{id.toUpperCase()} Button</h3>
-                                {(["single", "double", "long"] as TapType[]).map((tap) => (
+                                {TAP_ORDER.map((tap) => (
                                     <div key={tap}>
                                         <h4>{tapLabel(tap)}</h4>
                                         <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => setIcon(id, tap, v)} />
-                                        <label className="option">
-                                            <input
-                                                type="checkbox"
-                                                checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
-                                                onChange={(e) => {
-                                                    const checked = e.target.checked;
-                                                    setState((s) => {
-                                                        const prev = s.buttonConfigs[id] ?? { icons: {} };
-                                                        const prevStrike = prev.strike ?? {};
-                                                        return {
-                                                            ...s,
-                                                            buttonConfigs: {
-                                                                ...s.buttonConfigs,
-                                                                [id]: {
-                                                                    ...prev,
-                                                                    strike: { ...prevStrike, [tap]: checked },
+                                        <p>
+                                            <label className="option">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
+                                                    onChange={(e) => {
+                                                        const checked = e.target.checked;
+                                                        setState((s) => {
+                                                            const prev = s.buttonConfigs[id] ?? { icons: {} };
+                                                            const prevStrike = prev.strike ?? {};
+                                                            return {
+                                                                ...s,
+                                                                buttonConfigs: {
+                                                                    ...s.buttonConfigs,
+                                                                    [id]: {
+                                                                        ...prev,
+                                                                        strike: { ...prevStrike, [tap]: checked },
+                                                                    },
                                                                 },
-                                                            },
-                                                        };
-                                                    });
-                                                }}
-                                            />
-                                            Strikethrough (manual “off”)
-                                        </label>
+                                                            };
+                                                        });
+                                                    }}
+                                                />
+                                                Strikethrough (manual “off”)
+                                            </label>
+                                        </p>
                                     </div>
                                 ))}
                             </section>

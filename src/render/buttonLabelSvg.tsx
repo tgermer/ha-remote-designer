@@ -1,5 +1,5 @@
 import type { ButtonDef } from "../app/remotes";
-import type { DesignState, TapType } from "../app/types";
+import { TAP_ORDER, type DesignState, type TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 
 type CornerRadii = { tl: number; tr: number; br: number; bl: number };
@@ -65,7 +65,7 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
     const cfg = state.buttonConfigs[button.id]?.icons ?? {};
 
     const enabledTaps = state.tapsEnabled.length ? state.tapsEnabled : (["single"] as TapType[]);
-    const taps = enabledTaps.filter((t) => !!cfg[t]);
+    const taps = TAP_ORDER.filter((t) => enabledTaps.includes(t) && !!cfg[t]);
     const n = taps.length;
 
     // Center the button zone inside the label (40×30mm)

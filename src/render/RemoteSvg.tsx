@@ -1,5 +1,5 @@
 import type { RemoteTemplate } from "../app/remotes";
-import type { DesignState, TapType } from "../app/types";
+import { TAP_ORDER, type DesignState, type TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 
 type CornerRadii = { tl: number; tr: number; br: number; bl: number };
@@ -94,7 +94,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
             {template.buttons.map((b) => {
                 const cfg = state.buttonConfigs[b.id]?.icons ?? {};
-                const activeTaps = enabledTaps.filter((t) => !!cfg[t]);
+                const activeTaps = TAP_ORDER.filter((t) => enabledTaps.includes(t) && !!cfg[t]);
                 const n = activeTaps.length;
 
                 const buttonCx = b.xMm + b.wMm / 2;
