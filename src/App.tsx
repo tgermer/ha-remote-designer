@@ -396,18 +396,31 @@ export default function App() {
                 nextTapsEnabled = [...s.tapsEnabled, tap];
             }
 
-            const prev = s.buttonConfigs[buttonId]?.icons ?? {};
-            const nextIcons = { ...prev } as any;
+            const prevCfg = s.buttonConfigs[buttonId] ?? { icons: {} };
+            const prevIcons = prevCfg.icons ?? {};
+            const nextIcons: any = { ...prevIcons };
 
-            if (icon) nextIcons[tap] = icon;
-            else delete nextIcons[tap];
+            // Preserve strike map, but clear strike for this tap when icon is removed
+            const prevStrike = prevCfg.strike ?? {};
+            const nextStrike: any = { ...prevStrike };
+
+            if (icon) {
+                nextIcons[tap] = icon;
+            } else {
+                delete nextIcons[tap];
+                delete nextStrike[tap]; // if the icon is removed, remove its strike flag too
+            }
 
             return {
                 ...s,
                 tapsEnabled: nextTapsEnabled,
                 buttonConfigs: {
                     ...s.buttonConfigs,
-                    [buttonId]: { icons: nextIcons },
+                    [buttonId]: {
+                        ...prevCfg,
+                        icons: nextIcons,
+                        strike: nextStrike,
+                    },
                 },
             };
         });
