@@ -86,6 +86,34 @@ function withTimestamp(name: string) {
     return `${name} (${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())})`;
 }
 
+function sanitizeFilenameBase(input: string) {
+    // Make filenames predictable and safe.
+    // - normalize diacritics
+    // - replace various unicode dashes with '-'
+    // - whitespace -> '-'
+    // - remove remaining non [a-zA-Z0-9._-]
+    // - collapse repeated '-'
+    const s = input
+        .normalize("NFKD")
+        .replace(/[\u2010-\u2015]/g, "-")
+        .replace(/\s+/g, "-")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9._-]+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^[-.]+|[-.]+$/g, "");
+
+    return s || "untitled";
+}
+
+function getExportBaseName(params: { saveName: string; remoteId: string }) {
+    const n = params.saveName.trim();
+    if (!n) return params.remoteId;
+
+    const safe = sanitizeFilenameBase(n);
+    // Always include the model id for clarity
+    return `${safe}-${params.remoteId}`;
+}
+
 /* ----------------------------- initial state ----------------------------- */
 
 const initial: DesignState = {
@@ -160,6 +188,8 @@ export default function App() {
             setLoadedName("");
         }
     };
+
+    const exportBase = useMemo(() => getExportBaseName({ saveName, remoteId: state.remoteId }), [saveName, state.remoteId]);
 
     // Load saved designs once on mount
     useEffect(() => {
@@ -438,7 +468,7 @@ export default function App() {
     const exportRemoteSvg = () => {
         const svg = exportRemoteHostRef.current?.querySelector("svg");
         if (!svg) return;
-        downloadTextFile(`${state.remoteId}-remote.svg`, serializeSvg(svg), "image/svg+xml");
+        downloadTextFile(`${exportBase}-remote.svg`, serializeSvg(svg), "image/svg+xml");
     };
 
     const [dpi, setDpi] = useState(203);
@@ -450,7 +480,7 @@ export default function App() {
         setIsZipping(true);
 
         const zip = new JSZip();
-        const folder = zip.folder(state.remoteId) ?? zip;
+        const folder = zip.folder(exportBase) ?? zip;
 
         for (const id of buttonIds) {
             setExportButtonId(id);
@@ -469,7 +499,7 @@ export default function App() {
         }
 
         setExportButtonId(null);
-        downloadBlob(`${state.remoteId}-labels.zip`, await zip.generateAsync({ type: "blob" }));
+        downloadBlob(`${exportBase}-labels.zip`, await zip.generateAsync({ type: "blob" }));
         setIsZipping(false);
     };
 
