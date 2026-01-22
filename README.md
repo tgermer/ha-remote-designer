@@ -33,7 +33,8 @@ Labeling sounds trivial, but in practice it isn’t:
 - Consistent sizing is hard
 - Printing at the correct scale is error-prone
 
-**Remote Label Designer** solves exactly this gap between automation logic and the physical remote in your hand.
+**Remote Label Designer** closes the gap between automation logic  
+and the physical remote in your hand.
 
 <img src="public/hero-image.jpg" alt="Printed button labels applied to smart-home remotes" width="400">
 
@@ -51,10 +52,12 @@ No installation required. No account needed.
 
 ## What this tool does (current state)
 
-- Create simple, consistent labels for physical smart-home remotes
-- Focus on buttons, not full remotes
-- Export labels as **high-resolution PNG**
-- Optional print calibration (10 mm reference)
+- Design simple, consistent labels for physical smart-home remotes
+- Focus on **buttons**, not full remote skins
+- Export labels as **SVG**
+- Optional print calibration reference (10 mm)
+- Save your configured remotes locally in your browser (localStorage)
+- Reload and continue editing later
 - No accounts
 - No cloud
 - No vendor lock-in
@@ -66,17 +69,17 @@ This is intentionally a **community prototype**.
 ## What this tool is NOT (yet)
 
 - No PDF export
-- No SVG export
+- No PNG export
 - No perfect print templates
 - No professional sticker service
 
-These may come later, **after validating real-world usage**.
+These may come later — **after validating real-world usage**.
 
 ---
 
-## Why PNG first?
+## Why SVG first?
 
-PNG is deliberate.
+SVG is a deliberate choice.
 
 The goal of this project is **real-life testing**, not perfect printing:
 
@@ -100,7 +103,6 @@ High resolution (300 DPI) ensures:
 Exported PNGs can include an optional calibration reference:
 
 - 10 mm line
-- 10 × 10 mm square
 
 Before judging size accuracy:
 
@@ -136,7 +138,7 @@ The tool is **not limited to Home Assistant**. Home Assistant is just one ecosys
 
 - More remote presets
 - Better layout controls
-- SVG / PDF export (optional)
+- Optional SVG / PDF export improvements
 - Material experiments (vinyl, outdoor-safe)
 - Optional sticker service (e.g. plotter / cutting machine)
 
@@ -155,7 +157,7 @@ Please open an issue if you can answer any of these:
 - Does this solve a real problem for you?
 - Which remotes are missing?
 - Which button sizes do you actually need?
-- Is PNG enough for your workflow?
+- Is SVG sufficient for your workflow?
 - What went wrong when printing or sticking?
 
 Photos of real remotes are especially helpful.
