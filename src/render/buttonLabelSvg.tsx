@@ -54,10 +54,11 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; si
         );
     }
 
-    // Long press: robust pill (always rounded in SVG)
+    // Long press: rounded capsule that supports outline vs filled
     const h = sizeMm * 0.8;
     const w = sizeMm * 2.6;
-    return <line x1={-w / 2} y1={0} x2={w / 2} y2={0} stroke="black" strokeWidth={h} strokeLinecap="round" />;
+
+    return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} ry={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
 }
 
 export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, showWatermark, watermarkText, watermarkOpacity }: { state: DesignState; button: ButtonDef; labelWidthMm: number; labelHeightMm: number; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number }) {
@@ -125,17 +126,31 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                     const iconCy = topY + iconMm / 2;
                     const markerCy = topY + iconMm + gapMm + markerMm / 2;
 
-                    return taps.map((tap, i) => {
-                        const iconCx = bx + colW * (i + 0.5);
-                        return (
-                            <g key={tap}>
-                                {renderHaIconAtMm({ icon: cfg[tap] as string, cx: iconCx, cy: iconCy, iconMm })}
-                                <g transform={`translate(${iconCx}, ${markerCy})`}>
-                                    <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} />
-                                </g>
-                            </g>
-                        );
-                    });
+                    const showDividers = state.options.showTapDividers;
+
+                    const dividers = showDividers
+                        ? Array.from({ length: n - 1 }).map((_, i) => {
+                              const x = bx + colW * (i + 1);
+                              return <line key={`div_${i}`} x1={x} y1={by + 0.8} x2={x} y2={by + button.hMm - 0.8} stroke="black" strokeWidth={0.2} opacity={0.6} />;
+                          })
+                        : null;
+
+                    return (
+                        <g>
+                            {dividers}
+                            {taps.map((tap, i) => {
+                                const iconCx = bx + colW * (i + 0.5);
+                                return (
+                                    <g key={tap}>
+                                        {renderHaIconAtMm({ icon: cfg[tap] as string, cx: iconCx, cy: iconCy, iconMm })}
+                                        <g transform={`translate(${iconCx}, ${markerCy})`}>
+                                            <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} />
+                                        </g>
+                                    </g>
+                                );
+                            })}
+                        </g>
+                    );
                 })()}
 
             {/* Watermark */}
