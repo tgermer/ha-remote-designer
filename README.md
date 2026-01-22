@@ -3,13 +3,15 @@
 
 👉 **Try the tool:** https://ha-remote-designer.netlify.app/
 
-Design printable button labels for physical smart-home remotes –  without graphic design tools.
+Design printable button labels for physical smart-home remotes –  
+without graphic design tools.
 
 ---
 
 ## Why this exists
 
-When you start using physical remotes in a smart-home setup, they quickly become more powerful than the manufacturer ever intended.
+When you start using physical remotes in a smart-home setup, they quickly become
+more powerful than the manufacturer ever intended.
 
 Single press.  
 Double press.  
@@ -30,7 +32,8 @@ Labeling sounds trivial, but in practice it isn’t:
 - Consistent sizing is hard
 - Printing at the correct scale is error-prone
 
-**Remote Label Designer** solves exactly this gap between automation logic and the physical remote in your hand.
+**Remote Label Designer** closes the gap between automation logic  
+and the physical remote in your hand.
 
 <img src="public/IMG_2019.jpeg" alt="Printed labels on a smart-home remote" width="400">
 
@@ -44,17 +47,19 @@ You can try the current prototype directly in your browser:
 
 👉 https://ha-remote-designer.netlify.app/
 
-No installation required.
+No installation required.  
 No account needed.
 
 ---
 
 ## What this tool does (current state)
 
-- Create simple, consistent labels for physical smart-home remotes
-- Focus on buttons, not full remotes
-- Export labels as **high-resolution PNG**
-- Optional print calibration (10 mm reference)
+- Design simple, consistent labels for physical smart-home remotes
+- Focus on **buttons**, not full remote skins
+- Export labels as **SVG**
+- Optional print calibration reference (10 mm)
+- Save your configured remotes locally in your browser (localStorage)
+- Reload and continue editing later
 - No accounts
 - No cloud
 - No vendor lock-in
@@ -66,19 +71,19 @@ This is intentionally a **community prototype**.
 ## What this tool is NOT (yet)
 
 - No PDF export
-- No SVG export
+- No PNG export
 - No perfect print templates
 - No professional sticker service
 
-These may come later, **after validating real-world usage**.
+These may come later — **after validating real-world usage**.
 
 ---
 
-## Why PNG first?
+## Why SVG first?
 
-PNG is deliberate.
+SVG is a deliberate choice.
 
-The goal of this project is **real-life testing**, not perfect printing:
+The goal of this project is **real-life testing with accurate printing**:
 - Print it at home
 - Cut it
 - Stick it on a remote
@@ -86,18 +91,17 @@ The goal of this project is **real-life testing**, not perfect printing:
 
 If the idea fails at this stage, higher-end formats won’t fix it.
 
-High resolution (300 DPI) ensures:
-- readable text
-- realistic size evaluation
+SVG ensures:
+- crystal-clear, sharp print output
+- precise sizing independent of resolution
 - fair feedback on the concept itself
 
 ---
 
 ## Print calibration (important)
 
-Exported PNGs can include an optional calibration reference:
+Exported SVGs can include an optional calibration reference:
 - 10 mm line
-- 10 × 10 mm square
 
 Before judging size accuracy:
 1. Print at **100%**
@@ -125,7 +129,7 @@ If you never forget what your buttons do, you probably don’t need this.
 **HA stands for Home Automation.**
 
 The tool is **not limited to Home Assistant**.
-Home Assistant is just one ecosystem where the problem becomes obvious quickly.
+Home Assistant is just one ecosystem where this problem becomes obvious quickly.
 
 ---
 
@@ -133,11 +137,11 @@ Home Assistant is just one ecosystem where the problem becomes obvious quickly.
 
 - More remote presets
 - Better layout controls
-- SVG / PDF export (optional)
+- Optional SVG / PDF export improvements
 - Material experiments (vinyl, outdoor-safe)
 - Optional sticker service (e.g. plotter / cutting machine)
 
-Nothing here is guaranteed.
+Nothing here is guaranteed.  
 Community feedback will decide.
 
 ---
@@ -153,7 +157,7 @@ Please open an issue if you can answer any of these:
 - Does this solve a real problem for you?
 - Which remotes are missing?
 - Which button sizes do you actually need?
-- Is PNG enough for your workflow?
+- Is SVG sufficient for your workflow?
 - What went wrong when printing or sticking?
 
 Photos of real remotes are especially helpful.
@@ -164,7 +168,7 @@ Photos of real remotes are especially helpful.
 
 This project is licensed under the MIT License.
 
-You are free to use, modify and share it.
+You are free to use, modify and share it.  
 Attribution is appreciated.
 
 ---
@@ -183,14 +187,17 @@ If it helps you even a little, that’s already a win.
 
 This project is open source on purpose.
 
-The value of this tool is not the code itself, but solving a very practical, real-world problem: making physical smart-home remotes readable again.
+The value of this tool is not the code itself,
+but solving a very practical, real-world problem:
+making physical smart-home remotes readable again.
 
 Open sourcing the tool allows:
 - real-world feedback
 - community trust
 - experimentation across different ecosystems
 
-Future services (such as printed stickers or material-based solutions) are intentionally **out of scope** for this repository.
+Future services (such as printed stickers or material-based solutions)
+are intentionally **out of scope** for this repository.
 
 Open source code and optional paid services are not a contradiction.
 They solve different problems.
