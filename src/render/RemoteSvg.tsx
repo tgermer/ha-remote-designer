@@ -133,7 +133,13 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                             <g key={b.id}>
                                 {outline}
                                 {buttonGuides}
-                                {renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: topY + iconMm / 2, iconMm })}
+                                {renderHaIconAtMm({
+                                    icon: cfg[tap]!,
+                                    cx: buttonCx,
+                                    cy: topY + iconMm / 2,
+                                    iconMm,
+                                    strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                                })}
                                 <g transform={`translate(${buttonCx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
                                     <TapMarker tap={tap} fillMode={tapMarkerFill} />
                                 </g>
@@ -145,7 +151,13 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                         <g key={b.id}>
                             {outline}
                             {buttonGuides}
-                            {renderHaIconAtMm({ icon: cfg[tap]!, cx: buttonCx, cy: buttonCy, iconMm })}
+                            {renderHaIconAtMm({
+                                icon: cfg[tap]!,
+                                cx: buttonCx,
+                                cy: buttonCy,
+                                iconMm,
+                                strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                            })}
                         </g>
                     );
                 }
@@ -173,7 +185,13 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                             const cx = b.xMm + colW * (i + 0.5);
                             return (
                                 <g key={tap}>
-                                    {renderHaIconAtMm({ icon: cfg[tap]!, cx, cy: topY + iconMm / 2, iconMm })}
+                                    {renderHaIconAtMm({
+                                        icon: cfg[tap]!,
+                                        cx,
+                                        cy: topY + iconMm / 2,
+                                        iconMm,
+                                        strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                                    })}
                                     <g transform={`translate(${cx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
                                         <TapMarker tap={tap} fillMode={tapMarkerFill} />
                                     </g>

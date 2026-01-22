@@ -25,21 +25,55 @@ export function isSupportedHaIcon(icon: string): boolean {
     return false;
 }
 
-export function renderHaIconAtMm({ icon, cx, cy, iconMm }: { icon: string; cx: number; cy: number; iconMm: number }) {
+export function renderHaIconAtMm({ icon, cx, cy, iconMm, strike }: { icon: string; cx: number; cy: number; iconMm: number; strike?: boolean }) {
     // MDI (24x24)
+    const strikeOverlay = strike ? (
+        <>
+            {(() => {
+                // Mirrored (top-left -> bottom-right) and slightly shorter than the full icon box.
+                const d = iconMm * 0.42;
+                const x1 = cx - d;
+                const y1 = cy - d;
+                const x2 = cx + d;
+                const y2 = cy + d;
+
+                // Offset a parallel white highlight to the "right" side of the diagonal.
+                // For a (1,1) direction line, the right-side perpendicular is (1,-1).
+                const off = iconMm * 0.06;
+                const ox = off / Math.SQRT2;
+                const oy = -off / Math.SQRT2;
+
+                const blackW = iconMm * 0.085;
+                const whiteW = iconMm * 0.085;
+
+                return (
+                    <>
+                        {/* white highlight line (parallel, offset) */}
+                        <line x1={x1 + ox} y1={y1 + oy} x2={x2 + ox} y2={y2 + oy} stroke="white" strokeWidth={whiteW} strokeLinecap="butt" />
+                        {/* black strike line */}
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="black" strokeWidth={blackW} strokeLinecap="butt" />
+                    </>
+                );
+            })()}
+        </>
+    ) : null;
     if (icon.startsWith("mdi:")) {
         if (!getMdiPath(icon)) return null;
         return (
-            <g
-                transform={`
-          translate(${cx}, ${cy})
-          translate(${-iconMm / 2}, ${-iconMm / 2})
-          scale(${iconMm / 24})
-        `}
-                fill="black"
-            >
-                <MdiPath name={icon} />
-            </g>
+            <>
+                <g
+                    transform={`
+        translate(${cx}, ${cy})
+        translate(${-iconMm / 2}, ${-iconMm / 2})
+        scale(${iconMm / 24})
+      `}
+                    fill="black"
+                >
+                    <MdiPath name={icon} />
+                </g>
+
+                {strikeOverlay}
+            </>
         );
     }
 
@@ -55,16 +89,19 @@ export function renderHaIconAtMm({ icon, cx, cy, iconMm }: { icon: string; cx: n
         const sy = iconMm / vb.h;
 
         return (
-            <g
-                transform={`
-          translate(${cx}, ${cy})
-          translate(${-iconMm / 2}, ${-iconMm / 2})
-          scale(${sx} ${sy})
-          translate(${-vb.minX} ${-vb.minY})
-        `}
-                // DO NOT force fill/stroke; let the SVG define it.
-                dangerouslySetInnerHTML={{ __html: inner }}
-            />
+            <>
+                <g
+                    transform={`
+        translate(${cx}, ${cy})
+        translate(${-iconMm / 2}, ${-iconMm / 2})
+        scale(${sx} ${sy})
+        translate(${-vb.minX} ${-vb.minY})
+      `}
+                    dangerouslySetInnerHTML={{ __html: inner }}
+                />
+
+                {strikeOverlay}
+            </>
         );
     }
 

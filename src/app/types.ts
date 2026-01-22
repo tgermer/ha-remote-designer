@@ -4,6 +4,7 @@ export type TapType = "single" | "double" | "long";
 
 export type ButtonConfig = {
     icons: Partial<Record<TapType, string>>; // e.g. "mdi:lightbulb-outline"
+    strike?: Partial<Record<TapType, boolean>>;
 };
 
 export type DesignOptions = {

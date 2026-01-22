@@ -107,7 +107,13 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
 
                         return (
                             <g>
-                                {renderHaIconAtMm({ icon: cfg[tap] as string, cx: buttonCx, cy: iconCy, iconMm })}
+                                {renderHaIconAtMm({
+                                    icon: cfg[tap] as string,
+                                    cx: buttonCx,
+                                    cy: iconCy,
+                                    iconMm,
+                                    strike: state.buttonConfigs[button.id]?.strike?.[tap] ?? false,
+                                })}
                                 <g transform={`translate(${buttonCx}, ${markerCy})`}>
                                     <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} />
                                 </g>
@@ -116,7 +122,17 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                     }
 
                     const buttonCy = by + button.hMm / 2;
-                    return <g>{renderHaIconAtMm({ icon: cfg[tap] as string, cx: buttonCx, cy: buttonCy, iconMm })}</g>;
+                    return (
+                        <g>
+                            {renderHaIconAtMm({
+                                icon: cfg[tap] as string,
+                                cx: buttonCx,
+                                cy: buttonCy,
+                                iconMm,
+                                strike: state.buttonConfigs[button.id]?.strike?.[tap] ?? false,
+                            })}
+                        </g>
+                    );
                 })()}
 
             {n > 1 &&
@@ -145,7 +161,13 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                                 const iconCx = bx + colW * (i + 0.5);
                                 return (
                                     <g key={tap}>
-                                        {renderHaIconAtMm({ icon: cfg[tap] as string, cx: iconCx, cy: iconCy, iconMm })}
+                                        {renderHaIconAtMm({
+                                            icon: cfg[tap] as string,
+                                            cx: iconCx,
+                                            cy: iconCy,
+                                            iconMm,
+                                            strike: state.buttonConfigs[button.id]?.strike?.[tap] ?? false,
+                                        })}
                                         <g transform={`translate(${iconCx}, ${markerCy})`}>
                                             <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} />
                                         </g>

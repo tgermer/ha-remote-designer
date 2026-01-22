@@ -930,6 +930,30 @@ export default function App() {
                                     <div key={tap}>
                                         <h4>{tapLabel(tap)}</h4>
                                         <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => setIcon(id, tap, v)} />
+                                        <label className="option">
+                                            <input
+                                                type="checkbox"
+                                                checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    setState((s) => {
+                                                        const prev = s.buttonConfigs[id] ?? { icons: {} };
+                                                        const prevStrike = prev.strike ?? {};
+                                                        return {
+                                                            ...s,
+                                                            buttonConfigs: {
+                                                                ...s.buttonConfigs,
+                                                                [id]: {
+                                                                    ...prev,
+                                                                    strike: { ...prevStrike, [tap]: checked },
+                                                                },
+                                                            },
+                                                        };
+                                                    });
+                                                }}
+                                            />
+                                            Strikethrough (manual “off”)
+                                        </label>
                                     </div>
                                 ))}
                             </section>
