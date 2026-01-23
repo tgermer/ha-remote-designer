@@ -274,14 +274,14 @@ export const REMOTES: RemoteTemplate[] = [
         heightMm: 55,
         cornerMm: 2,
         buttons: [
-            { id: "top_left", xMm: 15.5, yMm: 3, wMm: 12, hMm: 15, rMm: 0 },
-            { id: "top_right", xMm: 27.5, yMm: 3, wMm: 12, hMm: 15, rMm: 0 },
+            { id: "top_left", xMm: 15.5, yMm: 4, wMm: 12, hMm: 14, rMm: 0 },
+            { id: "top_right", xMm: 27.5, yMm: 4, wMm: 12, hMm: 14, rMm: 0 },
 
             { id: "center_left", xMm: 15.5, yMm: 18.33, wMm: 12, hMm: 19, rMm: 0 },
             { id: "center_right", xMm: 27.5, yMm: 18.33, wMm: 12, hMm: 19, rMm: 0 },
 
-            { id: "bottom_left", xMm: 15.5, yMm: 37, wMm: 12, hMm: 15, rMm: 0 },
-            { id: "bottom_right", xMm: 27.5, yMm: 37, wMm: 12, hMm: 15, rMm: 0 },
+            { id: "bottom_left", xMm: 15.5, yMm: 37, wMm: 12, hMm: 14, rMm: 0 },
+            { id: "bottom_right", xMm: 27.5, yMm: 37, wMm: 12, hMm: 14, rMm: 0 },
         ],
         examples: [
             {
