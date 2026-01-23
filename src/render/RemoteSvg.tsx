@@ -62,7 +62,7 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; si
     return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
 }
 
-export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number }) {
+export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity, background }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; background?: "white" | "remote" | "transparent" }) {
     const options = { ...state.options, ...overrides };
     const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
 
@@ -81,8 +81,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
     return (
         <svg width={`${template.widthMm}mm`} height={`${canvasHeightMm}mm`} viewBox={`0 0 ${template.widthMm} ${canvasHeightMm}`} xmlns="http://www.w3.org/2000/svg">
-            <rect x="0" y="0" width={template.widthMm} height={canvasHeightMm} fill="white" />
-
+            {background === "white" || background === undefined ? <rect x="0" y="0" width={template.widthMm} height={canvasHeightMm} fill="white" /> : background === "remote" ? <rect x="0" y="0" width={template.widthMm} height={template.heightMm} rx={template.cornerMm} fill="white" /> : null}
             {showRemoteOutline && <rect x="0.2" y="0.2" width={template.widthMm - 0.4} height={template.heightMm - 0.4} rx={template.cornerMm} fill="none" stroke="black" strokeWidth="0.4" />}
 
             {showGuides && (

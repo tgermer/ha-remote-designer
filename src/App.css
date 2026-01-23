@@ -41,9 +41,120 @@ main {
   align-items: start;
 }
 
+/* Gallery should use full width (single column layout) */
+.workspace--gallery {
+  grid-template-columns: 1fr;
+}
+
+
 .header,
 .footer {
   grid-column: 1 / -1;
+}
+
+.topnav {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1rem;
+}
+
+.topnav__btn {
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  background: #f7f7f7;
+}
+
+.topnav__btn--active {
+  background: #e9e9ff;
+  border-color: #bdbde6;
+}
+
+/* Gallery thumbnails: render RemoteSvg smaller without affecting layout */
+/* Gallery layout */
+.gallery {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.gallery__header {
+  margin-bottom: 0.75rem;
+}
+
+.gallery__title {
+  margin: 0 0 0.35rem;
+}
+
+.gallery__subtitle {
+  margin: 0;
+  opacity: 0.85;
+}
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem;
+}
+
+.galleryCard {
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.galleryCard:hover {
+  background: #fcfcfc;
+}
+
+/* Media area: white background works for all remotes (no grey mismatch) */
+.galleryCard__media {
+  background: rgba(216, 191, 216, 0.2);
+  padding: 0.75rem;
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #eee;
+}
+
+/* Thumbnail: 60% size + rounded clipping so square SVG background doesn't show at corners */
+.galleryThumb {
+  width: 50%;
+  margin: 0 auto;
+  overflow: hidden;
+  background: transparent;
+}
+
+.galleryThumb svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Aqara W100: align thumb to the right (buttons are on the right side) */
+.galleryCard[data-remote-id="aqara_w100"] .galleryThumb {
+  width: 80%;
+}
+
+.galleryCard__meta {
+  padding: 0.75rem;
+}
+
+.galleryCard__title {
+  font-weight: 600;
+}
+
+.galleryCard__model {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.galleryCard__desc {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
 }
 
 /* Left column */
@@ -63,7 +174,7 @@ main {
   border: 1px dashed #bbb;
   border-radius: 8px;
   padding: 1rem;
-  max-height: calc(100vh - 2rem);
+  /* max-height: calc(100vh - 2rem); */
   overflow: auto;
   justify-self: start;
   width: max-content;

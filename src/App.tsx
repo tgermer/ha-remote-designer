@@ -147,6 +147,71 @@ function nextFrame() {
     return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
+function getUrlView(): "editor" | "gallery" {
+    const sp = new URLSearchParams(window.location.search);
+    return sp.get("view") === "gallery" ? "gallery" : "editor";
+}
+
+function setUrlView(view: "editor" | "gallery") {
+    const url = new URL(window.location.href);
+    if (view === "gallery") url.searchParams.set("view", "gallery");
+    else url.searchParams.delete("view");
+
+    // Use pushState so browser back/forward works.
+    window.history.pushState(null, "", url.toString());
+}
+
+function buildStateFromExample(params: { remoteId: any; example: any }): DesignState {
+    const { remoteId, example } = params;
+
+    // Start from app defaults for consistent behaviour
+    const base: DesignState = {
+        ...initial,
+        remoteId,
+        tapsEnabled: Array.isArray(example?.tapsEnabled) && example.tapsEnabled.length ? example.tapsEnabled : ["single"],
+        buttonConfigs: {},
+        options: { ...initial.options },
+    };
+
+    // Apply example icons (+ strike)
+    if (example?.buttonIcons) {
+        for (const [buttonId, iconsByTap] of Object.entries(example.buttonIcons)) {
+            const id = String(buttonId);
+            base.buttonConfigs[id] = {
+                icons: { ...(iconsByTap as any) },
+                strike: { ...(example?.buttonStrike?.[id] as any) },
+            };
+        }
+    }
+
+    // Apply strikes even for buttons that have no icons in the example
+    if (example?.buttonStrike) {
+        for (const [buttonId, strikeByTap] of Object.entries(example.buttonStrike)) {
+            const id = String(buttonId);
+            const prev = base.buttonConfigs[id] ?? { icons: {} };
+            base.buttonConfigs[id] = {
+                ...prev,
+                strike: { ...(prev.strike as any), ...(strikeByTap as any) },
+            };
+        }
+    }
+
+    // Apply example-specific options (if any)
+    if (example?.options) {
+        base.options = { ...base.options, ...example.options };
+    }
+
+    // Sensible defaults ONLY if the example did not specify them
+    if (example?.options?.showTapMarkersAlways === undefined) {
+        base.options.showTapMarkersAlways = true;
+    }
+    if (example?.options?.showTapDividers === undefined) {
+        base.options.showTapDividers = (base.tapsEnabled?.length ?? 0) > 1;
+    }
+
+    return base;
+}
+
 /* --------------------------------- App ---------------------------------- */
 
 export default function App() {
@@ -154,7 +219,25 @@ export default function App() {
         document.title = "Remote Label Designer for Home Automation";
     }, []);
 
-    const [state, setState] = useState<DesignState>(() => loadFromHash<DesignState>() ?? initial);
+    const [view, setView] = useState<"editor" | "gallery">(() => getUrlView());
+    const isGallery = view === "gallery";
+
+    useEffect(() => {
+        const onPopState = () => setView(getUrlView());
+        window.addEventListener("popstate", onPopState);
+        return () => window.removeEventListener("popstate", onPopState);
+    }, []);
+
+    const goTo = (next: "editor" | "gallery") => {
+        setUrlView(next);
+        setView(next);
+    };
+
+    const [state, setState] = useState<DesignState>(() => {
+        // In gallery view we do not try to parse the hash as state.
+        if (getUrlView() === "gallery") return initial;
+        return loadFromHash<DesignState>() ?? initial;
+    });
 
     /* ----------------------------- Saved designs UI state ----------------------------- */
     const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>([]);
@@ -303,9 +386,11 @@ export default function App() {
 
     /* persist state in URL */
     useEffect(() => {
+        // Do not persist editor state into the hash while the gallery is shown.
+        if (isGallery) return;
         const t = window.setTimeout(() => saveToHash(state), 150);
         return () => window.clearTimeout(t);
-    }, [state]);
+    }, [state, isGallery]);
 
     const template = useMemo(() => REMOTES.find((r) => r.id === state.remoteId) ?? REMOTES[0], [state.remoteId]);
 
@@ -336,10 +421,28 @@ export default function App() {
             tapsEnabled: selectedExample.tapsEnabled,
         };
 
-        // overlay example icons onto current config
+        // overlay example icons + strike flags onto current config
         for (const [buttonId, iconsByTap] of Object.entries(selectedExample.buttonIcons)) {
-            const existing = next.buttonConfigs[buttonId]?.icons ?? {};
-            next.buttonConfigs[buttonId] = { icons: { ...existing, ...iconsByTap } };
+            const existingIcons = next.buttonConfigs[buttonId]?.icons ?? {};
+            const existingStrike = next.buttonConfigs[buttonId]?.strike ?? {};
+            const strikeOverlay = selectedExample.buttonStrike?.[buttonId] ?? {};
+
+            next.buttonConfigs[buttonId] = {
+                icons: { ...existingIcons, ...iconsByTap },
+                strike: { ...existingStrike, ...strikeOverlay },
+            };
+        }
+
+        // Apply strike flags even for buttons without icon overlays
+        if (selectedExample.buttonStrike) {
+            for (const [buttonId, strikeByTap] of Object.entries(selectedExample.buttonStrike)) {
+                const existingIcons = next.buttonConfigs[buttonId]?.icons ?? {};
+                const existingStrike = next.buttonConfigs[buttonId]?.strike ?? {};
+                next.buttonConfigs[buttonId] = {
+                    icons: existingIcons,
+                    strike: { ...existingStrike, ...(strikeByTap as any) },
+                };
+            }
         }
 
         // Apply example-specific options first (e.g. hide single-tap marker for Aqara factory)
@@ -449,6 +552,9 @@ export default function App() {
     /* ------------------------------ rest ----------------------------------- */
 
     const resetToDefaults = () => {
+        // Ensure we're in editor view
+        goTo("editor");
+
         // Remove the hash so it truly feels like “start from scratch”.
         window.history.replaceState(null, "", window.location.pathname + window.location.search);
 
@@ -528,496 +634,602 @@ export default function App() {
     return (
         <main className="app">
             <SiteHeader isAdmin={isAdmin} />
-            <div className="workspace">
-                <section className="controls">
-                    {/* Remote */}
-                    <fieldset>
-                        <legend>Remote</legend>
-                        <div className="modelRow">
-                            <label className="modelRow__label">
-                                Model
-                                <select
-                                    value={state.remoteId}
-                                    onChange={(e) => {
-                                        const nextRemoteId = e.target.value as any;
 
-                                        // Clear mappings when switching remotes (prevents accidental carry-over)
-                                        setState((s) => ({
-                                            ...s,
-                                            remoteId: nextRemoteId,
-                                            tapsEnabled: ["single"],
-                                            buttonConfigs: {},
-                                        }));
+            <nav className="topnav" aria-label="Primary navigation">
+                <button
+                    type="button"
+                    className={view === "editor" ? "topnav__btn topnav__btn--active" : "topnav__btn"}
+                    onClick={() => {
+                        goTo("editor");
+                        setPreviewExampleOn(false);
+                    }}
+                >
+                    Editor
+                </button>
+                <button
+                    type="button"
+                    className={view === "gallery" ? "topnav__btn topnav__btn--active" : "topnav__btn"}
+                    onClick={() => {
+                        goTo("gallery");
+                        setPreviewExampleOn(false);
+                    }}
+                >
+                    Gallery
+                </button>
+            </nav>
 
-                                        // Stop any example preview when switching remotes
-                                        setPreviewExampleOn(false);
+            <div className={isGallery ? "workspace workspace--gallery" : "workspace"}>
+                {isGallery ? (
+                    <section className="gallery" aria-label="Gallery">
+                        <header className="gallery__header">
+                            <h2 className="gallery__title">Gallery</h2>
+                            <p className="gallery__subtitle">Click a preset to open it in the editor as a starting point.</p>
+                        </header>
 
-                                        // Clear saved-design editing context (Name field etc.)
-                                        setSaveName("");
-                                        setSaveNameError("");
-                                        setActiveSavedId(null);
-                                        setLoadedSnapshot(null);
-                                        setLoadedName("");
-                                        setSelectedSavedId("");
-                                    }}
-                                >
-                                    {REMOTES.map((r) => (
-                                        <option key={r.id} value={r.id}>
-                                            {r.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-                            <div className="modelRow__thumb" aria-label="Selected remote preview">
-                                {remoteImageUrl ? <img src={remoteImageUrl} alt={`${state.remoteId} preview`} /> : <span className="modelRow__thumbFallback">No image</span>}
-                            </div>
+                        <div className="galleryGrid">
+                            {REMOTES.flatMap((r) => {
+                                const exs = r.examples ?? [];
+                                return exs.map((ex) => {
+                                    const exState = buildStateFromExample({ remoteId: r.id, example: ex });
+
+                                    return (
+                                        <button
+                                            key={`${r.id}__${ex.id}`}
+                                            type="button"
+                                            className="galleryCard"
+                                            data-remote-id={r.id}
+                                            onClick={() => {
+                                                setState(exState);
+                                                setPreviewExampleOn(false);
+                                                setSelectedExampleId(ex.id);
+                                                goTo("editor");
+                                            }}
+                                        >
+                                            <div className="galleryCard__media">
+                                                <div className="galleryThumb">
+                                                    <RemoteSvg
+                                                        template={r as any}
+                                                        state={exState}
+                                                        background="remote"
+                                                        showWatermark={showWatermark}
+                                                        watermarkText={watermarkText}
+                                                        watermarkOpacity={watermarkOpacity}
+                                                        overrides={{
+                                                            showScaleBar: false,
+                                                            showGuides: false,
+                                                            showRemoteOutline: true,
+                                                            showButtonOutlines: true,
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="galleryCard__meta">
+                                                <div className="galleryCard__title">{ex.name}</div>
+                                                <div className="galleryCard__model">{r.name}</div>
+                                                {ex.description ? <div className="galleryCard__desc">{ex.description}</div> : null}
+                                            </div>
+                                        </button>
+                                    );
+                                });
+                            })}
                         </div>
-                        <div className="row">
-                            <button type="button" onClick={resetCurrentRemote}>
-                                Reset current remote
-                            </button>
-                        </div>
-                    </fieldset>
+                    </section>
+                ) : null}
 
-                    {/* Examples (per remote) */}
-                    {examples.length ? (
+                {!isGallery ? (
+                    <section className="controls">
+                        {/* Remote */}
                         <fieldset>
-                            <legend>Examples</legend>
+                            <legend>Remote</legend>
+                            <div className="modelRow">
+                                <label className="modelRow__label">
+                                    Model
+                                    <select
+                                        value={state.remoteId}
+                                        onChange={(e) => {
+                                            const nextRemoteId = e.target.value as any;
 
-                            <label className="modelRow__label">
-                                Choose an example for this remote
-                                <select value={selectedExampleId} onChange={(e) => setSelectedExampleId(e.target.value)}>
-                                    {examples.map((ex) => (
-                                        <option key={ex.id} value={ex.id}>
-                                            {ex.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
+                                            // Clear mappings when switching remotes (prevents accidental carry-over)
+                                            setState((s) => ({
+                                                ...s,
+                                                remoteId: nextRemoteId,
+                                                tapsEnabled: ["single"],
+                                                buttonConfigs: {},
+                                            }));
 
-                            {selectedExample?.description ? <p>{selectedExample.description}</p> : null}
-
-                            <div className="row">
-                                <div className="row">
-                                    <button type="button" disabled={!selectedExample} onClick={() => setPreviewExampleOn((v) => !v)}>
-                                        {previewExampleOn ? "Stop preview" : "Preview"}
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        disabled={!selectedExample}
-                                        onClick={() => {
-                                            if (!selectedExample) return;
-
-                                            setState((s) => {
-                                                const next = { ...s, buttonConfigs: { ...s.buttonConfigs } };
-
-                                                next.tapsEnabled = selectedExample.tapsEnabled;
-
-                                                for (const [buttonId, iconsByTap] of Object.entries(selectedExample.buttonIcons)) {
-                                                    const existing = next.buttonConfigs[buttonId]?.icons ?? {};
-                                                    next.buttonConfigs[buttonId] = { icons: { ...existing, ...iconsByTap } };
-                                                }
-
-                                                // Start with current options
-                                                let nextOptions = { ...next.options };
-
-                                                // Merge example-specific options
-                                                if (selectedExample.options) {
-                                                    nextOptions = { ...nextOptions, ...selectedExample.options };
-                                                }
-
-                                                // Defaults only if not explicitly set by the example
-                                                if (selectedExample.options?.showTapMarkersAlways === undefined) {
-                                                    nextOptions.showTapMarkersAlways = true;
-                                                }
-                                                if (selectedExample.options?.showTapDividers === undefined) {
-                                                    nextOptions.showTapDividers = selectedExample.tapsEnabled.length > 1;
-                                                }
-
-                                                next.options = nextOptions;
-
-                                                return next;
-                                            });
-
-                                            // optional: once applied, stop preview
+                                            // Stop any example preview when switching remotes
                                             setPreviewExampleOn(false);
+
+                                            // Clear saved-design editing context (Name field etc.)
+                                            setSaveName("");
+                                            setSaveNameError("");
+                                            setActiveSavedId(null);
+                                            setLoadedSnapshot(null);
+                                            setLoadedName("");
+                                            setSelectedSavedId("");
                                         }}
                                     >
-                                        Apply
-                                    </button>
+                                        {REMOTES.map((r) => (
+                                            <option key={r.id} value={r.id}>
+                                                {r.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <div className="modelRow__thumb" aria-label="Selected remote preview">
+                                    {remoteImageUrl ? <img src={remoteImageUrl} alt={`${state.remoteId} preview`} /> : <span className="modelRow__thumbFallback">No image</span>}
                                 </div>
                             </div>
+                            <div className="row">
+                                <button type="button" onClick={resetCurrentRemote}>
+                                    Reset current remote
+                                </button>
+                            </div>
                         </fieldset>
-                    ) : null}
 
-                    {/* Saved designs (localStorage) */}
-                    <fieldset>
-                        <legend>Saved remotes</legend>
+                        {/* Examples (per remote) */}
+                        {examples.length ? (
+                            <fieldset>
+                                <legend>Examples</legend>
 
-                        <label className="modelRow__label">
-                            Name
-                            <input
-                                type="text"
-                                value={saveName}
-                                onChange={(e) => {
-                                    setSaveName(e.target.value);
-                                    if (saveNameError) setSaveNameError("");
-                                }}
-                                onBlur={() => {
-                                    const n = saveName.trim();
-                                    if (!n) return;
+                                <label className="modelRow__label">
+                                    Choose an example for this remote
+                                    <select value={selectedExampleId} onChange={(e) => setSelectedExampleId(e.target.value)}>
+                                        {examples.map((ex) => (
+                                            <option key={ex.id} value={ex.id}>
+                                                {ex.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
 
-                                    // If the typed name matches an existing saved design for this remote model,
-                                    // select it in the dropdown (but do not clear selection when empty).
-                                    const match = savedDesigns.find((d) => d.state.remoteId === state.remoteId && normalizeName(d.name) === normalizeName(n));
-                                    if (match) setSelectedSavedId(match.id);
-                                }}
-                                placeholder="e.g. Living room dimmer"
-                            />
-                        </label>
-                        {saveNameError ? <p style={{ margin: 0, fontSize: "0.85rem", color: "#b00020" }}>{saveNameError}</p> : null}
+                                {selectedExample?.description ? <p>{selectedExample.description}</p> : null}
 
-                        <p>
-                            <div className="row">
-                                <button type="button" onClick={saveActiveDesign} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
-                                    Save
-                                </button>
-                                <button type="button" onClick={saveAsNewDesign} disabled={!saveName.trim()}>
-                                    Save as
-                                </button>
-                            </div>
-                        </p>
-                        {activeSavedId && <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>{hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}</p>}
+                                <div className="row">
+                                    <div className="row">
+                                        <button type="button" disabled={!selectedExample} onClick={() => setPreviewExampleOn((v) => !v)}>
+                                            {previewExampleOn ? "Stop preview" : "Preview"}
+                                        </button>
 
-                        <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
-                            Your saved remotes
-                            <select value={selectedSavedId} onChange={(e) => setSelectedSavedId(e.target.value)} onFocus={refreshSavedDesigns}>
-                                <option value="">(none)</option>
-                                {savedDesigns.map((d) => (
-                                    <option key={d.id} value={d.id}>
-                                        {d.name} — {remoteNameById.get(d.state.remoteId as any) ?? d.state.remoteId}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
+                                        <button
+                                            type="button"
+                                            disabled={!selectedExample}
+                                            onClick={() => {
+                                                if (!selectedExample) return;
 
-                        <p>
-                            <div className="row">
-                                <button type="button" onClick={loadSelectedDesign} disabled={!selectedSavedId}>
-                                    Load
-                                </button>
-                                <button type="button" onClick={deleteSelectedDesign} disabled={!selectedSavedId}>
-                                    Delete
-                                </button>
-                            </div>
-                        </p>
+                                                setState((s) => {
+                                                    const next = { ...s, buttonConfigs: { ...s.buttonConfigs } };
 
-                        <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>Saved in your browser (localStorage). It remains after reloads, but will be removed if you clear site data.</p>
-                    </fieldset>
+                                                    next.tapsEnabled = selectedExample.tapsEnabled;
 
-                    {/* Options */}
-                    <fieldset>
-                        <legend>Options</legend>
-                        <div className="options">
-                            <label className="option">
+                                                    for (const [buttonId, iconsByTap] of Object.entries(selectedExample.buttonIcons)) {
+                                                        const existingIcons = next.buttonConfigs[buttonId]?.icons ?? {};
+                                                        const existingStrike = next.buttonConfigs[buttonId]?.strike ?? {};
+                                                        const strikeOverlay = selectedExample.buttonStrike?.[buttonId] ?? {};
+
+                                                        next.buttonConfigs[buttonId] = {
+                                                            icons: { ...existingIcons, ...iconsByTap },
+                                                            strike: { ...existingStrike, ...strikeOverlay },
+                                                        };
+                                                    }
+
+                                                    // Apply strike flags even for buttons without icon overlays
+                                                    if (selectedExample.buttonStrike) {
+                                                        for (const [buttonId, strikeByTap] of Object.entries(selectedExample.buttonStrike)) {
+                                                            const existingIcons = next.buttonConfigs[buttonId]?.icons ?? {};
+                                                            const existingStrike = next.buttonConfigs[buttonId]?.strike ?? {};
+                                                            next.buttonConfigs[buttonId] = {
+                                                                icons: existingIcons,
+                                                                strike: { ...existingStrike, ...(strikeByTap as any) },
+                                                            };
+                                                        }
+                                                    }
+
+                                                    // Start with current options
+                                                    let nextOptions = { ...next.options };
+
+                                                    // Merge example-specific options
+                                                    if (selectedExample.options) {
+                                                        nextOptions = { ...nextOptions, ...selectedExample.options };
+                                                    }
+
+                                                    // Defaults only if not explicitly set by the example
+                                                    if (selectedExample.options?.showTapMarkersAlways === undefined) {
+                                                        nextOptions.showTapMarkersAlways = true;
+                                                    }
+                                                    if (selectedExample.options?.showTapDividers === undefined) {
+                                                        nextOptions.showTapDividers = selectedExample.tapsEnabled.length > 1;
+                                                    }
+
+                                                    next.options = nextOptions;
+
+                                                    return next;
+                                                });
+
+                                                // optional: once applied, stop preview
+                                                setPreviewExampleOn(false);
+                                            }}
+                                        >
+                                            Apply
+                                        </button>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        ) : null}
+
+                        {/* Saved designs (localStorage) */}
+                        <fieldset>
+                            <legend>Saved remotes</legend>
+
+                            <label className="modelRow__label">
+                                Name
                                 <input
-                                    type="checkbox"
-                                    checked={o.showTapMarkersAlways}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, showTapMarkersAlways: e.target.checked },
-                                        }))
-                                    }
-                                />
-                                Show tap markers for single icon
-                            </label>
+                                    type="text"
+                                    value={saveName}
+                                    onChange={(e) => {
+                                        setSaveName(e.target.value);
+                                        if (saveNameError) setSaveNameError("");
+                                    }}
+                                    onBlur={() => {
+                                        const n = saveName.trim();
+                                        if (!n) return;
 
-                            <label className="option">
-                                <input
-                                    type="checkbox"
-                                    checked={o.showTapDividers}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, showTapDividers: e.target.checked },
-                                        }))
-                                    }
+                                        // If the typed name matches an existing saved design for this remote model,
+                                        // select it in the dropdown (but do not clear selection when empty).
+                                        const match = savedDesigns.find((d) => d.state.remoteId === state.remoteId && normalizeName(d.name) === normalizeName(n));
+                                        if (match) setSelectedSavedId(match.id);
+                                    }}
+                                    placeholder="e.g. Living room dimmer"
                                 />
-                                Show dividers for multi icons
                             </label>
+                            {saveNameError ? <p style={{ margin: 0, fontSize: "0.85rem", color: "#b00020" }}>{saveNameError}</p> : null}
 
-                            <label className="option">
-                                Tap marker style
-                                <select
-                                    value={o.tapMarkerFill}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, tapMarkerFill: e.target.value as any },
-                                        }))
-                                    }
-                                >
-                                    <option value="outline">Outline</option>
-                                    <option value="filled">Filled</option>
+                            <p>
+                                <div className="row">
+                                    <button type="button" onClick={saveActiveDesign} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
+                                        Save
+                                    </button>
+                                    <button type="button" onClick={saveAsNewDesign} disabled={!saveName.trim()}>
+                                        Save as
+                                    </button>
+                                </div>
+                            </p>
+                            {activeSavedId && <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>{hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}</p>}
+
+                            <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
+                                Your saved remotes
+                                <select value={selectedSavedId} onChange={(e) => setSelectedSavedId(e.target.value)} onFocus={refreshSavedDesigns}>
+                                    <option value="">(none)</option>
+                                    {savedDesigns.map((d) => (
+                                        <option key={d.id} value={d.id}>
+                                            {d.name} — {remoteNameById.get(d.state.remoteId as any) ?? d.state.remoteId}
+                                        </option>
+                                    ))}
                                 </select>
                             </label>
 
-                            <label className="option">
-                                <input
-                                    type="checkbox"
-                                    checked={o.showRemoteOutline}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, showRemoteOutline: e.target.checked },
-                                        }))
-                                    }
-                                />
-                                Show remote outline
-                            </label>
+                            <p>
+                                <div className="row">
+                                    <button type="button" onClick={loadSelectedDesign} disabled={!selectedSavedId}>
+                                        Load
+                                    </button>
+                                    <button type="button" onClick={deleteSelectedDesign} disabled={!selectedSavedId}>
+                                        Delete
+                                    </button>
+                                </div>
+                            </p>
 
-                            <label className="option">
-                                <input
-                                    type="checkbox"
-                                    checked={o.showButtonOutlines}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, showButtonOutlines: e.target.checked },
-                                        }))
-                                    }
-                                />
-                                Show button outlines
-                            </label>
+                            <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>Saved in your browser (localStorage). It remains after reloads, but will be removed if you clear site data.</p>
+                        </fieldset>
 
-                            <label className="option">
-                                Label outline color
-                                <input
-                                    type="color"
-                                    value={o.labelOutlineColor}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, labelOutlineColor: e.target.value },
-                                        }))
-                                    }
-                                />
-                            </label>
-
-                            <label className="option">
-                                Label outline stroke (mm)
-                                <input
-                                    type="number"
-                                    min={0.05}
-                                    max={2}
-                                    step={0.05}
-                                    value={o.labelOutlineStrokeMm}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, labelOutlineStrokeMm: Number(e.target.value) },
-                                        }))
-                                    }
-                                />
-                            </label>
-
-                            <label className="option">
-                                <input
-                                    type="checkbox"
-                                    checked={o.autoIconSizing}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, autoIconSizing: e.target.checked },
-                                        }))
-                                    }
-                                />
-                                Auto icon sizing
-                            </label>
-
-                            {!o.autoIconSizing && (
+                        {/* Options */}
+                        <fieldset>
+                            <legend>Options</legend>
+                            <div className="options">
                                 <label className="option">
-                                    Fixed icon size (mm)
                                     <input
-                                        type="number"
-                                        min={4}
-                                        max={14}
-                                        step={0.5}
-                                        value={o.fixedIconMm}
+                                        type="checkbox"
+                                        checked={o.showTapMarkersAlways}
                                         onChange={(e) =>
                                             setState((s) => ({
                                                 ...s,
-                                                options: { ...s.options, fixedIconMm: Number(e.target.value) },
+                                                options: { ...s.options, showTapMarkersAlways: e.target.checked },
+                                            }))
+                                        }
+                                    />
+                                    Show tap markers for single icon
+                                </label>
+
+                                <label className="option">
+                                    <input
+                                        type="checkbox"
+                                        checked={o.showTapDividers}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, showTapDividers: e.target.checked },
+                                            }))
+                                        }
+                                    />
+                                    Show dividers for multi icons
+                                </label>
+
+                                <label className="option">
+                                    Tap marker style
+                                    <select
+                                        value={o.tapMarkerFill}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, tapMarkerFill: e.target.value as any },
+                                            }))
+                                        }
+                                    >
+                                        <option value="outline">Outline</option>
+                                        <option value="filled">Filled</option>
+                                    </select>
+                                </label>
+
+                                <label className="option">
+                                    <input
+                                        type="checkbox"
+                                        checked={o.showRemoteOutline}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, showRemoteOutline: e.target.checked },
+                                            }))
+                                        }
+                                    />
+                                    Show remote outline
+                                </label>
+
+                                <label className="option">
+                                    <input
+                                        type="checkbox"
+                                        checked={o.showButtonOutlines}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, showButtonOutlines: e.target.checked },
+                                            }))
+                                        }
+                                    />
+                                    Show button outlines
+                                </label>
+
+                                <label className="option">
+                                    Label outline color
+                                    <input
+                                        type="color"
+                                        value={o.labelOutlineColor}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, labelOutlineColor: e.target.value },
                                             }))
                                         }
                                     />
                                 </label>
-                            )}
 
-                            <label className="option">
-                                <input
-                                    type="checkbox"
-                                    checked={o.showScaleBar}
-                                    onChange={(e) =>
-                                        setState((s) => ({
-                                            ...s,
-                                            options: { ...s.options, showScaleBar: e.target.checked },
-                                        }))
-                                    }
-                                />
-                                Show 1 cm scale bar (print check)
-                            </label>
-                        </div>
-                    </fieldset>
+                                <label className="option">
+                                    Label outline stroke (mm)
+                                    <input
+                                        type="number"
+                                        min={0.05}
+                                        max={2}
+                                        step={0.05}
+                                        value={o.labelOutlineStrokeMm}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, labelOutlineStrokeMm: Number(e.target.value) },
+                                            }))
+                                        }
+                                    />
+                                </label>
 
-                    <fieldset>
-                        <legend>Share</legend>
+                                <label className="option">
+                                    <input
+                                        type="checkbox"
+                                        checked={o.autoIconSizing}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, autoIconSizing: e.target.checked },
+                                            }))
+                                        }
+                                    />
+                                    Auto icon sizing
+                                </label>
 
-                        <p className="share">
-                            <button type="button" onClick={copyShareLink}>
-                                Copy share link
-                            </button>
-                            {shareStatus === "copied" && (
-                                <span className="share__status" role="status">
-                                    Copied!
-                                </span>
-                            )}
-                        </p>
+                                {!o.autoIconSizing && (
+                                    <label className="option">
+                                        Fixed icon size (mm)
+                                        <input
+                                            type="number"
+                                            min={4}
+                                            max={14}
+                                            step={0.5}
+                                            value={o.fixedIconMm}
+                                            onChange={(e) =>
+                                                setState((s) => ({
+                                                    ...s,
+                                                    options: { ...s.options, fixedIconMm: Number(e.target.value) },
+                                                }))
+                                            }
+                                        />
+                                    </label>
+                                )}
 
-                        {shareStatus === "failed" && (
-                            <div className="share__fallback">
-                                <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
-                                <input className="share__input" type="text" readOnly value={getShareUrl()} onFocus={(e) => e.currentTarget.select()} />
+                                <label className="option">
+                                    <input
+                                        type="checkbox"
+                                        checked={o.showScaleBar}
+                                        onChange={(e) =>
+                                            setState((s) => ({
+                                                ...s,
+                                                options: { ...s.options, showScaleBar: e.target.checked },
+                                            }))
+                                        }
+                                    />
+                                    Show 1 cm scale bar (print check)
+                                </label>
                             </div>
-                        )}
+                        </fieldset>
 
-                        <p>
-                            <button type="button" onClick={resetToDefaults}>
-                                Start from scratch
-                            </button>
-                        </p>
-                    </fieldset>
-
-                    <fieldset>
-                        <legend>Export</legend>
-
-                        <p>
-                            <button onClick={exportRemoteSvg}>Export as SVG</button>
-                        </p>
-                    </fieldset>
-
-                    {/* Export (admin only) */}
-                    {isAdmin ? (
                         <fieldset>
-                            <legend>Admin Export</legend>
+                            <legend>Share</legend>
+
+                            <p className="share">
+                                <button type="button" onClick={copyShareLink}>
+                                    Copy share link
+                                </button>
+                                {shareStatus === "copied" && (
+                                    <span className="share__status" role="status">
+                                        Copied!
+                                    </span>
+                                )}
+                            </p>
+
+                            {shareStatus === "failed" && (
+                                <div className="share__fallback">
+                                    <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
+                                    <input className="share__input" type="text" readOnly value={getShareUrl()} onFocus={(e) => e.currentTarget.select()} />
+                                </div>
+                            )}
+
+                            <p>
+                                <button type="button" onClick={resetToDefaults}>
+                                    Start from scratch
+                                </button>
+                            </p>
+                        </fieldset>
+
+                        <fieldset>
+                            <legend>Export</legend>
 
                             <p>
                                 <button onClick={exportRemoteSvg}>Export as SVG</button>
                             </p>
-
-                            <div className="exportRow">
-                                <button onClick={exportZip} disabled={isZipping}>
-                                    {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
-                                </button>
-
-                                <label className="exportRow__label">
-                                    DPI
-                                    <select value={dpi} onChange={(e) => setDpi(Number(e.target.value))}>
-                                        <option value={203}>203</option>
-                                        <option value={300}>300</option>
-                                    </select>
-                                </label>
-                            </div>
                         </fieldset>
-                    ) : null}
 
-                    {/* Buttons */}
-                    <section>
-                        <h2>Buttons</h2>
-                        {buttonIds.map((id) => (
-                            <section key={id} className="button-config">
-                                <h3>{id.toUpperCase()} Button</h3>
-                                {TAP_ORDER.map((tap) => (
-                                    <div key={tap}>
-                                        <h4>{tapLabel(tap)}</h4>
-                                        <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => setIcon(id, tap, v)} />
-                                        <p>
-                                            {(() => {
-                                                const iconName = state.buttonConfigs[id]?.icons?.[tap];
-                                                if (!iconName) return null;
+                        {/* Export (admin only) */}
+                        {isAdmin ? (
+                            <fieldset>
+                                <legend>Admin Export</legend>
 
-                                                // Hide strikethrough toggle if the icon already represents an "off" state
-                                                if (typeof iconName === "string" && iconName.toLowerCase().includes("off")) return null;
+                                <p>
+                                    <button onClick={exportRemoteSvg}>Export as SVG</button>
+                                </p>
 
-                                                return (
-                                                    <label className="option">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
-                                                            onChange={(e) => {
-                                                                const checked = e.target.checked;
-                                                                setState((s) => {
-                                                                    const prev = s.buttonConfigs[id] ?? { icons: {} };
-                                                                    const prevStrike = prev.strike ?? {};
-                                                                    return {
-                                                                        ...s,
-                                                                        buttonConfigs: {
-                                                                            ...s.buttonConfigs,
-                                                                            [id]: {
-                                                                                ...prev,
-                                                                                strike: { ...prevStrike, [tap]: checked },
+                                <div className="exportRow">
+                                    <button onClick={exportZip} disabled={isZipping}>
+                                        {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
+                                    </button>
+
+                                    <label className="exportRow__label">
+                                        DPI
+                                        <select value={dpi} onChange={(e) => setDpi(Number(e.target.value))}>
+                                            <option value={203}>203</option>
+                                            <option value={300}>300</option>
+                                        </select>
+                                    </label>
+                                </div>
+                            </fieldset>
+                        ) : null}
+
+                        {/* Buttons */}
+                        <section>
+                            <h2>Buttons</h2>
+                            {buttonIds.map((id) => (
+                                <section key={id} className="button-config">
+                                    <h3>{id.toUpperCase()} Button</h3>
+                                    {TAP_ORDER.map((tap) => (
+                                        <div key={tap}>
+                                            <h4>{tapLabel(tap)}</h4>
+                                            <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => setIcon(id, tap, v)} />
+                                            <p>
+                                                {(() => {
+                                                    const iconName = state.buttonConfigs[id]?.icons?.[tap];
+                                                    if (!iconName) return null;
+
+                                                    // Hide strikethrough toggle if the icon already represents an "off" state
+                                                    if (typeof iconName === "string" && iconName.toLowerCase().includes("off")) return null;
+
+                                                    return (
+                                                        <label className="option">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
+                                                                onChange={(e) => {
+                                                                    const checked = e.target.checked;
+                                                                    setState((s) => {
+                                                                        const prev = s.buttonConfigs[id] ?? { icons: {} };
+                                                                        const prevStrike = prev.strike ?? {};
+                                                                        return {
+                                                                            ...s,
+                                                                            buttonConfigs: {
+                                                                                ...s.buttonConfigs,
+                                                                                [id]: {
+                                                                                    ...prev,
+                                                                                    strike: { ...prevStrike, [tap]: checked },
+                                                                                },
                                                                             },
-                                                                        },
-                                                                    };
-                                                                });
-                                                            }}
-                                                        />
-                                                        Strikethrough (manual “off”)
-                                                    </label>
-                                                );
-                                            })()}
-                                        </p>
-                                    </div>
-                                ))}
-                            </section>
-                        ))}
+                                                                        };
+                                                                    });
+                                                                }}
+                                                            />
+                                                            Strikethrough (manual “off”)
+                                                        </label>
+                                                    );
+                                                })()}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </section>
+                            ))}
+                        </section>
                     </section>
-                </section>
+                ) : null}
 
                 {/* Preview */}
-                <aside className="preview">
-                    <RemoteSvg template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} />
-                </aside>
+                {!isGallery ? (
+                    <aside className="preview">
+                        <RemoteSvg template={template} state={previewState} background="white" showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} />
+                    </aside>
+                ) : null}
 
                 {/* Help */}
-                <section className="help" aria-label="Icon help">
-                    <details className="help__details">
-                        <summary>Icon help & sources</summary>
-                        <div className="help__content">
-                            <p>
-                                This app supports all Material Design Icons (MDI). Browse and search icons here:{" "}
-                                <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">
-                                    pictogrammers.com/library/mdi
-                                </a>
-                                .
-                            </p>
+                {!isGallery ? (
+                    <section className="help" aria-label="Icon help">
+                        <details className="help__details">
+                            <summary>Icon help & sources</summary>
+                            <div className="help__content">
+                                <p>
+                                    This app supports all Material Design Icons (MDI). Browse and search icons here:{" "}
+                                    <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">
+                                        pictogrammers.com/library/mdi
+                                    </a>
+                                    .
+                                </p>
 
-                            <p>
-                                Hue icon previews are sourced from the <code>hass-hue-icons</code> project:{" "}
-                                <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
-                                    github.com/arallsopp/hass-hue-icons
-                                </a>
-                                .
-                            </p>
+                                <p>
+                                    Hue icon previews are sourced from the <code>hass-hue-icons</code> project:{" "}
+                                    <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
+                                        github.com/arallsopp/hass-hue-icons
+                                    </a>
+                                    .
+                                </p>
 
-                            <p className="help__note">
-                                Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.
-                            </p>
-                        </div>
-                    </details>
-                </section>
+                                <p className="help__note">
+                                    Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.
+                                </p>
+                            </div>
+                        </details>
+                    </section>
+                ) : null}
             </div>
 
             {/* Hidden export renderers */}
@@ -1025,6 +1237,7 @@ export default function App() {
                 <RemoteSvg
                     template={template}
                     state={state}
+                    background="white"
                     showWatermark={showWatermark}
                     watermarkText={watermarkText}
                     watermarkOpacity={watermarkOpacity}

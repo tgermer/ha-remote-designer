@@ -29,6 +29,7 @@ export type RemoteExample = {
     description?: string;
     tapsEnabled: TapType[];
     buttonIcons: Record<string, Partial<Record<TapType, string>>>;
+    buttonStrike?: Record<string, Partial<Record<TapType, boolean>>>;
     options?: Partial<DesignOptions>;
 };
 
@@ -176,6 +177,39 @@ export const REMOTES: RemoteTemplate[] = [
 
             // Bottom rocker: outer corners rounded, top corners square
             { id: "bottom", xMm: 3, yMm: 35.25, wMm: 34, hMm: 32.25, r: { tl: 0, tr: 0, br: 40, bl: 40 } },
+        ],
+        examples: [
+            {
+                id: "bilresa_scene_light",
+                name: "Scenes & Light Control",
+                description: "Single tap for automatic lighting, long press for scenes and accent lighting",
+                tapsEnabled: ["single", "long"],
+                buttonIcons: {
+                    top: {
+                        single: "mdi:lightbulb-auto",
+                        long: "mdi:palette",
+                    },
+                    bottom: {
+                        single: "mdi:lightbulb-off-outline",
+                        long: "hue:ensis",
+                    },
+                },
+                buttonStrike: {
+                    bottom: {
+                        long: true,
+                    },
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    autoIconSizing: true,
+                    fixedIconMm: 8,
+                    tapMarkerFill: "outline",
+                    labelOutlineColor: "#757575",
+                },
+            },
         ],
     },
     {
