@@ -97,32 +97,35 @@ main {
   gap: 0.75rem;
 }
 
-.galleryCard {
+ .galleryCard {
   border: 1px solid rgba(0,0,0,.12);
   border-radius: 12px;
   overflow: hidden;
-  background: white;
+  background: rgba(216, 191, 216, 0.2);
   padding: 0;
   cursor: pointer;
   text-align: left;
-}
-
-.galleryCard:hover {
-  background: #fcfcfc;
-}
-
-/* Media area: white background works for all remotes (no grey mismatch) */
-.galleryCard__media {
-  background: rgba(216, 191, 216, 0.2);
-  padding: 0.75rem;
   display: flex;
-  justify-content: center;
-  border-bottom: 1px solid #eee;
+  flex-direction: column;
+  min-height: 0;
 }
 
-/* Thumbnail: 60% size + rounded clipping so square SVG background doesn't show at corners */
-.galleryThumb {
-  width: 50%;
+ .galleryCard:hover {
+  background: rgba(216, 191, 216, 0.28);
+}
+
+ .galleryCard__media {
+  background: transparent;
+  padding: 1rem;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ .galleryThumb {
+  width: 30%;
   margin: 0 auto;
   overflow: hidden;
   background: transparent;
@@ -133,13 +136,17 @@ main {
   height: auto;
 }
 
-/* Aqara W100: align thumb to the right (buttons are on the right side) */
-.galleryCard[data-remote-id="aqara_w100"] .galleryThumb, .galleryCard[data-remote-id="HM-PB-6-WM55"] .galleryThumb  {
-  width: 80%;
+/* Aqara W100 and HM-PB-6-WM55: larger thumb */
+.galleryCard[data-remote-id="aqara_w100"] .galleryThumb,
+.galleryCard[data-remote-id="HM-PB-6-WM55"] .galleryThumb {
+  width: 60%;
 }
 
 .galleryCard__meta {
+  background: #fff;
   padding: 0.75rem;
+  margin: 0;
+  border-top: 1px solid rgba(0,0,0,.06);
 }
 
 .galleryCard__title {
