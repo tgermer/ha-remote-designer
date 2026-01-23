@@ -134,7 +134,7 @@ main {
 }
 
 /* Aqara W100: align thumb to the right (buttons are on the right side) */
-.galleryCard[data-remote-id="aqara_w100"] .galleryThumb {
+.galleryCard[data-remote-id="aqara_w100"] .galleryThumb, .galleryCard[data-remote-id="HM-PB-6-WM55"] .galleryThumb  {
   width: 80%;
 }
 

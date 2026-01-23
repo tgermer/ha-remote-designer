@@ -1,6 +1,6 @@
 import type { TapType, DesignOptions } from "./types";
 
-export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100";
+export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100" | "HM-PB-6-WM55";
 
 export type CornerRadiiMm = {
     tl?: number;
@@ -243,7 +243,76 @@ export const REMOTES: RemoteTemplate[] = [
                     minus: { single: "mdi:minus" },
                 },
             },
+            {
+                id: "office",
+                name: "Office Switch",
+                description: "Desk lighting control with brightness, color scenes and full off.",
+                tapsEnabled: ["single", "long"],
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                },
+                buttonIcons: {
+                    plus: { single: "mdi:plus", long: "mdi:palette" },
+                    center: { single: "mdi:desk", long: "mdi:desk" },
+                    minus: { single: "mdi:lightbulb-group-off-outline" },
+                },
+                buttonStrike: {
+                    minus: {
+                        long: true,
+                    },
+                },
+            },
         ],
         defaultExampleId: "factory",
+    },
+    {
+        id: "HM-PB-6-WM55",
+        name: "Homematic Funk-Wandsender 6fach",
+        // Placeholder measurements — adjust after measuring the real device
+        widthMm: 55,
+        heightMm: 55,
+        cornerMm: 2,
+        buttons: [
+            { id: "top_left", xMm: 13.5, yMm: 0, wMm: 14, hMm: 18, rMm: 0 },
+            { id: "top_right", xMm: 27.5, yMm: 0, wMm: 14, hMm: 18, rMm: 0 },
+
+            { id: "center_left", xMm: 13.5, yMm: 18.33, wMm: 14, hMm: 19, rMm: 0 },
+            { id: "center_right", xMm: 27.5, yMm: 18.33, wMm: 14, hMm: 19, rMm: 0 },
+
+            { id: "bottom_left", xMm: 13.5, yMm: 37, wMm: 14, hMm: 18, rMm: 0 },
+            { id: "bottom_right", xMm: 27.5, yMm: 37, wMm: 14, hMm: 18, rMm: 0 },
+        ],
+        examples: [
+            {
+                id: "candy1",
+                name: "Home Automation Master Switch",
+                description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
+                tapsEnabled: ["single"],
+
+                buttonIcons: {
+                    top_left: { single: "mdi:lightbulb-group-outline" },
+                    top_right: { single: "mdi:lightbulb-group-off-outline" },
+                    center_left: { single: "mdi:window-closed-variant" },
+                    center_right: { single: "mdi:pool" },
+                    bottom_left: { single: "mdi:weather-sunny" },
+                    bottom_right: { single: "mdi:weather-night" },
+                },
+
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showGuides: false,
+                    autoIconSizing: false,
+                    fixedIconMm: 6.5,
+                    tapMarkerFill: "outline",
+                    labelOutlineColor: "#464646",
+                    labelOutlineStrokeMm: 0.2,
+                    // showScaleBar: false, // meist nicht als Example speichern
+                },
+            },
+        ],
     },
 ];
