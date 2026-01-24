@@ -5,8 +5,8 @@ import { RemoteSvg } from "../render/RemoteSvg";
 import { ButtonLabelSvg } from "../render/buttonLabelSvg";
 
 type HiddenExportRenderersProps = {
-    exportRemoteHostRef: RefObject<HTMLDivElement>;
-    exportButtonHostRef: RefObject<HTMLDivElement>;
+    exportRemoteHostRef: RefObject<HTMLDivElement | null>;
+    exportButtonHostRef: RefObject<HTMLDivElement | null>;
     template: RemoteTemplate;
     state: DesignState;
     exportButton: ButtonDef | null;

@@ -512,7 +512,7 @@ export default function App() {
         setIsZipping(false);
     };
 
-    const exportButton = exportButtonId ? template.buttons.find((b) => b.id === exportButtonId) : null;
+    const exportButton = exportButtonId ? template.buttons.find((b) => b.id === exportButtonId) ?? null : null;
 
     const handleRemoteChange = (nextRemoteId: DesignState["remoteId"]) => {
         // Clear mappings when switching remotes (prevents accidental carry-over)
