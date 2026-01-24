@@ -36,8 +36,9 @@ function IconPreview({ icon }: { icon: string }) {
 
 function exportKeysToHaNames(): string[] {
     // Convert @mdi/js export keys like "mdiLightbulbOutline" -> "mdi:lightbulb-outline"
-    return Object.keys(MDIJS)
-        .filter((k) => k.startsWith("mdi") && typeof (MDIJS as any)[k] === "string")
+    const mdi = MDIJS as Record<string, unknown>;
+    return Object.keys(mdi)
+        .filter((k) => k.startsWith("mdi") && typeof mdi[k] === "string")
         .map(
             (k) =>
                 "mdi:" +
@@ -50,7 +51,8 @@ function exportKeysToHaNames(): string[] {
 }
 
 export function IconPicker({ value, onChange, placeholder }: { value: string | undefined; onChange: (next: string | undefined) => void; placeholder?: string }) {
-    const [text, setText] = useState(value ?? "");
+    const [draft, setDraft] = useState(value ?? "");
+    const [isEditing, setIsEditing] = useState(false);
 
     // Which browser panel is open: 'mdi' | 'hue' | null
     const [browser, setBrowser] = useState<"mdi" | "hue" | null>(null);
@@ -77,27 +79,21 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         return () => window.removeEventListener("iconpicker:focus", handler as EventListener);
     }, [instanceId]);
 
-    useEffect(() => {
-        setText(value ?? "");
-        // If external value is cleared, also close panels for a clean feel.
-        if (!value) setBrowser(null);
-    }, [value]);
-
     const effectivePlaceholder = placeholder ?? (FEATURES.HUE_ICONS ? "mdi:... or hue:..." : "mdi:...");
 
     const valid = useMemo(() => {
-        const t = text.trim();
+        const t = (isEditing ? draft : value ?? "").trim();
         if (!t) return true;
         return isSupportedHaIcon(t);
-    }, [text]);
+    }, [draft, isEditing, value]);
 
     // Build full MDI list once
     const allMdiIcons = useMemo(() => exportKeysToHaNames(), []);
 
     // Auto-open panel based on early prefix while typing (m/mdi... or h/hue...)
-    useEffect(() => {
+    const maybeAutoOpenBrowser = (nextText: string) => {
         if (!hasInteracted) return;
-        const t = text.trim().toLowerCase();
+        const t = nextText.trim().toLowerCase();
 
         // Early open on single-letter prefixes
         if (t === "h" && FEATURES.HUE_ICONS) {
@@ -128,7 +124,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
             setBrowser("mdi");
             return;
         }
-    }, [text, hasInteracted]);
+    };
 
     const mdiFiltered = useMemo(() => {
         const q = mdiQuery.trim().toLowerCase();
@@ -150,26 +146,39 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         return allHueIcons.filter((x) => x.toLowerCase().includes(q));
     }, [hueQuery, allHueIcons]);
 
-    const applyCurrent = () => onChange(text.trim() ? text.trim() : undefined);
+    const currentText = isEditing ? draft : value ?? "";
+
+    const applyCurrent = () => {
+        const trimmed = currentText.trim();
+        onChange(trimmed ? trimmed : undefined);
+        setIsEditing(false);
+    };
 
     return (
         <div className="iconpicker">
             <div className="iconpicker__row">
                 <input
                     className="iconpicker__input"
-                    value={text}
+                    value={currentText}
                     onChange={(e) => {
                         setHasInteracted(true);
-                        setText(e.target.value);
+                        setIsEditing(true);
+                        setDraft(e.target.value);
+                        maybeAutoOpenBrowser(e.target.value);
                     }}
                     onFocus={() => {
                         setHasInteracted(true);
+                        setIsEditing(true);
+                        setDraft(value ?? "");
                         window.dispatchEvent(new CustomEvent("iconpicker:focus", { detail: instanceId }));
 
-                        const t = text.trim().toLowerCase();
+                        const t = (value ?? "").trim().toLowerCase();
                         // If user has already started with a hint, open the matching browser.
                         if ((t === "h" || t.startsWith("hue")) && FEATURES.HUE_ICONS) setBrowser("hue");
                         else if (t === "m" || t.startsWith("mdi")) setBrowser("mdi");
+                    }}
+                    onBlur={() => {
+                        setIsEditing(false);
                     }}
                     placeholder={effectivePlaceholder}
                     aria-invalid={!valid}
@@ -206,20 +215,22 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     className="iconpicker__btn"
                     onClick={() => {
                         setHasInteracted(true);
-                        setText("");
+                        setIsEditing(true);
+                        setDraft("");
                         setBrowser(null);
                         setMdiQuery("");
                         setHueQuery("");
                         onChange(undefined);
+                        setIsEditing(false);
                     }}
-                    disabled={!value && !text.trim()}
+                    disabled={!value && !currentText.trim()}
                 >
                     Delete
                 </button>
             </div>
 
             <div className="iconpicker__row iconpicker__row--secondary">
-                <div className="iconpicker__preview">{text.trim() ? <IconPreview icon={text.trim()} /> : null}</div>
+                <div className="iconpicker__preview">{currentText.trim() ? <IconPreview icon={currentText.trim()} /> : null}</div>
 
                 <button type="button" className="iconpicker__btn" onClick={applyCurrent} disabled={!valid}>
                     Apply
@@ -263,7 +274,8 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                                 type="button"
                                 className="iconpicker__tile"
                                 onClick={() => {
-                                    setText(icon);
+                                    setDraft(icon);
+                                    setIsEditing(false);
                                     onChange(icon);
                                 }}
                                 title={icon}
@@ -303,7 +315,8 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                                 type="button"
                                 className="iconpicker__tile"
                                 onClick={() => {
-                                    setText(icon);
+                                    setDraft(icon);
+                                    setIsEditing(false);
                                     onChange(icon);
                                 }}
                                 title={icon}

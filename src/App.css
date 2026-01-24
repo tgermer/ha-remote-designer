@@ -2,6 +2,10 @@
   color-scheme: light;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   color: #2F2F4F;
   background-color: thistle;
@@ -36,7 +40,7 @@ main {
 .workspace {
   display: grid;
   /* Keep preview at its natural size (no shrinking). */
-  grid-template-columns: minmax(0, 500px) max-content minmax(0, 360px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
   gap: 1rem;
   align-items: start;
 }
@@ -56,19 +60,30 @@ main {
   grid-column: 1 / -1;
   display: flex;
   gap: 0.5rem;
-  padding: 0 1rem;
+  padding: 0.25rem 1rem 0.75rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(47, 47, 79, 0.15);
 }
 
-.topnav__btn {
-  padding: 0.4rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid #ccc;
-  background: #f7f7f7;
+.topnav__link {
+  padding: 0.25rem 0;
+  text-decoration: none;
+  color: #2F2F4F;
+  border-bottom: 2px solid transparent;
+  font-weight: 500;
 }
 
-.topnav__btn--active {
-  background: #e9e9ff;
-  border-color: #bdbde6;
+.topnav__link:visited {
+  color: #2F2F4F;
+}
+
+.topnav__link:hover {
+  border-bottom-color: rgba(47, 47, 79, 0.3);
+}
+
+.topnav__link--active {
+  border-bottom-color: #2F2F4F;
+  font-weight: 700;
 }
 
 /* Gallery thumbnails: render RemoteSvg smaller without affecting layout */
@@ -87,6 +102,19 @@ main {
 }
 
 .gallery__subtitle {
+  margin: 0;
+  opacity: 0.85;
+}
+
+.editor__header {
+  margin-bottom: 0.75rem;
+}
+
+.editor__title {
+  margin: 0 0 0.35rem;
+}
+
+.editor__subtitle {
   margin: 0;
   opacity: 0.85;
 }
@@ -172,10 +200,25 @@ main {
   min-height: 0;
 }
 
+.controlsLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.controlsLayout__column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.controlsLayout__full {
+  grid-column: 1 / -1;
+}
+
 /* Preview */
 .preview {
-  position: sticky;
-  top: 1rem;
   align-self: start;
   background: white;
   border: 1px dashed #bbb;
@@ -185,6 +228,15 @@ main {
   overflow: auto;
   justify-self: start;
   width: max-content;
+}
+
+.rightRail {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  position: sticky;
+  top: 1rem;
+  align-self: start;
 }
 /* Prevent SVG in preview from auto-scaling down, keep intrinsic size */
 .preview svg {
@@ -551,6 +603,10 @@ button:disabled {
   .workspace {
     grid-template-columns: 1fr;
     overflow-x: visible;
+  }
+
+  .controlsLayout {
+    grid-template-columns: 1fr;
   }
 
   .preview,

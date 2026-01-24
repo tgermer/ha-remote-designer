@@ -1,4 +1,4 @@
-import type { RemoteTemplate } from "../app/remotes";
+import type { ButtonDef, RemoteTemplate } from "../app/remotes";
 import { TAP_ORDER, type DesignState, type TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 
@@ -22,7 +22,7 @@ function roundedRectPath(x: number, y: number, w: number, h: number, r: CornerRa
     return [`M ${x0 + tl} ${y0}`, `H ${x1 - tr}`, tr ? `A ${tr} ${tr} 0 0 1 ${x1} ${y0 + tr}` : `L ${x1} ${y0}`, `V ${y1 - br}`, br ? `A ${br} ${br} 0 0 1 ${x1 - br} ${y1}` : `L ${x1} ${y1}`, `H ${x0 + bl}`, bl ? `A ${bl} ${bl} 0 0 1 ${x0} ${y1 - bl}` : `L ${x0} ${y1}`, `V ${y0 + tl}`, tl ? `A ${tl} ${tl} 0 0 1 ${x0 + tl} ${y0}` : `L ${x0} ${y0}`, "Z"].join(" ");
 }
 
-function getButtonRadiiMm(button: any, squareButtons?: boolean): CornerRadii {
+function getButtonRadiiMm(button: Pick<ButtonDef, "rMm" | "r">, squareButtons?: boolean): CornerRadii {
     if (squareButtons) return { tl: 0, tr: 0, br: 0, bl: 0 };
 
     const uni = typeof button.rMm === "number" ? button.rMm : 0;
@@ -69,7 +69,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
     const outlineColor = options.labelOutlineColor ?? "#ccc";
     const outlineStrokeMm = typeof options.labelOutlineStrokeMm === "number" ? options.labelOutlineStrokeMm : 0.1;
 
-    const showScaleBar = (options as any).showScaleBar === true;
+    const showScaleBar = options.showScaleBar === true;
     // Extra bottom space for the 1 cm scale bar + text (export only)
     const extraBottomMm = showScaleBar ? 16 : 0;
     const canvasHeightMm = template.heightMm + extraBottomMm;

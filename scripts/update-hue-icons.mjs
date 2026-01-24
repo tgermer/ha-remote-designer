@@ -1,6 +1,5 @@
-// Ausführen mit: node scripts/update-hue-icons.mjs
-
 #!/usr/bin/env node
+// Ausführen mit: node scripts/update-hue-icons.mjs
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
