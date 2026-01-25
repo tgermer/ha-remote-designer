@@ -1,6 +1,6 @@
 import type { TapType, DesignOptions } from "./types";
 
-export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100" | "HM-PB-6-WM55";
+export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100" | "HM-PB-6-WM55" | "tuya_ts0044" | "enocean_ptm_215ze";
 
 export type CornerRadiiMm = {
     tl?: number;
@@ -36,6 +36,9 @@ export type RemoteExample = {
 export type RemoteTemplate = {
     id: RemoteId;
     name: string;
+    isDraft?: boolean;
+    productIds?: string[];
+    links?: { label: string; url: string }[];
     widthMm: number;
     heightMm: number;
     cornerMm: number;
@@ -314,5 +317,98 @@ export const REMOTES: RemoteTemplate[] = [
                 },
             },
         ],
+    },
+    {
+        id: "tuya_ts0044",
+        name: "MOES 4 Button Scene (TS0044)",
+        isDraft: true,
+        productIds: ["TS0044", "TS0044_1"],
+        links: [
+            { label: "Zigbee2MQTT", url: "https://www.zigbee2mqtt.io/devices/TS0044.html" },
+            // { label: "Manufacturer", url: "https://moeshouse.com/products/zigbee-4-gang-scene-remote" },
+        ],
+        // Placeholder measurements — adjust after measuring the real device
+        widthMm: 86,
+        heightMm: 86,
+        cornerMm: 6,
+        buttons: [
+            { id: "top_left", xMm: 4, yMm: 4, wMm: 39, hMm: 39, r: { tl: 3, tr: 0, br: 0, bl: 0 } },
+            { id: "top_right", xMm: 44, yMm: 4, wMm: 39, hMm: 39, r: { tl: 0, tr: 3, br: 0, bl: 0 } },
+            { id: "bottom_left", xMm: 4, yMm: 44, wMm: 39, hMm: 39, r: { tl: 0, tr: 0, br: 0, bl: 3 } },
+            { id: "bottom_right", xMm: 44, yMm: 44, wMm: 39, hMm: 39, r: { tl: 0, tr: 0, br: 3, bl: 0 } },
+        ],
+        examples: [
+            {
+                id: "default",
+                name: "Groups & Scene",
+                description: "Single tap: group on/off on the left, scene on the right.",
+                tapsEnabled: ["single"],
+                buttonIcons: {
+                    top_left: { single: "mdi:lightbulb-group" },
+                    bottom_left: { single: "mdi:lightbulb-group-off-outline" },
+                    top_right: { single: "mdi:palette" },
+                    bottom_right: { single: "mdi:lightbulb-outline" },
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showGuides: false,
+                    autoIconSizing: true,
+                    fixedIconMm: 6.5,
+                    tapMarkerFill: "outline",
+                    labelOutlineColor: "#464646",
+                    labelOutlineStrokeMm: 0.2,
+                    // showScaleBar: false, // meist nicht als Example speichern
+                },
+            },
+        ],
+        defaultExampleId: "default",
+    },
+    {
+        id: "enocean_ptm_215ze",
+        name: "EnOcean PTM 215ZE (module)",
+        isDraft: true,
+        productIds: ["PTM 215ZE", "PTM 215Z"],
+        links: [{ label: "Zigbee2MQTT", url: "https://www.zigbee2mqtt.io/devices/PTM_215ZE.html" }],
+        // Placeholder measurements — depends on the chosen rocker/faceplate
+        widthMm: 86,
+        heightMm: 86,
+        cornerMm: 4,
+        buttons: [
+            { id: "top_left", xMm: 8, yMm: 8, wMm: 32, hMm: 32, rMm: 2 },
+            { id: "bottom_left", xMm: 8, yMm: 46, wMm: 32, hMm: 32, rMm: 2 },
+            { id: "top_right", xMm: 46, yMm: 8, wMm: 32, hMm: 32, rMm: 2 },
+            { id: "bottom_right", xMm: 46, yMm: 46, wMm: 32, hMm: 32, rMm: 2 },
+        ],
+        examples: [
+            {
+                id: "default",
+                name: "Module placeholder",
+                description: "Layout depends on the chosen rocker/cover.",
+                tapsEnabled: ["single", "double", "long"],
+                buttonIcons: {
+                    top_left: { single: "mdi:roller-shade" },
+                    bottom_left: { single: "mdi:roller-shade-closed" },
+                    top_right: { single: "mdi:arrow-up" },
+                    bottom_right: { single: "mdi:arrow-down" },
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showGuides: false,
+                    autoIconSizing: true,
+                    fixedIconMm: 6.5,
+                    tapMarkerFill: "outline",
+                    labelOutlineColor: "#464646",
+                    labelOutlineStrokeMm: 0.2,
+                    // showScaleBar: false, // meist nicht als Example speichern
+                },
+            },
+        ],
+        defaultExampleId: "default",
     },
 ];
