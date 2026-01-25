@@ -10,6 +10,8 @@ type HiddenExportRenderersProps = {
     template: RemoteTemplate;
     state: DesignState;
     exportButton: ButtonDef | null;
+    labelWidthMm: number;
+    labelHeightMm: number;
     showScaleBar: boolean;
     showWatermark: boolean;
     watermarkText: string;
@@ -17,7 +19,7 @@ type HiddenExportRenderersProps = {
 };
 
 export function HiddenExportRenderers(props: HiddenExportRenderersProps) {
-    const { exportRemoteHostRef, exportButtonHostRef, template, state, exportButton, showScaleBar, showWatermark, watermarkText, watermarkOpacity } = props;
+    const { exportRemoteHostRef, exportButtonHostRef, template, state, exportButton, labelWidthMm, labelHeightMm, showScaleBar, showWatermark, watermarkText, watermarkOpacity } = props;
 
     return (
         <>
@@ -44,8 +46,8 @@ export function HiddenExportRenderers(props: HiddenExportRenderersProps) {
                     <ButtonLabelSvg
                         state={state}
                         button={exportButton}
-                        labelWidthMm={40}
-                        labelHeightMm={30}
+                        labelWidthMm={labelWidthMm}
+                        labelHeightMm={labelHeightMm}
                         showWatermark={showWatermark}
                         watermarkText={watermarkText}
                         watermarkOpacity={watermarkOpacity}

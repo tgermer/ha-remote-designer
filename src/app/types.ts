@@ -24,6 +24,15 @@ export type DesignOptions = {
 
     labelOutlineColor: string;
     labelOutlineStrokeMm: number;
+
+    labelWidthMm: number;
+    labelHeightMm: number;
+    labelCornerMm: number;
+    labelCount: number;
+    sheetSize: "A4" | "Letter";
+    sheetMarginXMm: number;
+    sheetMarginYMm: number;
+    sheetGapMm: number;
 };
 
 export type DesignState = {

@@ -1,6 +1,6 @@
 import type { TapType, DesignOptions } from "./types";
 
-export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100" | "HM-PB-6-WM55" | "tuya_ts0044" | "enocean_ptm_215ze";
+export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100" | "HM-PB-6-WM55" | "tuya_ts0044" | "enocean_ptm_215ze" | "generic";
 
 export type CornerRadiiMm = {
     tl?: number;
@@ -36,7 +36,9 @@ export type RemoteExample = {
 export type RemoteTemplate = {
     id: RemoteId;
     name: string;
+    description?: string;
     isDraft?: boolean;
+    isStickerSheet?: boolean;
     productIds?: string[];
     links?: { label: string; url: string }[];
     widthMm: number;
@@ -50,6 +52,17 @@ export type RemoteTemplate = {
 
 // v2: placeholder values – measure and adjust later
 export const REMOTES: RemoteTemplate[] = [
+    {
+        id: "generic",
+        name: "Generic Sticker Sheet",
+        description: "For generic label sheets, e.g. suitable for Aqara Cube sides.",
+        isDraft: false,
+        isStickerSheet: true,
+        widthMm: 210,
+        heightMm: 297,
+        cornerMm: 0,
+        buttons: [],
+    },
     {
         id: "hue_dimmer_v1",
         name: "Philips Hue Dimmer Switch (v1)",

@@ -18,7 +18,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
             <h2>Buttons</h2>
             {buttonIds.map((id) => (
                 <section key={id} className="button-config">
-                    <h3>{id.toUpperCase()} Button</h3>
+                    <h3>{id.startsWith("label_") ? `Sticker ${id.slice("label_".length)}` : `${id.toUpperCase()} Button`}</h3>
                     {TAP_ORDER.map((tap) => (
                         <div key={tap}>
                             <h4>{tapLabel(tap)}</h4>

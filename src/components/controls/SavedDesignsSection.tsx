@@ -53,16 +53,14 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
             </label>
             {saveNameError ? <p style={{ margin: 0, fontSize: "0.85rem", color: "#b00020" }}>{saveNameError}</p> : null}
 
-            <p>
-                <div className="row">
-                    <button type="button" onClick={onSaveActive} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
-                        Save
-                    </button>
-                    <button type="button" onClick={onSaveAsNew} disabled={!saveName.trim()}>
-                        Save as
-                    </button>
-                </div>
-            </p>
+            <div className="row">
+                <button type="button" onClick={onSaveActive} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
+                    Save
+                </button>
+                <button type="button" onClick={onSaveAsNew} disabled={!saveName.trim()}>
+                    Save as
+                </button>
+            </div>
             {activeSavedId && <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>{hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}</p>}
 
             <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
@@ -77,16 +75,14 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                 </select>
             </label>
 
-            <p>
-                <div className="row">
-                    <button type="button" onClick={onLoadSelected} disabled={!selectedSavedId}>
-                        Load
-                    </button>
-                    <button type="button" onClick={onDeleteSelected} disabled={!selectedSavedId}>
-                        Delete
-                    </button>
-                </div>
-            </p>
+            <div className="row">
+                <button type="button" onClick={onLoadSelected} disabled={!selectedSavedId}>
+                    Load
+                </button>
+                <button type="button" onClick={onDeleteSelected} disabled={!selectedSavedId}>
+                    Delete
+                </button>
+            </div>
 
             <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>
                 Saved in your browser (localStorage). It remains after reloads, but will be removed if you clear site data.

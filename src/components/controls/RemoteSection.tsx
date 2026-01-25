@@ -35,6 +35,7 @@ export function RemoteSection(props: RemoteSectionProps) {
                 </div>
             </div>
             {activeRemote?.productIds?.length ? <p className="modelRow__meta">Product IDs: {activeRemote.productIds.join(", ")}</p> : null}
+            {activeRemote?.description ? <p className="modelRow__meta">{activeRemote.description}</p> : null}
             {activeRemote?.links?.length ? (
                 <p className="modelRow__meta">
                     Links:{" "}

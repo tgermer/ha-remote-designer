@@ -61,7 +61,7 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; si
     return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} ry={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
 }
 
-export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, showWatermark, watermarkText, watermarkOpacity }: { state: DesignState; button: ButtonDef; labelWidthMm: number; labelHeightMm: number; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number }) {
+export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, showWatermark, watermarkText, watermarkOpacity, xMm, yMm }: { state: DesignState; button: ButtonDef; labelWidthMm: number; labelHeightMm: number; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; xMm?: number; yMm?: number }) {
     const cfg = state.buttonConfigs[button.id]?.icons ?? {};
 
     const enabledTaps = state.tapsEnabled.length ? state.tapsEnabled : (["single"] as TapType[]);
@@ -85,7 +85,14 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
     const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
 
     return (
-        <svg width={`${labelWidthMm}mm`} height={`${labelHeightMm}mm`} viewBox={`0 0 ${labelWidthMm} ${labelHeightMm}`} xmlns="http://www.w3.org/2000/svg">
+        <svg
+            width={`${labelWidthMm}mm`}
+            height={`${labelHeightMm}mm`}
+            viewBox={`0 0 ${labelWidthMm} ${labelHeightMm}`}
+            xmlns="http://www.w3.org/2000/svg"
+            x={typeof xMm === "number" ? xMm : undefined}
+            y={typeof yMm === "number" ? yMm : undefined}
+        >
             <rect x="0" y="0" width={labelWidthMm} height={labelHeightMm} fill="white" />
 
             {/* Button cut frame (with radii) */}

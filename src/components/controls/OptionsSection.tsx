@@ -3,10 +3,12 @@ import type { DesignOptions } from "../../app/types";
 type OptionsSectionProps = {
     options: DesignOptions;
     onUpdateOptions: (patch: Partial<DesignOptions>) => void;
+    remoteOutlineLabel?: string;
 };
 
 export function OptionsSection(props: OptionsSectionProps) {
-    const { options, onUpdateOptions } = props;
+    const { options, onUpdateOptions, remoteOutlineLabel } = props;
+    const outlineLabel = remoteOutlineLabel ?? "Show remote outline";
 
     return (
         <fieldset>
@@ -32,7 +34,7 @@ export function OptionsSection(props: OptionsSectionProps) {
 
                 <label className="option">
                     <input type="checkbox" checked={options.showRemoteOutline} onChange={(e) => onUpdateOptions({ showRemoteOutline: e.target.checked })} />
-                    Show remote outline
+                    {outlineLabel}
                 </label>
 
                 <label className="option">
@@ -68,7 +70,7 @@ export function OptionsSection(props: OptionsSectionProps) {
                         <input
                             type="number"
                             min={4}
-                            max={14}
+                            max={40}
                             step={0.5}
                             value={options.fixedIconMm}
                             onChange={(e) => onUpdateOptions({ fixedIconMm: Number(e.target.value) })}

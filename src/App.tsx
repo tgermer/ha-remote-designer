@@ -12,6 +12,7 @@ import { GalleryLayout } from "./components/layout/GalleryLayout";
 import { ControlsLayout } from "./components/layout/ControlsLayout";
 import { RemoteSection } from "./components/controls/RemoteSection";
 import { SavedDesignsSection } from "./components/controls/SavedDesignsSection";
+import { StickerTemplateSection } from "./components/controls/StickerTemplateSection";
 import { OptionsSection } from "./components/controls/OptionsSection";
 import { ShareExportSection } from "./components/controls/ShareExportSection";
 import { ButtonsSection } from "./components/controls/ButtonsSection";
@@ -22,7 +23,9 @@ import { HiddenExportRenderers } from "./components/HiddenExportRenderers";
 import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
 import { svgTextToPngBlobMm, downloadBlob } from "./app/exportPng";
+import { downloadPdfFromSvg, downloadPdfFromSvgs } from "./app/exportPdf";
 import { readSavedDesigns, writeSavedDesigns, newId, nameExistsForRemote, withTimestamp, normalizeName, type SavedDesign } from "./app/savedDesigns";
+import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "./app/stickerSheet";
 
 import { FEATURES } from "./app/featureFlags";
 import { getHueIconsLoadedSnapshot, preloadHueIcons, subscribeHueIcons } from "./hue/hueIcons";
@@ -93,10 +96,57 @@ const initial: DesignState = {
         tapMarkerFill: "outline",
         labelOutlineColor: "#ccc",
         labelOutlineStrokeMm: 0.1,
+        labelWidthMm: 40,
+        labelHeightMm: 30,
+        labelCornerMm: 2,
+        labelCount: 6,
+        sheetSize: "A4",
+        sheetMarginXMm: 8,
+        sheetMarginYMm: 8,
+        sheetGapMm: 3,
     },
 };
 
 /* ------------------------------- helpers -------------------------------- */
+
+function normalizeState(input: DesignState): DesignState {
+    const fallbackRemoteId = REMOTES[0]?.id ?? initial.remoteId;
+    const nextRemoteId = REMOTES.some((r) => r.id === input.remoteId) ? input.remoteId : fallbackRemoteId;
+    const mergedOptions = {
+        ...initial.options,
+        ...(input.options ?? {}),
+    };
+
+    const clampNumber = (value: unknown, fallback: number, min?: number, max?: number) => {
+        const n = typeof value === "number" ? value : Number(value);
+        if (!Number.isFinite(n)) return fallback;
+        if (typeof min === "number" && n < min) return min;
+        if (typeof max === "number" && n > max) return max;
+        return n;
+    };
+
+    return {
+        ...initial,
+        ...input,
+        remoteId: nextRemoteId,
+        tapsEnabled: Array.isArray(input.tapsEnabled) && input.tapsEnabled.length ? input.tapsEnabled : initial.tapsEnabled,
+        buttonConfigs: input.buttonConfigs ?? {},
+        options: {
+            ...mergedOptions,
+            fixedIconMm: clampNumber(mergedOptions.fixedIconMm, initial.options.fixedIconMm, 1),
+            labelOutlineStrokeMm: clampNumber(mergedOptions.labelOutlineStrokeMm, initial.options.labelOutlineStrokeMm, 0),
+            labelWidthMm: clampNumber(mergedOptions.labelWidthMm, initial.options.labelWidthMm, 1),
+            labelHeightMm: clampNumber(mergedOptions.labelHeightMm, initial.options.labelHeightMm, 1),
+            labelCornerMm: clampNumber(mergedOptions.labelCornerMm, initial.options.labelCornerMm, 0),
+            labelCount: Math.max(1, Math.floor(clampNumber(mergedOptions.labelCount, initial.options.labelCount, 1))),
+            sheetSize: mergedOptions.sheetSize === "Letter" ? "Letter" : "A4",
+            sheetMarginXMm: clampNumber(mergedOptions.sheetMarginXMm, initial.options.sheetMarginXMm, 0),
+            sheetMarginYMm: clampNumber(mergedOptions.sheetMarginYMm, initial.options.sheetMarginYMm, 0),
+            sheetGapMm: clampNumber(mergedOptions.sheetGapMm, initial.options.sheetGapMm, 0),
+            tapMarkerFill: mergedOptions.tapMarkerFill === "filled" ? "filled" : "outline",
+        },
+    };
+}
 
 function tapLabel(t: TapType) {
     if (t === "single") return "Tap";
@@ -252,8 +302,14 @@ export default function App() {
     const [state, setState] = useState<DesignState>(() => {
         // In gallery view we do not try to parse the hash as state.
         if (getUrlView() === "gallery") return initial;
-        return loadFromHash<DesignState>() ?? initial;
+        return normalizeState(loadFromHash<DesignState>() ?? initial);
     });
+    const [stickerPageIndex, setStickerPageIndex] = useState(0);
+
+    useEffect(() => {
+        if (REMOTES.some((r) => r.id === state.remoteId)) return;
+        setState((s) => normalizeState(s));
+    }, [state.remoteId]);
 
     /* ----------------------------- Saved designs UI state ----------------------------- */
     const initialSavedDesigns = useMemo(() => readSavedDesigns().sort((a, b) => b.updatedAt - a.updatedAt), []);
@@ -303,10 +359,10 @@ export default function App() {
         const found = items.find((d) => d.id === selectedSavedId);
         if (!found) return;
 
-        setState(found.state);
+        setState(normalizeState(found.state));
 
         setActiveSavedId(found.id);
-        setLoadedSnapshot(found.state);
+        setLoadedSnapshot(normalizeState(found.state));
         setLoadedName(found.name);
         setSaveName(found.name);
         setSaveNameError("");
@@ -401,7 +457,64 @@ export default function App() {
         return () => window.clearTimeout(t);
     }, [state, isGallery]);
 
-    const template = useMemo(() => REMOTES.find((r) => r.id === state.remoteId) ?? REMOTES[0], [state.remoteId]);
+    const o = state.options;
+    const baseTemplate = useMemo(() => REMOTES.find((r) => r.id === state.remoteId) ?? REMOTES[0], [state.remoteId]);
+    const isStickerSheet = baseTemplate.isStickerSheet === true;
+    const sheetSizeMm = o.sheetSize === "Letter" ? LETTER_SIZE_MM : A4_SIZE_MM;
+
+    const stickerLayout = useMemo(() => {
+        if (!isStickerSheet) return null;
+        return getStickerSheetLayout({
+            labelWidthMm: o.labelWidthMm,
+            labelHeightMm: o.labelHeightMm,
+            count: o.labelCount,
+            sheetWidthMm: sheetSizeMm.width,
+            sheetHeightMm: sheetSizeMm.height,
+            marginXMm: o.sheetMarginXMm,
+            marginYMm: o.sheetMarginYMm,
+            gapMm: o.sheetGapMm,
+        });
+    }, [isStickerSheet, o.labelWidthMm, o.labelHeightMm, o.labelCount, o.sheetMarginXMm, o.sheetMarginYMm, o.sheetGapMm, sheetSizeMm.width, sheetSizeMm.height]);
+
+    const template = useMemo(() => {
+        const base = baseTemplate;
+        if (!isStickerSheet) return base;
+
+        const layout =
+            stickerLayout ??
+            getStickerSheetLayout({
+                labelWidthMm: o.labelWidthMm,
+                labelHeightMm: o.labelHeightMm,
+                count: o.labelCount,
+                sheetWidthMm: sheetSizeMm.width,
+                sheetHeightMm: sheetSizeMm.height,
+                marginXMm: o.sheetMarginXMm,
+                marginYMm: o.sheetMarginYMm,
+                gapMm: o.sheetGapMm,
+            });
+        const pageIndex = Math.max(0, stickerPageIndex);
+        const offset = pageIndex * layout.maxCount;
+        const remaining = Math.max(0, o.labelCount - offset);
+        const count = Math.min(layout.maxCount, remaining);
+        const positions = layout.positions.slice(0, count);
+
+        const buttons = positions.map((pos, index) => ({
+            id: `label_${offset + index + 1}`,
+            xMm: pos.xMm,
+            yMm: pos.yMm,
+            wMm: o.labelWidthMm,
+            hMm: o.labelHeightMm,
+            rMm: o.labelCornerMm,
+        }));
+
+        return {
+            ...base,
+            widthMm: layout.sheetWidthMm,
+            heightMm: layout.sheetHeightMm,
+            cornerMm: 0,
+            buttons,
+        };
+    }, [baseTemplate, isStickerSheet, stickerLayout, o.labelWidthMm, o.labelHeightMm, o.labelCornerMm, o.labelCount, o.sheetMarginXMm, o.sheetMarginYMm, o.sheetGapMm, sheetSizeMm.width, sheetSizeMm.height, stickerPageIndex]);
 
     const remoteNameById = useMemo(() => {
         return new Map(REMOTES.map((r) => [r.id, r.name] as const));
@@ -443,8 +556,18 @@ export default function App() {
         void preloadFullMdi();
     }, [shouldPreloadFullMdi, fullMdiLoaded]);
 
-    const buttonIds = template.buttons.map((b) => b.id);
-    const o = state.options;
+    const buttonIds = isStickerSheet ? Array.from({ length: Math.max(0, o.labelCount) }, (_, i) => `label_${i + 1}`) : template.buttons.map((b) => b.id);
+    const labelWidthMm = o.labelWidthMm;
+    const labelHeightMm = o.labelHeightMm;
+    const stickerPages = stickerLayout?.pages ?? 0;
+
+    useEffect(() => {
+        if (!isStickerSheet) return;
+        const maxIndex = Math.max(0, stickerPages - 1);
+        if (stickerPageIndex > maxIndex) {
+            setStickerPageIndex(maxIndex);
+        }
+    }, [isStickerSheet, stickerPages, stickerPageIndex]);
 
     const setIcon = (buttonId: string, tap: TapType, icon?: string) => {
         setState((s) => {
@@ -569,7 +692,7 @@ export default function App() {
 
             const png = await svgTextToPngBlobMm({
                 svgText: serializeSvg(svg),
-                size: { widthMm: 40, heightMm: 30, dpi },
+                size: { widthMm: labelWidthMm, heightMm: labelHeightMm, dpi },
             });
 
             folder.file(`${id}.png`, png);
@@ -580,7 +703,75 @@ export default function App() {
         setIsZipping(false);
     };
 
-    const exportButton = exportButtonId ? template.buttons.find((b) => b.id === exportButtonId) ?? null : null;
+    const exportButton =
+        exportButtonId
+            ? isStickerSheet
+                ? { id: exportButtonId, xMm: 0, yMm: 0, wMm: o.labelWidthMm, hMm: o.labelHeightMm, rMm: o.labelCornerMm }
+                : template.buttons.find((b) => b.id === exportButtonId) ?? null
+            : null;
+
+    const exportA4Pdf = async () => {
+        if (!isStickerSheet) {
+            const svg = exportRemoteHostRef.current?.querySelector("svg");
+            if (!svg) return;
+            const svgText = serializeSvg(svg).replace(/^<\?xml[^>]*>\s*/i, "");
+            await downloadPdfFromSvg({
+                filename: `${exportBase}-a4`,
+                svgText,
+                widthMm: sheetSizeMm.width,
+                heightMm: sheetSizeMm.height,
+            });
+            return;
+        }
+
+        const layout = stickerLayout;
+        if (!layout || layout.maxCount <= 0) return;
+        const totalPages = Math.max(1, layout.pages);
+        const svgTexts: string[] = [];
+
+        const prevPage = stickerPageIndex;
+        for (let page = 0; page < totalPages; page += 1) {
+            setStickerPageIndex(page);
+            await nextFrame();
+            await nextFrame();
+            const svg = exportRemoteHostRef.current?.querySelector("svg");
+            if (!svg) continue;
+            svgTexts.push(serializeSvg(svg).replace(/^<\?xml[^>]*>\s*/i, ""));
+        }
+        setStickerPageIndex(prevPage);
+
+        if (!svgTexts.length) return;
+        await downloadPdfFromSvgs({
+            filename: `${exportBase}-${o.sheetSize.toLowerCase()}`,
+            svgTexts,
+            widthMm: sheetSizeMm.width,
+            heightMm: sheetSizeMm.height,
+        });
+    };
+
+    const exportAllPagesSvgZip = async () => {
+        if (!isStickerSheet) return;
+        const layout = stickerLayout;
+        if (!layout || layout.maxCount <= 0 || layout.pages <= 1) return;
+
+        const totalPages = Math.max(1, layout.pages);
+        const zip = new JSZip();
+        const folder = zip.folder(exportBase) ?? zip;
+
+        const prevPage = stickerPageIndex;
+        for (let page = 0; page < totalPages; page += 1) {
+            setStickerPageIndex(page);
+            await nextFrame();
+            await nextFrame();
+            const svg = exportRemoteHostRef.current?.querySelector("svg");
+            if (!svg) continue;
+            const svgText = serializeSvg(svg);
+            folder.file(`page-${page + 1}.svg`, svgText);
+        }
+        setStickerPageIndex(prevPage);
+
+        downloadBlob(`${exportBase}-all-pages.svg.zip`, await zip.generateAsync({ type: "blob" }));
+    };
 
     const handleRemoteChange = (nextRemoteId: DesignState["remoteId"]) => {
         // Clear mappings when switching remotes (prevents accidental carry-over)
@@ -688,7 +879,13 @@ export default function App() {
                             }
                             right={
                                 <>
-                                    <OptionsSection options={o} onUpdateOptions={updateOptions} />
+                                    {isStickerSheet && stickerLayout ? <StickerTemplateSection options={o} layout={stickerLayout} onUpdateOptions={updateOptions} /> : null}
+
+                                    <OptionsSection
+                                        options={o}
+                                        onUpdateOptions={updateOptions}
+                                        remoteOutlineLabel={isStickerSheet ? "Show paper outline" : "Show remote outline"}
+                                    />
 
                                     <ShareExportSection
                                         shareStatus={shareStatus}
@@ -700,13 +897,29 @@ export default function App() {
                                         isZipping={isZipping}
                                         dpi={dpi}
                                         onChangeDpi={setDpi}
+                                        showA4Pdf={isStickerSheet}
+                                        onExportA4Pdf={exportA4Pdf}
+                                        showSvgAllPages={isStickerSheet && stickerPages > 1}
+                                        onExportAllPagesSvgZip={exportAllPagesSvgZip}
                                     />
                                 </>
                             }
                             full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} />}
                         />
                     }
-                    preview={<PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />}
+                    preview={
+                        <PreviewPane
+                            template={template}
+                            state={previewState}
+                            showWatermark={showWatermark}
+                            watermarkText={watermarkText}
+                            watermarkOpacity={watermarkOpacity}
+                            isStickerSheet={isStickerSheet}
+                            pageIndex={stickerPageIndex}
+                            pages={stickerPages}
+                            onChangePage={setStickerPageIndex}
+                        />
+                    }
                     help={<HelpSection />}
                 />
             )}
@@ -717,7 +930,9 @@ export default function App() {
                 template={template}
                 state={state}
                 exportButton={exportButton}
-                showScaleBar={o.showScaleBar}
+                labelWidthMm={labelWidthMm}
+                labelHeightMm={labelHeightMm}
+                showScaleBar={isStickerSheet ? false : o.showScaleBar}
                 showWatermark={showWatermark}
                 watermarkText={watermarkText}
                 watermarkOpacity={watermarkOpacity}
