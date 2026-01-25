@@ -122,7 +122,9 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                     const tap = activeTaps[0];
                     const iconMm = autoIconSizing ? Math.max(5, Math.min(10, b.wMm - 2, b.hMm - 2)) : fixedIconMm;
 
-                    if (showTapMarkersAlways) {
+                    const shouldShowMarker = tap !== "single" || showTapMarkersAlways;
+
+                    if (shouldShowMarker) {
                         const markerMm = 3;
                         const gapMm = 1;
                         const groupH = iconMm + gapMm + markerMm;

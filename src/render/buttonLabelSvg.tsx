@@ -106,7 +106,9 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
 
                     const buttonCx = bx + button.wMm / 2;
 
-                    if (state.options.showTapMarkersAlways) {
+                    const shouldShowMarker = tap !== "single" || state.options.showTapMarkersAlways;
+
+                    if (shouldShowMarker) {
                         const groupH = iconMm + gapMm + markerMm;
                         const topY = by + (button.hMm - groupH) / 2;
                         const iconCy = topY + iconMm / 2;

@@ -16,7 +16,7 @@ export function OptionsSection(props: OptionsSectionProps) {
             <div className="options">
                 <label className="option">
                     <input type="checkbox" checked={options.showTapMarkersAlways} onChange={(e) => onUpdateOptions({ showTapMarkersAlways: e.target.checked })} />
-                    Show tap markers for single icon
+                    Show tap marker for single tap (single icon)
                 </label>
 
                 <label className="option">
