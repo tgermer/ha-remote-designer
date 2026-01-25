@@ -358,6 +358,10 @@ export default function App() {
         }
     };
 
+    useEffect(() => {
+        if (isGallery) refreshSavedDesigns();
+    }, [isGallery, selectedSavedId, activeSavedId]);
+
     const exportBase = useMemo(() => getExportBaseName({ saveName, remoteId: state.remoteId }), [saveName, state.remoteId]);
 
     // Dirty check: any change to state or the name compared to the loaded design
@@ -377,6 +381,16 @@ export default function App() {
         setLoadedName(found.name);
         setSaveName(found.name);
         setSaveNameError("");
+    };
+
+    const openSavedDesign = (design: SavedDesign) => {
+        setState(normalizeState(design.state));
+        setActiveSavedId(design.id);
+        setLoadedSnapshot(normalizeState(design.state));
+        setLoadedName(design.name);
+        setSaveName(design.name);
+        setSaveNameError("");
+        setSelectedSavedId(design.id);
     };
 
     const saveAsNewDesign = () => {
@@ -951,12 +965,20 @@ export default function App() {
                 <GalleryLayout>
                     <GalleryView
                         remotes={REMOTES}
+                        savedDesigns={savedDesigns}
                         buildStateFromExample={buildStateFromExample}
                         showWatermark={showWatermark}
                         watermarkText={watermarkText}
                         watermarkOpacity={watermarkOpacity}
-                        onOpenExample={({ state: nextState }) => {
-                            setState(nextState);
+                        onOpenPreview={({ state: nextState }) => {
+                            setState(normalizeState(nextState));
+                            goTo("editor");
+                            requestAnimationFrame(() => {
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                            });
+                        }}
+                        onOpenSaved={(design) => {
+                            openSavedDesign(design);
                             goTo("editor");
                             requestAnimationFrame(() => {
                                 window.scrollTo({ top: 0, behavior: "smooth" });
