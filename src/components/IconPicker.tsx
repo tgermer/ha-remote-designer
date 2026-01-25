@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getMdiPath } from "../app/mdi";
 import { FEATURES } from "../app/featureFlags";
-import { hasHueIcon, listHueIcons } from "../hue/hueIcons";
+import { hasHueIcon, listHueIcons, preloadHueIcons } from "../hue/hueIcons";
 import { isSupportedHaIcon, renderHaIconAtMm } from "../render/renderHaIcon";
 import * as MDIJS from "@mdi/js";
 
@@ -107,6 +107,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
         // Open when user starts typing the family name (before the colon)
         if ((t.startsWith("hue") || t.startsWith("hue:")) && FEATURES.HUE_ICONS) {
+            void preloadHueIcons();
             setBrowser("hue");
             return;
         }
@@ -117,6 +118,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
         // Keep existing behavior for full prefixes
         if (t.startsWith("hue:") && FEATURES.HUE_ICONS) {
+            void preloadHueIcons();
             setBrowser("hue");
             return;
         }
@@ -174,7 +176,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
                         const t = (value ?? "").trim().toLowerCase();
                         // If user has already started with a hint, open the matching browser.
-                        if ((t === "h" || t.startsWith("hue")) && FEATURES.HUE_ICONS) setBrowser("hue");
+                        if ((t === "h" || t.startsWith("hue")) && FEATURES.HUE_ICONS) {
+                            void preloadHueIcons();
+                            setBrowser("hue");
+                        }
                         else if (t === "m" || t.startsWith("mdi")) setBrowser("mdi");
                     }}
                     onBlur={() => {
@@ -202,6 +207,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                         className={`iconpicker__btn ${browser === "hue" ? "iconpicker__btn--active" : ""}`}
                         onClick={() => {
                             setHasInteracted(true);
+                            void preloadHueIcons();
                             setBrowser((b) => (b === "hue" ? null : "hue"));
                         }}
                         title="Browse Hue icons"

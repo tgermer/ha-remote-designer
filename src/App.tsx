@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useSyncExternalStore } from "react";
 import "./App.css";
 
 import { type DesignState, type TapType } from "./app/types";
@@ -25,6 +25,7 @@ import { svgTextToPngBlobMm, downloadBlob } from "./app/exportPng";
 import { readSavedDesigns, writeSavedDesigns, newId, nameExistsForRemote, withTimestamp, normalizeName, type SavedDesign } from "./app/savedDesigns";
 
 import { FEATURES } from "./app/featureFlags";
+import { getHueIconsLoadedSnapshot, preloadHueIcons, subscribeHueIcons } from "./hue/hueIcons";
 
 import JSZip from "jszip";
 
@@ -176,6 +177,30 @@ function buildStateFromExample(params: { remoteId: RemoteTemplate["id"]; example
     }
 
     return base;
+}
+
+function stateUsesHueIcons(state: DesignState) {
+    for (const cfg of Object.values(state.buttonConfigs)) {
+        const icons = cfg?.icons ?? {};
+        for (const icon of Object.values(icons)) {
+            if (typeof icon === "string" && icon.startsWith("hue:")) return true;
+        }
+    }
+    return false;
+}
+
+function remotesUseHueIcons() {
+    for (const remote of REMOTES) {
+        const examples = remote.examples ?? [];
+        for (const ex of examples) {
+            for (const iconsByTap of Object.values(ex.buttonIcons)) {
+                for (const icon of Object.values(iconsByTap)) {
+                    if (typeof icon === "string" && icon.startsWith("hue:")) return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 /* --------------------------------- App ---------------------------------- */
@@ -374,6 +399,15 @@ export default function App() {
     const showWatermark = FEATURES.WATERMARK;
     const watermarkText = "PREVIEW PREVIEW PREVIEW";
     const watermarkOpacity = 0.2;
+
+    const hueIconsLoaded = useSyncExternalStore(subscribeHueIcons, getHueIconsLoadedSnapshot);
+    const galleryUsesHueIcons = useMemo(() => remotesUseHueIcons(), []);
+    const shouldPreloadHueIcons = useMemo(() => (isGallery ? galleryUsesHueIcons : stateUsesHueIcons(state)), [isGallery, galleryUsesHueIcons, state]);
+
+    useEffect(() => {
+        if (!shouldPreloadHueIcons || hueIconsLoaded) return;
+        void preloadHueIcons();
+    }, [shouldPreloadHueIcons, hueIconsLoaded]);
 
     const buttonIds = template.buttons.map((b) => b.id);
     const o = state.options;
