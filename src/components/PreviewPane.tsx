@@ -1,6 +1,7 @@
 import type { DesignState } from "../app/types";
 import type { RemoteTemplate } from "../app/remotes";
 import { RemoteSvg } from "../render/RemoteSvg";
+import { UiIcon } from "./UiIcon";
 
 type PreviewPaneProps = {
     template: RemoteTemplate;
@@ -12,18 +13,20 @@ type PreviewPaneProps = {
     pageIndex?: number;
     pages?: number;
     onChangePage?: (next: number) => void;
+    className?: string;
 };
 
 export function PreviewPane(props: PreviewPaneProps) {
-    const { template, state, showWatermark, watermarkText, watermarkOpacity, isStickerSheet, pageIndex = 0, pages = 0, onChangePage } = props;
+    const { template, state, showWatermark, watermarkText, watermarkOpacity, isStickerSheet, pageIndex = 0, pages = 0, onChangePage, className } = props;
     const showPager = isStickerSheet && pages > 1 && !!onChangePage;
     const currentPage = Math.min(Math.max(0, pageIndex), Math.max(0, pages - 1));
 
     return (
-        <aside className={`preview ${isStickerSheet ? "preview--sheet" : ""}`}>
+        <aside className={`preview ${isStickerSheet ? "preview--sheet" : ""} ${className ?? ""}`.trim()}>
             {showPager && (
                 <div className="preview__pager">
                     <button type="button" onClick={() => onChangePage?.(Math.max(0, currentPage - 1))} disabled={currentPage <= 0}>
+                        <UiIcon name="mdi:chevron-left" className="icon" />
                         Prev
                     </button>
                     <span>
@@ -38,19 +41,11 @@ export function PreviewPane(props: PreviewPaneProps) {
                         of {pages}
                     </span>
                     <button type="button" onClick={() => onChangePage?.(Math.min(pages - 1, currentPage + 1))} disabled={currentPage >= pages - 1}>
-                        Next
+                        Next <UiIcon name="mdi:chevron-right" className="icon" />
                     </button>
                 </div>
             )}
-            <RemoteSvg
-                template={template}
-                state={state}
-                background="white"
-                showWatermark={showWatermark}
-                watermarkText={watermarkText}
-                watermarkOpacity={watermarkOpacity}
-                overrides={{ showScaleBar: false }}
-            />
+            <RemoteSvg template={template} state={state} background="white" showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} />
         </aside>
     );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { getMdiPath, getFullMdiLoadedSnapshot, isMdiInHomeSet, listFullMdiIcons, listHomeMdiIcons, preloadFullMdi, subscribeFullMdi } from "../app/mdi";
+import { UiIcon } from "./UiIcon";
 import { FEATURES } from "../app/featureFlags";
 import { getHueIconsLoadedSnapshot, hasHueIcon, listHueIcons, preloadHueIcons, subscribeHueIcons } from "../hue/hueIcons";
 import { isSupportedHaIcon, renderHaIconAtMm } from "../render/renderHaIcon";
@@ -246,7 +247,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
                 <button
                     type="button"
-                    className="iconpicker__btn"
+                    className="iconpicker__btn btn btn--danger"
                     onClick={() => {
                         setHasInteracted(true);
                         setIsEditing(true);
@@ -259,6 +260,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     }}
                     disabled={!value && !currentText.trim()}
                 >
+                    <UiIcon name="mdi:delete-outline" className="icon" />
                     Delete
                 </button>
             </div>
@@ -296,6 +298,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                             </span>
                         </div>
                         <button type="button" className="iconpicker__btn" onClick={() => setBrowser(null)} aria-label="Close MDI browser">
+                            <UiIcon name="mdi:close-circle-outline" className="icon" />
                             Close
                         </button>
                     </header>
@@ -362,6 +365,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                             <span className="iconpicker__panelCount">({allHueIcons.length})</span>
                         </div>
                         <button type="button" className="iconpicker__btn" onClick={() => setBrowser(null)} aria-label="Close Hue browser">
+                            <UiIcon name="mdi:close-circle-outline" className="icon" />
                             Close
                         </button>
                     </header>

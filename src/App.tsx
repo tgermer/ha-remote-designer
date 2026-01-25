@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import "./App.css";
 
 import { type DesignState, type TapType } from "./app/types";
@@ -19,6 +20,7 @@ import { ButtonsSection } from "./components/controls/ButtonsSection";
 import { PreviewPane } from "./components/PreviewPane";
 import { HelpSection } from "./components/HelpSection";
 import { HiddenExportRenderers } from "./components/HiddenExportRenderers";
+import { UiIcon } from "./components/UiIcon";
 
 import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
@@ -593,6 +595,11 @@ export default function App() {
     const fullMdiLoaded = useSyncExternalStore(subscribeFullMdi, getFullMdiLoadedSnapshot);
     const galleryUsesFullMdi = useMemo(() => remotesUseFullMdi(), []);
     const shouldPreloadFullMdi = useMemo(() => (isGallery ? galleryUsesFullMdi : stateUsesFullMdi(state)), [isGallery, galleryUsesFullMdi, state]);
+    const overlayRoot = typeof document !== "undefined" ? document.getElementById("overlay-root") : null;
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewHeightVh, setPreviewHeightVh] = useState(32);
+    const previewHeightRef = useRef(32);
+    const dragStateRef = useRef<{ startY: number; startHeight: number } | null>(null);
 
     useEffect(() => {
         if (!shouldPreloadFullMdi || fullMdiLoaded) return;
@@ -890,8 +897,40 @@ export default function App() {
     // Removed effect: Keep the dropdown selection in sync with the name field
     // (handled only onBlur of the name field now)
 
+    useEffect(() => {
+        previewHeightRef.current = previewHeightVh;
+    }, [previewHeightVh]);
+
+    useEffect(() => {
+        const handleMove = (event: PointerEvent) => {
+            if (!dragStateRef.current) return;
+            const deltaPx = event.clientY - dragStateRef.current.startY;
+            const deltaVh = (deltaPx / window.innerHeight) * 100;
+            const next = Math.min(70, Math.max(24, dragStateRef.current.startHeight - deltaVh));
+            setPreviewHeightVh(next);
+        };
+        const handleUp = () => {
+            if (!dragStateRef.current) return;
+            dragStateRef.current = null;
+            const snapPoints = [30, 45, 60];
+            const current = previewHeightRef.current;
+            const snapped = snapPoints.reduce((best, point) => (Math.abs(point - current) < Math.abs(best - current) ? point : best), snapPoints[0]);
+            setPreviewHeightVh(snapped);
+        };
+
+        window.addEventListener("pointermove", handleMove);
+        window.addEventListener("pointerup", handleUp);
+        window.addEventListener("pointercancel", handleUp);
+        return () => {
+            window.removeEventListener("pointermove", handleMove);
+            window.removeEventListener("pointerup", handleUp);
+            window.removeEventListener("pointercancel", handleUp);
+        };
+    }, []);
+
     return (
-        <main className="app">
+        <>
+            <main className="app">
             <SiteHeader isAdmin={isAdmin} />
 
             <TopNav
@@ -919,6 +958,9 @@ export default function App() {
                         onOpenExample={({ state: nextState }) => {
                             setState(nextState);
                             goTo("editor");
+                            requestAnimationFrame(() => {
+                                window.scrollTo({ top: 0, behavior: "smooth" });
+                            });
                         }}
                     />
                 </GalleryLayout>
@@ -966,7 +1008,20 @@ export default function App() {
                             full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} />}
                         />
                     }
-                    preview={<PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} />}
+                    preview={
+                        <PreviewPane
+                            template={template}
+                            state={previewState}
+                            showWatermark={showWatermark}
+                            watermarkText={watermarkText}
+                            watermarkOpacity={watermarkOpacity}
+                            isStickerSheet={isStickerSheet}
+                            pageIndex={stickerPageIndexSafe}
+                            pages={stickerPages}
+                            onChangePage={setStickerPageIndex}
+                            className="preview--desktop"
+                        />
+                    }
                     help={<HelpSection />}
                 />
             )}
@@ -975,5 +1030,47 @@ export default function App() {
 
             <SiteFooter />
         </main>
+            {!isGallery && overlayRoot
+                ? createPortal(
+                      <div
+                          className={`previewOverlay ${previewOpen ? "previewOverlay--open" : "previewOverlay--closed"}`}
+                          style={{ ["--preview-height" as string]: `${previewHeightVh}vh` }}
+                      >
+                          {previewOpen ? (
+                              <div className="previewOverlay__sheet" role="dialog" aria-label="Preview">
+                                  <div
+                                      className="previewOverlay__header"
+                                      onPointerDown={(event) => {
+                                          dragStateRef.current = { startY: event.clientY, startHeight: previewHeightVh };
+                                      }}
+                                  >
+                                      <div className="previewOverlay__handle" aria-hidden="true" />
+                                      <button type="button" className="previewOverlay__close" aria-label="Close preview" onClick={() => setPreviewOpen(false)}>
+                                          <UiIcon name="mdi:close-circle-outline" className="icon" />
+                                      </button>
+                                  </div>
+                                  <PreviewPane
+                                      template={template}
+                                      state={previewState}
+                                      showWatermark={showWatermark}
+                                      watermarkText={watermarkText}
+                                      watermarkOpacity={watermarkOpacity}
+                                      isStickerSheet={isStickerSheet}
+                                      pageIndex={stickerPageIndexSafe}
+                                      pages={stickerPages}
+                                      onChangePage={setStickerPageIndex}
+                                      className="preview--overlay"
+                                  />
+                              </div>
+                          ) : (
+                              <button type="button" className="previewOverlay__bar" onClick={() => setPreviewOpen(true)}>
+                                  Preview
+                              </button>
+                          )}
+                      </div>,
+                      overlayRoot,
+                  )
+                : null}
+        </>
     );
 }

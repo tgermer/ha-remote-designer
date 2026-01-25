@@ -8,9 +8,10 @@ type TopNavProps = {
 
 export function TopNav(props: TopNavProps) {
     const { view, editorHref, galleryHref, onGoEditor, onGoGallery } = props;
+    const activeIndex = view === "editor" ? 0 : 1;
 
     return (
-        <nav className="topnav" aria-label="Primary navigation">
+        <nav className="topnav" aria-label="Primary navigation" style={{ ["--active-index" as string]: String(activeIndex) }}>
             <a href={editorHref} className={view === "editor" ? "topnav__link topnav__link--active" : "topnav__link"} onClick={onGoEditor}>
                 Editor
             </a>

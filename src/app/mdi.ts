@@ -1,5 +1,7 @@
 import { MDI_HOME_AUTOMATION_DEFAULT } from "./mdiHomeSet";
 import { MDI_HOME_PATHS } from "./mdiHomePaths";
+import { MDI_UI_PATHS } from "./mdiUiPaths";
+import { MDI_PROJECT_PATHS } from "./mdiProjectPaths";
 
 function kebabToPascal(s: string) {
     return s
@@ -40,7 +42,7 @@ export async function preloadFullMdi() {
 }
 
 export function isMdiInHomeSet(haIcon: string) {
-    return !!MDI_HOME_PATHS[haIcon];
+    return !!MDI_UI_PATHS[haIcon] || !!MDI_PROJECT_PATHS[haIcon] || !!MDI_HOME_PATHS[haIcon];
 }
 
 export function listHomeMdiIcons() {
@@ -63,6 +65,12 @@ export function listFullMdiIcons() {
 }
 
 export function getMdiPath(haIcon: string): string | null {
+    const ui = MDI_UI_PATHS[haIcon];
+    if (ui) return ui;
+
+    const project = MDI_PROJECT_PATHS[haIcon];
+    if (project) return project;
+
     const direct = MDI_HOME_PATHS[haIcon];
     if (direct) return direct;
 

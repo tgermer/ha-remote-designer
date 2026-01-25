@@ -1,4 +1,5 @@
 import type { RemoteExample } from "../../app/remotes";
+import { UiIcon } from "../UiIcon";
 
 type ExamplesSectionProps = {
     examples: RemoteExample[];
@@ -34,11 +35,13 @@ export function ExamplesSection(props: ExamplesSectionProps) {
 
             <div className="row">
                 <div className="row">
-                    <button type="button" disabled={!selectedExample} onClick={onTogglePreview}>
+                    <button type="button" className="btn" disabled={!selectedExample} onClick={onTogglePreview}>
+                        <UiIcon name={previewExampleOn ? "mdi:eye-off-outline" : "mdi:eye-outline"} className="icon" />
                         {previewExampleOn ? "Stop preview" : "Preview"}
                     </button>
 
-                    <button type="button" disabled={!selectedExample} onClick={onApplyExample}>
+                    <button type="button" className="btn" disabled={!selectedExample} onClick={onApplyExample}>
+                        <UiIcon name="mdi:check-bold" className="icon" />
                         Apply
                     </button>
                 </div>

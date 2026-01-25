@@ -26,12 +26,13 @@ export function GalleryView(props: GalleryViewProps) {
                     const exs = r.examples ?? [];
                     return exs.map((ex) => {
                         const exState = buildStateFromExample({ remoteId: r.id, example: ex });
+                        const isSquareRemote = Math.abs(r.widthMm - r.heightMm) / Math.max(r.widthMm, r.heightMm) <= 0.12;
 
                         return (
                             <button
                                 key={`${r.id}__${ex.id}`}
                                 type="button"
-                                className="galleryCard"
+                                className={`galleryCard${isSquareRemote ? " galleryCard--square" : ""}`}
                                 data-remote-id={r.id}
                                 onClick={() => onOpenExample({ exampleId: ex.id, state: exState })}
                             >

@@ -1,3 +1,5 @@
+import { UiIcon } from "../UiIcon";
+
 type ShareStatus = "idle" | "copied" | "failed";
 
 type ShareExportSectionProps = {
@@ -25,7 +27,8 @@ export function ShareExportSection(props: ShareExportSectionProps) {
             <legend>Share & Export</legend>
 
             <p className="share">
-                <button type="button" onClick={onCopyShareLink}>
+                <button type="button" className="btn" onClick={onCopyShareLink}>
+                    <UiIcon name="mdi:link-variant" className="icon" />
                     Copy share link
                 </button>
                 {shareStatus === "copied" && (
@@ -44,24 +47,39 @@ export function ShareExportSection(props: ShareExportSectionProps) {
 
             {onExportRemoteJson ? (
                 <div className="row row--spaced">
-                    <button onClick={onExportRemoteJson}>Export JSON</button>
+                    <button className="btn" onClick={onExportRemoteJson}>
+                        <UiIcon name="mdi:code-json" className="icon" />
+                        Export JSON
+                    </button>
                 </div>
             ) : null}
 
             <div className="row row--spaced">
-                <button onClick={onExportRemoteSvg}>Export SVG</button>
-                {showSvgAllPages && onExportAllPagesSvgZip ? <button onClick={onExportAllPagesSvgZip}>Export all pages SVG (ZIP)</button> : null}
+                <button className="btn" onClick={onExportRemoteSvg}>
+                    <UiIcon name="mdi:file-image-outline" className="icon" />
+                    Export SVG
+                </button>
+                {showSvgAllPages && onExportAllPagesSvgZip ? (
+                    <button className="btn" onClick={onExportAllPagesSvgZip}>
+                        <UiIcon name="mdi:folder-zip-outline" className="icon" />
+                        Export all pages SVG (ZIP)
+                    </button>
+                ) : null}
             </div>
 
             {showA4Pdf && onExportA4Pdf ? (
                 <p>
-                    <button onClick={onExportA4Pdf}>Export PDF</button>
+                    <button className="btn" onClick={onExportA4Pdf}>
+                        <UiIcon name="mdi:file-pdf-box" className="icon" />
+                        Export PDF
+                    </button>
                 </p>
             ) : null}
 
             {isAdmin ? (
                 <div className="exportRow">
-                    <button onClick={onExportZip} disabled={isZipping}>
+                    <button className="btn" onClick={onExportZip} disabled={isZipping}>
+                        <UiIcon name="mdi:folder-zip-outline" className="icon" />
                         {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
                     </button>
 

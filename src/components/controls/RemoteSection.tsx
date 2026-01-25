@@ -1,4 +1,5 @@
 import type { RemoteTemplate } from "../../app/remotes";
+import { UiIcon } from "../UiIcon";
 
 type RemoteSectionProps = {
     remotes: RemoteTemplate[];
@@ -50,7 +51,8 @@ export function RemoteSection(props: RemoteSectionProps) {
                 </p>
             ) : null}
             <div className="row row--spaced">
-                <button type="button" onClick={onResetRemote}>
+                <button type="button" className="btn" onClick={onResetRemote}>
+                    <UiIcon name="mdi:backup-restore" className="icon" />
                     Reset current remote
                 </button>
             </div>

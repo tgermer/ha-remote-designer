@@ -8,7 +8,10 @@ type SiteHeaderProps = {
 export function SiteHeader({ isAdmin = false, title = "Remote Label Designer for Home Automation" }: SiteHeaderProps) {
     return (
         <header className={styles.header}>
-            <h1>{title}</h1>
+            <div className={styles.title}>
+                <img className={styles.logo} src="/dimmer-switch.svg" alt="" aria-hidden="true" />
+                <h1>{title}</h1>
+            </div>
             {isAdmin && <span className={styles.badge}>Admin</span>}
         </header>
     );
