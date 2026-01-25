@@ -31,6 +31,7 @@ export function HiddenExportRenderers(props: HiddenExportRenderersProps) {
                     showWatermark={showWatermark}
                     watermarkText={watermarkText}
                     watermarkOpacity={watermarkOpacity}
+                    renderPreviewElements={false}
                     overrides={{
                         showRemoteOutline: false,
                         showGuides: false,

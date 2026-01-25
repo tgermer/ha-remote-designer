@@ -43,6 +43,11 @@ export function OptionsSection(props: OptionsSectionProps) {
                 </label>
 
                 <label className="option">
+                    <input type="checkbox" checked={options.showCutouts} onChange={(e) => onUpdateOptions({ showCutouts: e.target.checked })} />
+                    Show cutouts (export + preview)
+                </label>
+
+                <label className="option">
                     Label outline color
                     <input type="color" value={options.labelOutlineColor} onChange={(e) => onUpdateOptions({ labelOutlineColor: e.target.value })} />
                 </label>

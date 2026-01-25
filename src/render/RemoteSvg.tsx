@@ -1,4 +1,4 @@
-import type { ButtonDef, RemoteTemplate } from "../app/remotes";
+import type { ButtonDef, CutoutElement, PreviewElement, RemoteTemplate } from "../app/remotes";
 import { TAP_ORDER, type DesignState, type TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 
@@ -34,6 +34,26 @@ function getButtonRadiiMm(button: Pick<ButtonDef, "rMm" | "r">, squareButtons?: 
     return { tl, tr, br, bl };
 }
 
+function getElementRadiiMm(element: Pick<PreviewElement, "rMm" | "r">): CornerRadii {
+    const uni = typeof element.rMm === "number" ? element.rMm : 0;
+    const tl = typeof element.r?.tl === "number" ? element.r.tl : uni;
+    const tr = typeof element.r?.tr === "number" ? element.r.tr : uni;
+    const br = typeof element.r?.br === "number" ? element.r.br : uni;
+    const bl = typeof element.r?.bl === "number" ? element.r.bl : uni;
+
+    return { tl, tr, br, bl };
+}
+
+function getCutoutRadiiMm(element: Extract<CutoutElement, { kind: "rect" }>): CornerRadii {
+    const uni = typeof element.rMm === "number" ? element.rMm : 0;
+    const tl = typeof element.r?.tl === "number" ? element.r.tl : uni;
+    const tr = typeof element.r?.tr === "number" ? element.r.tr : uni;
+    const br = typeof element.r?.br === "number" ? element.r.br : uni;
+    const bl = typeof element.r?.bl === "number" ? element.r.bl : uni;
+
+    return { tl, tr, br, bl };
+}
+
 function isUniformRadii(r: CornerRadii) {
     return r.tl === r.tr && r.tr === r.br && r.br === r.bl;
 }
@@ -62,9 +82,9 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; si
     return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
 }
 
-export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity, background, onSelectButton }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; background?: "white" | "remote" | "transparent"; onSelectButton?: (buttonId: string) => void }) {
+export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity, background, onSelectButton, renderPreviewElements = true }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; background?: "white" | "remote" | "transparent"; onSelectButton?: (buttonId: string) => void; renderPreviewElements?: boolean }) {
     const options = { ...state.options, ...overrides };
-    const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
+    const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showCutouts, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
 
     const outlineColor = options.labelOutlineColor ?? "#ccc";
     const outlineStrokeMm = typeof options.labelOutlineStrokeMm === "number" ? options.labelOutlineStrokeMm : 0.1;
@@ -90,6 +110,46 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                     <line x1={0} y1={template.heightMm / 2} x2={template.widthMm} y2={template.heightMm / 2} stroke="black" strokeWidth="0.2" />
                 </g>
             )}
+
+            {renderPreviewElements &&
+                template.previewElements?.map((element, index) => {
+                    if (element.kind !== "rect") return null;
+                    const radii = getElementRadiiMm(element);
+                    const fill = element.fill ?? "#e6e6e6";
+                    const stroke = element.stroke ?? "none";
+                    const strokeWidthMm = typeof element.strokeWidthMm === "number" ? element.strokeWidthMm : 0.2;
+                    const opacity = typeof element.opacity === "number" ? element.opacity : 1;
+
+                    if (isUniformRadii(radii)) {
+                        return (
+                            <rect
+                                key={`preview-${index}`}
+                                x={element.xMm}
+                                y={element.yMm}
+                                width={element.wMm}
+                                height={element.hMm}
+                                rx={radii.tl}
+                                fill={fill}
+                                stroke={stroke}
+                                strokeWidth={strokeWidthMm}
+                                opacity={opacity}
+                                pointerEvents="none"
+                            />
+                        );
+                    }
+
+                    return (
+                        <path
+                            key={`preview-${index}`}
+                            d={roundedRectPath(element.xMm, element.yMm, element.wMm, element.hMm, radii)}
+                            fill={fill}
+                            stroke={stroke}
+                            strokeWidth={strokeWidthMm}
+                            opacity={opacity}
+                            pointerEvents="none"
+                        />
+                    );
+                })}
 
             {template.buttons.map((b) => {
                 const cfg = state.buttonConfigs[b.id]?.icons ?? {};
@@ -240,6 +300,61 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                         })}
                         {hitTarget}
                     </g>
+                );
+            })}
+
+            {showCutouts &&
+                template.cutoutElements?.map((element, index) => {
+                const fill = element.fill ?? "white";
+                const stroke = element.stroke ?? "#6f6f6f";
+                const strokeWidthMm = typeof element.strokeWidthMm === "number" ? element.strokeWidthMm : 0.3;
+                const opacity = typeof element.opacity === "number" ? element.opacity : 1;
+
+                if (element.kind === "circle") {
+                    return (
+                        <circle
+                            key={`cutout-${index}`}
+                            cx={element.cxMm}
+                            cy={element.cyMm}
+                            r={element.rMm}
+                            fill={fill}
+                            stroke={stroke}
+                            strokeWidth={strokeWidthMm}
+                            opacity={opacity}
+                            pointerEvents="none"
+                        />
+                    );
+                }
+
+                const radii = getCutoutRadiiMm(element);
+                if (isUniformRadii(radii)) {
+                    return (
+                        <rect
+                            key={`cutout-${index}`}
+                            x={element.xMm}
+                            y={element.yMm}
+                            width={element.wMm}
+                            height={element.hMm}
+                            rx={radii.tl}
+                            fill={fill}
+                            stroke={stroke}
+                            strokeWidth={strokeWidthMm}
+                            opacity={opacity}
+                            pointerEvents="none"
+                        />
+                    );
+                }
+
+                return (
+                    <path
+                        key={`cutout-${index}`}
+                        d={roundedRectPath(element.xMm, element.yMm, element.wMm, element.hMm, radii)}
+                        fill={fill}
+                        stroke={stroke}
+                        strokeWidth={strokeWidthMm}
+                        opacity={opacity}
+                        pointerEvents="none"
+                    />
                 );
             })}
 

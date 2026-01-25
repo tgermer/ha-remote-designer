@@ -23,6 +23,45 @@ export type ButtonDef = {
     r?: CornerRadiiMm;
 };
 
+export type PreviewElement = {
+    kind: "rect";
+    xMm: number;
+    yMm: number;
+    wMm: number;
+    hMm: number;
+    rMm?: number;
+    r?: CornerRadiiMm;
+    fill?: string;
+    stroke?: string;
+    strokeWidthMm?: number;
+    opacity?: number;
+};
+
+export type CutoutElement =
+    | {
+          kind: "rect";
+          xMm: number;
+          yMm: number;
+          wMm: number;
+          hMm: number;
+          rMm?: number;
+          r?: CornerRadiiMm;
+          fill?: string;
+          stroke?: string;
+          strokeWidthMm?: number;
+          opacity?: number;
+      }
+    | {
+          kind: "circle";
+          cxMm: number;
+          cyMm: number;
+          rMm: number;
+          fill?: string;
+          stroke?: string;
+          strokeWidthMm?: number;
+          opacity?: number;
+      };
+
 export type RemoteExample = {
     id: string;
     name: string;
@@ -45,6 +84,8 @@ export type RemoteTemplate = {
     heightMm: number;
     cornerMm: number;
     buttons: ButtonDef[];
+    previewElements?: PreviewElement[];
+    cutoutElements?: CutoutElement[];
 
     examples?: RemoteExample[];
     defaultExampleId?: string;
@@ -187,6 +228,16 @@ export const REMOTES: RemoteTemplate[] = [
         widthMm: 40,
         heightMm: 70,
         cornerMm: 20,
+        cutoutElements: [
+            {
+                kind: "circle",
+                cxMm: 20,
+                cyMm: 35,
+                rMm: 2,
+                stroke: "#6f6f6f",
+                strokeWidthMm: 0.3,
+            },
+        ],
         buttons: [
             // Top rocker: outer corners rounded, bottom corners square
             { id: "top", xMm: 3, yMm: 3, wMm: 34, hMm: 32.25, r: { tl: 40, tr: 40, br: 0, bl: 0 } },
@@ -235,6 +286,19 @@ export const REMOTES: RemoteTemplate[] = [
         widthMm: 82,
         heightMm: 82,
         cornerMm: 12,
+        previewElements: [
+            {
+                kind: "rect",
+                xMm: 4,
+                yMm: 4,
+                wMm: 52,
+                hMm: 74,
+                r: { tl: 10, tr: 6, br: 6, bl: 12 },
+                fill: "#e6e6e6",
+                stroke: "#c8c8c8",
+                strokeWidthMm: 0.2,
+            },
+        ],
         buttons: [
             // Top rocker: outer corners rounded, bottom corners square
             { id: "plus", xMm: 61, yMm: 3, wMm: 17, hMm: 25, r: { tl: 0, tr: 10, br: 0, bl: 0 } },

@@ -12,6 +12,7 @@ export type DesignOptions = {
     showTapDividers: boolean;
     showRemoteOutline: boolean;
     showButtonOutlines: boolean;
+    showCutouts: boolean;
 
     showGuides: boolean;
 

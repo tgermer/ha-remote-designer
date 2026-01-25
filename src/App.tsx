@@ -97,6 +97,7 @@ const initial: DesignState = {
         showTapDividers: true,
         showRemoteOutline: true,
         showButtonOutlines: true,
+        showCutouts: true,
         showGuides: false,
         showScaleBar: true,
         autoIconSizing: true,
