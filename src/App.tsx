@@ -26,6 +26,7 @@ import { readSavedDesigns, writeSavedDesigns, newId, nameExistsForRemote, withTi
 
 import { FEATURES } from "./app/featureFlags";
 import { getHueIconsLoadedSnapshot, preloadHueIcons, subscribeHueIcons } from "./hue/hueIcons";
+import { getFullMdiLoadedSnapshot, isMdiInHomeSet, preloadFullMdi, subscribeFullMdi } from "./app/mdi";
 
 import JSZip from "jszip";
 
@@ -196,6 +197,30 @@ function remotesUseHueIcons() {
             for (const iconsByTap of Object.values(ex.buttonIcons)) {
                 for (const icon of Object.values(iconsByTap)) {
                     if (typeof icon === "string" && icon.startsWith("hue:")) return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function stateUsesFullMdi(state: DesignState) {
+    for (const cfg of Object.values(state.buttonConfigs)) {
+        const icons = cfg?.icons ?? {};
+        for (const icon of Object.values(icons)) {
+            if (typeof icon === "string" && icon.startsWith("mdi:") && !isMdiInHomeSet(icon)) return true;
+        }
+    }
+    return false;
+}
+
+function remotesUseFullMdi() {
+    for (const remote of REMOTES) {
+        const examples = remote.examples ?? [];
+        for (const ex of examples) {
+            for (const iconsByTap of Object.values(ex.buttonIcons)) {
+                for (const icon of Object.values(iconsByTap)) {
+                    if (typeof icon === "string" && icon.startsWith("mdi:") && !isMdiInHomeSet(icon)) return true;
                 }
             }
         }
@@ -408,6 +433,15 @@ export default function App() {
         if (!shouldPreloadHueIcons || hueIconsLoaded) return;
         void preloadHueIcons();
     }, [shouldPreloadHueIcons, hueIconsLoaded]);
+
+    const fullMdiLoaded = useSyncExternalStore(subscribeFullMdi, getFullMdiLoadedSnapshot);
+    const galleryUsesFullMdi = useMemo(() => remotesUseFullMdi(), []);
+    const shouldPreloadFullMdi = useMemo(() => (isGallery ? galleryUsesFullMdi : stateUsesFullMdi(state)), [isGallery, galleryUsesFullMdi, state]);
+
+    useEffect(() => {
+        if (!shouldPreloadFullMdi || fullMdiLoaded) return;
+        void preloadFullMdi();
+    }, [shouldPreloadFullMdi, fullMdiLoaded]);
 
     const buttonIds = template.buttons.map((b) => b.id);
     const o = state.options;

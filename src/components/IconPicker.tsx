@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { getMdiPath } from "../app/mdi";
+import { getMdiPath, getFullMdiLoadedSnapshot, isMdiInHomeSet, listFullMdiIcons, listHomeMdiIcons, preloadFullMdi, subscribeFullMdi } from "../app/mdi";
 import { FEATURES } from "../app/featureFlags";
 import { getHueIconsLoadedSnapshot, hasHueIcon, listHueIcons, preloadHueIcons, subscribeHueIcons } from "../hue/hueIcons";
 import { isSupportedHaIcon, renderHaIconAtMm } from "../render/renderHaIcon";
-import * as MDIJS from "@mdi/js";
-
-// Curated default suggestions (Home Automation-ish). User can still search ALL icons.
-const MDI_HOME_AUTOMATION_DEFAULT: string[] = ["mdi:home-assistant", "mdi:home", "mdi:lightbulb", "mdi:lightbulb-outline", "mdi:lightbulb-on-outline", "mdi:lightbulb-off-outline", "mdi:lamp", "mdi:ceiling-light", "mdi:ceiling-fan", "mdi:fan", "mdi:fan-off", "mdi:power", "mdi:power-plug", "mdi:power-socket-eu", "mdi:switch", "mdi:toggle-switch", "mdi:door", "mdi:door-open", "mdi:window-open", "mdi:lock", "mdi:lock-open-variant-outline", "mdi:thermometer", "mdi:thermostat", "mdi:radiator", "mdi:hvac", "mdi:air-conditioner", "mdi:weather-night", "mdi:motion-sensor", "mdi:motion-sensor-off", "mdi:cctv", "mdi:camera", "mdi:alarm-light", "mdi:alarm", "mdi:water", "mdi:water-pump", "mdi:curtains", "mdi:roller-shade", "mdi:blinds", "mdi:garage", "mdi:garage-open"];
 
 function IconPreview({ icon }: { icon: string }) {
     const t = icon.trim();
@@ -32,22 +28,6 @@ function IconPreview({ icon }: { icon: string }) {
     }
 
     return <div className="iconpicker__previewFallback">?</div>;
-}
-
-function exportKeysToHaNames(): string[] {
-    // Convert @mdi/js export keys like "mdiLightbulbOutline" -> "mdi:lightbulb-outline"
-    const mdi = MDIJS as Record<string, unknown>;
-    return Object.keys(mdi)
-        .filter((k) => k.startsWith("mdi") && typeof mdi[k] === "string")
-        .map(
-            (k) =>
-                "mdi:" +
-                k
-                    .replace(/^mdi/, "")
-                    .replace(/([A-Z])/g, "-$1")
-                    .toLowerCase()
-                    .replace(/^-/, "")
-        );
 }
 
 export function IconPicker({ value, onChange, placeholder }: { value: string | undefined; onChange: (next: string | undefined) => void; placeholder?: string }) {
@@ -87,8 +67,9 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         return isSupportedHaIcon(t);
     }, [draft, isEditing, value]);
 
-    // Build full MDI list once
-    const allMdiIcons = useMemo(() => exportKeysToHaNames(), []);
+    const fullMdiLoaded = useSyncExternalStore(subscribeFullMdi, getFullMdiLoadedSnapshot);
+    const [mdiRequested, setMdiRequested] = useState(false);
+    const allMdiIcons = useMemo(() => (fullMdiLoaded ? listFullMdiIcons() : listHomeMdiIcons()), [fullMdiLoaded]);
 
     // Auto-open panel based on early prefix while typing (m/mdi... or h/hue...)
     const maybeAutoOpenBrowser = (nextText: string) => {
@@ -97,6 +78,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
         // Early open on single-letter prefixes
         if (t === "h" && FEATURES.HUE_ICONS) {
+            if (!hueIconsLoaded) {
+                setHueRequested(true);
+                void preloadHueIcons();
+            }
             setBrowser("hue");
             return;
         }
@@ -107,7 +92,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
         // Open when user starts typing the family name (before the colon)
         if ((t.startsWith("hue") || t.startsWith("hue:")) && FEATURES.HUE_ICONS) {
-            void preloadHueIcons();
+            if (!hueIconsLoaded) {
+                setHueRequested(true);
+                void preloadHueIcons();
+            }
             setBrowser("hue");
             return;
         }
@@ -118,7 +106,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
         // Keep existing behavior for full prefixes
         if (t.startsWith("hue:") && FEATURES.HUE_ICONS) {
-            void preloadHueIcons();
+            if (!hueIconsLoaded) {
+                setHueRequested(true);
+                void preloadHueIcons();
+            }
             setBrowser("hue");
             return;
         }
@@ -133,13 +124,14 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         if (!q) {
             // Default: curated Home Automation list, but only those that exist in @mdi/js.
             const set = new Set(allMdiIcons);
-            return MDI_HOME_AUTOMATION_DEFAULT.filter((x) => set.has(x));
+            return listHomeMdiIcons().filter((x) => set.has(x));
         }
         // Search all icons (contains match)
         return allMdiIcons.filter((x) => x.includes(q));
     }, [mdiQuery, allMdiIcons]);
 
     const hueIconsLoaded = useSyncExternalStore(subscribeHueIcons, getHueIconsLoadedSnapshot);
+    const [hueRequested, setHueRequested] = useState(false);
     const allHueIcons = useMemo(() => {
         if (!FEATURES.HUE_ICONS) return [];
         if (!hueIconsLoaded) return [];
@@ -154,6 +146,9 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     }, [hueQuery, allHueIcons]);
 
     const currentText = isEditing ? draft : value ?? "";
+
+    const mdiLoading = mdiRequested && !fullMdiLoaded;
+    const hueLoading = hueRequested && !hueIconsLoaded;
 
     const applyCurrent = () => {
         const trimmed = currentText.trim();
@@ -170,8 +165,13 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     onChange={(e) => {
                         setHasInteracted(true);
                         setIsEditing(true);
-                        setDraft(e.target.value);
+                        const next = e.target.value;
+                        setDraft(next);
                         maybeAutoOpenBrowser(e.target.value);
+                        if (next.trim().startsWith("mdi:") && !fullMdiLoaded && !isMdiInHomeSet(next.trim())) {
+                            setMdiRequested(true);
+                            void preloadFullMdi();
+                        }
                     }}
                     onFocus={() => {
                         setHasInteracted(true);
@@ -182,7 +182,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                         const t = (value ?? "").trim().toLowerCase();
                         // If user has already started with a hint, open the matching browser.
                         if ((t === "h" || t.startsWith("hue")) && FEATURES.HUE_ICONS) {
-                            void preloadHueIcons();
+                            if (!hueIconsLoaded) {
+                                setHueRequested(true);
+                                void preloadHueIcons();
+                            }
                             setBrowser("hue");
                         }
                         else if (t === "m" || t.startsWith("mdi")) setBrowser("mdi");
@@ -199,6 +202,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     className={`iconpicker__btn ${browser === "mdi" ? "iconpicker__btn--active" : ""}`}
                     onClick={() => {
                         setHasInteracted(true);
+                        if (!fullMdiLoaded) {
+                            setMdiRequested(true);
+                            void preloadFullMdi();
+                        }
                         setBrowser((b) => (b === "mdi" ? null : "mdi"));
                     }}
                     title="Browse MDI icons"
@@ -212,7 +219,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                         className={`iconpicker__btn ${browser === "hue" ? "iconpicker__btn--active" : ""}`}
                         onClick={() => {
                             setHasInteracted(true);
-                            void preloadHueIcons();
+                            if (!hueIconsLoaded) {
+                                setHueRequested(true);
+                                void preloadHueIcons();
+                            }
                             setBrowser((b) => (b === "hue" ? null : "hue"));
                         }}
                         title="Browse Hue icons"
@@ -266,6 +276,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     <header className="iconpicker__panelHeader">
                         <div className="iconpicker__panelTitle">
                             <strong>MDI Icons</strong>
+                            {mdiLoading && <span className="iconpicker__panelLoading">Loading…</span>}
                             <span className="iconpicker__panelCount">
                                 ({mdiFiltered.length}
                                 {mdiQuery.trim() ? " / all" : " / home automation"})
@@ -276,31 +287,55 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                         </button>
                     </header>
 
-                    <input className="iconpicker__search" value={mdiQuery} onChange={(e) => setMdiQuery(e.target.value)} placeholder='Search MDI (try "light", "thermo", "curtain"...)' />
+                    <input
+                        className="iconpicker__search"
+                        value={mdiQuery}
+                        onChange={(e) => {
+                            const next = e.target.value;
+                            setMdiQuery(next);
+                            if (next.trim() && !fullMdiLoaded) {
+                                setMdiRequested(true);
+                                void preloadFullMdi();
+                            }
+                        }}
+                        placeholder='Search MDI (try "light", "thermo", "curtain"...)'
+                        disabled={mdiLoading}
+                    />
 
-                    <div className="iconpicker__grid" role="list">
-                        {mdiFiltered.slice(0, 300).map((icon) => (
-                            <button
-                                key={icon}
-                                type="button"
-                                className="iconpicker__tile"
-                                onClick={() => {
-                                    setDraft(icon);
-                                    setIsEditing(false);
-                                    onChange(icon);
-                                }}
-                                title={icon}
-                                role="listitem"
-                            >
-                                <span className="iconpicker__tileIcon">
-                                    <IconPreview icon={icon} />
-                                </span>
-                                <span className="iconpicker__tileText">{icon}</span>
-                            </button>
-                        ))}
+                    <div className="iconpicker__grid" role="list" aria-busy={mdiLoading}>
+                        {mdiLoading ? (
+                            <div className="iconpicker__hint">Loading full MDI catalog…</div>
+                        ) : (
+                            mdiFiltered.slice(0, 300).map((icon) => (
+                                <button
+                                    key={icon}
+                                    type="button"
+                                    className="iconpicker__tile"
+                                    onClick={() => {
+                                        setDraft(icon);
+                                        setIsEditing(false);
+                                        onChange(icon);
+                                    }}
+                                    title={icon}
+                                    role="listitem"
+                                >
+                                    <span className="iconpicker__tileIcon">
+                                        <IconPreview icon={icon} />
+                                    </span>
+                                    <span className="iconpicker__tileText">{icon}</span>
+                                </button>
+                            ))
+                        )}
                     </div>
 
-                    {mdiFiltered.length > 300 && <div className="iconpicker__hint">More than 300 results — refine your search.</div>}
+                    {mdiFiltered.length > 300 && !mdiLoading && <div className="iconpicker__hint">More than 300 results — refine your search.</div>}
+
+                    {mdiLoading && (
+                        <div className="iconpicker__loadingOverlay" role="status" aria-live="polite">
+                            <div className="iconpicker__spinner" aria-hidden="true" />
+                            <div className="iconpicker__loadingText">Loading MDI icons…</div>
+                        </div>
+                    )}
                 </section>
             ) : null}
 
@@ -310,6 +345,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     <header className="iconpicker__panelHeader">
                         <div className="iconpicker__panelTitle">
                             <strong>Hue Icons</strong>
+                            {hueLoading && <span className="iconpicker__panelLoading">Loading…</span>}
                             <span className="iconpicker__panelCount">({allHueIcons.length})</span>
                         </div>
                         <button type="button" className="iconpicker__btn" onClick={() => setBrowser(null)} aria-label="Close Hue browser">
@@ -317,35 +353,52 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                         </button>
                     </header>
 
-                    <input className="iconpicker__search" value={hueQuery} onChange={(e) => setHueQuery(e.target.value)} placeholder='Search e.g. "bulb", "spot", "ceiling"...' />
+                    <input
+                        className="iconpicker__search"
+                        value={hueQuery}
+                        onChange={(e) => setHueQuery(e.target.value)}
+                        placeholder='Search e.g. "bulb", "spot", "ceiling"...'
+                        disabled={hueLoading}
+                    />
 
-                    <div className="iconpicker__grid" role="list">
-                        {hueFiltered.slice(0, 300).map((icon) => (
-                            <button
-                                key={icon}
-                                type="button"
-                                className="iconpicker__tile"
-                                onClick={() => {
-                                    setDraft(icon);
-                                    setIsEditing(false);
-                                    onChange(icon);
-                                }}
-                                title={icon}
-                                role="listitem"
-                            >
-                                <span className="iconpicker__tileIcon">
-                                    <IconPreview icon={icon} />
-                                </span>
-                                <span className="iconpicker__tileText">{icon}</span>
-                            </button>
-                        ))}
+                    <div className="iconpicker__grid" role="list" aria-busy={hueLoading}>
+                        {hueLoading ? (
+                            <div className="iconpicker__hint">Loading Hue icons…</div>
+                        ) : (
+                            hueFiltered.slice(0, 300).map((icon) => (
+                                <button
+                                    key={icon}
+                                    type="button"
+                                    className="iconpicker__tile"
+                                    onClick={() => {
+                                        setDraft(icon);
+                                        setIsEditing(false);
+                                        onChange(icon);
+                                    }}
+                                    title={icon}
+                                    role="listitem"
+                                >
+                                    <span className="iconpicker__tileIcon">
+                                        <IconPreview icon={icon} />
+                                    </span>
+                                    <span className="iconpicker__tileText">{icon}</span>
+                                </button>
+                            ))
+                        )}
                     </div>
 
-                    {hueFiltered.length > 300 && <div className="iconpicker__hint">More than 300 results — refine your search.</div>}
+                    {hueFiltered.length > 300 && !hueLoading && <div className="iconpicker__hint">More than 300 results — refine your search.</div>}
 
-                    {hueFiltered.length === 0 && (
+                    {hueFiltered.length === 0 && !hueLoading && (
                         <div className="iconpicker__hint">
                             No results. (Are SVGs present in <code>src/hue/svgs</code>?)
+                        </div>
+                    )}
+
+                    {hueLoading && (
+                        <div className="iconpicker__loadingOverlay" role="status" aria-live="polite">
+                            <div className="iconpicker__spinner" aria-hidden="true" />
+                            <div className="iconpicker__loadingText">Loading Hue icons…</div>
                         </div>
                     )}
                 </section>
