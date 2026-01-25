@@ -1,13 +1,7 @@
 import { FEATURES } from "../app/featureFlags";
 
-// Lazy-load all SVGs from src/hue/svgs/*.svg as raw strings
-const modules = import.meta.glob("./svgs/*.svg", { query: "?raw", import: "default" });
-
-function filenameFromPath(path: string) {
-    const parts = path.split("/");
-    const file = parts[parts.length - 1] ?? "";
-    return file.replace(/\.svg$/i, "");
-}
+// Hue icon map is built at update time into a single JSON file
+const hueIconsUrl = new URL("./hue-icons.json", import.meta.url).href;
 
 let hueSvgByName: Record<string, string> | null = null;
 let loadPromise: Promise<void> | null = null;
@@ -31,13 +25,10 @@ export async function preloadHueIcons() {
     if (hueSvgByName) return;
     if (!loadPromise) {
         loadPromise = (async () => {
-            const entries = await Promise.all(
-                Object.entries(modules).map(async ([path, loader]) => {
-                    const mod = await (loader as () => Promise<unknown>)();
-                    return [filenameFromPath(path), mod as string] as const;
-                })
-            );
-            hueSvgByName = Object.fromEntries(entries);
+            const resp = await fetch(hueIconsUrl);
+            if (!resp.ok) throw new Error(`Failed to load hue icons: ${resp.status}`);
+            const data = (await resp.json()) as Record<string, string>;
+            hueSvgByName = data;
             loadPromise = null;
             notifyListeners();
         })();

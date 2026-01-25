@@ -8,6 +8,7 @@ import { execSync } from "node:child_process";
 const REPO_URL = "https://github.com/arallsopp/hass-hue-icons.git";
 const TMP_DIR = path.join(os.tmpdir(), "hass-hue-icons");
 const TARGET_DIR = path.join(process.cwd(), "src/hue/svgs");
+const TARGET_JSON = path.join(process.cwd(), "src/hue/hue-icons.json");
 
 function rmrf(p) {
     fs.rmSync(p, { recursive: true, force: true });
@@ -70,8 +71,22 @@ for (const src of sources) {
 
 const finalCount = fs.existsSync(TARGET_DIR) ? fs.readdirSync(TARGET_DIR).length : 0;
 
+// Build single JSON map for faster runtime loading
+const map = {};
+if (fs.existsSync(TARGET_DIR)) {
+    const files = fs.readdirSync(TARGET_DIR).filter((f) => f.toLowerCase().endsWith(".svg"));
+    files.sort();
+    for (const file of files) {
+        const name = file.replace(/\.svg$/i, "");
+        const svg = fs.readFileSync(path.join(TARGET_DIR, file), "utf8");
+        map[name] = svg;
+    }
+    fs.writeFileSync(TARGET_JSON, JSON.stringify(map));
+}
+
 console.log("✔ Done.");
 console.log(`  copied files : ${copied}`);
 console.log(`  duplicates   : ${dupCount} (last one wins in flat target folder)`);
 console.log(`  final svgs   : ${finalCount} in ${TARGET_DIR}`);
+console.log(`  json map     : ${Object.keys(map).length} entries in ${TARGET_JSON}`);
 console.log("\nℹ️  Restart Vite after updating icons:\n   npm run dev");

@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { getMdiPath } from "../app/mdi";
 import { FEATURES } from "../app/featureFlags";
-import { hasHueIcon, listHueIcons, preloadHueIcons } from "../hue/hueIcons";
+import { getHueIconsLoadedSnapshot, hasHueIcon, listHueIcons, preloadHueIcons, subscribeHueIcons } from "../hue/hueIcons";
 import { isSupportedHaIcon, renderHaIconAtMm } from "../render/renderHaIcon";
 import * as MDIJS from "@mdi/js";
 
@@ -139,7 +139,8 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         return allMdiIcons.filter((x) => x.includes(q));
     }, [mdiQuery, allMdiIcons]);
 
-    const allHueIcons = useMemo(() => (FEATURES.HUE_ICONS ? listHueIcons() : []), []);
+    const hueIconsLoaded = useSyncExternalStore(subscribeHueIcons, getHueIconsLoadedSnapshot);
+    const allHueIcons = useMemo(() => (FEATURES.HUE_ICONS ? listHueIcons() : []), [hueIconsLoaded]);
 
     const hueFiltered = useMemo(() => {
         if (!FEATURES.HUE_ICONS) return [];
