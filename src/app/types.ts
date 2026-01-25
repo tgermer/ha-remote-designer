@@ -5,6 +5,8 @@ export type TapType = "single" | "double" | "long";
 export type ButtonConfig = {
     icons: Partial<Record<TapType, string>>; // e.g. "mdi:lightbulb-outline"
     strike?: Partial<Record<TapType, boolean>>;
+    iconColors?: Partial<Record<TapType, string>>;
+    buttonFill?: string;
 };
 
 export type DesignOptions = {
@@ -18,10 +20,12 @@ export type DesignOptions = {
 
     autoIconSizing: boolean;
     fixedIconMm: number;
+    iconColor: string;
 
     showScaleBar: boolean;
 
     tapMarkerFill: "outline" | "filled";
+    tapMarkerColorMode: "black" | "icon";
 
     labelOutlineColor: string;
     labelOutlineStrokeMm: number;

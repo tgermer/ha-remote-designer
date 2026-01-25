@@ -102,7 +102,9 @@ const initial: DesignState = {
         showScaleBar: true,
         autoIconSizing: true,
         fixedIconMm: 8,
+        iconColor: "#000000",
         tapMarkerFill: "outline",
+        tapMarkerColorMode: "icon",
         labelOutlineColor: "#ccc",
         labelOutlineStrokeMm: 0.1,
         labelWidthMm: 40,
@@ -153,6 +155,8 @@ function normalizeState(input: DesignState): DesignState {
             sheetMarginYMm: clampNumber(mergedOptions.sheetMarginYMm, initial.options.sheetMarginYMm, 0),
             sheetGapMm: clampNumber(mergedOptions.sheetGapMm, initial.options.sheetGapMm, 0),
             tapMarkerFill: mergedOptions.tapMarkerFill === "filled" ? "filled" : "outline",
+            tapMarkerColorMode: mergedOptions.tapMarkerColorMode === "icon" ? "icon" : "black",
+            iconColor: typeof mergedOptions.iconColor === "string" ? mergedOptions.iconColor : initial.options.iconColor,
         },
     };
 }
@@ -699,12 +703,15 @@ export default function App() {
             // Preserve strike map, but clear strike for this tap when icon is removed
             const prevStrike = prevCfg.strike ?? {};
             const nextStrike: Partial<Record<TapType, boolean>> = { ...prevStrike };
+            const prevIconColors = prevCfg.iconColors ?? {};
+            const nextIconColors: Partial<Record<TapType, string>> = { ...prevIconColors };
 
             if (icon) {
                 nextIcons[tap] = icon;
             } else {
                 delete nextIcons[tap];
                 delete nextStrike[tap]; // if the icon is removed, remove its strike flag too
+                delete nextIconColors[tap];
             }
 
             return {
@@ -716,6 +723,7 @@ export default function App() {
                         ...prevCfg,
                         icons: nextIcons,
                         strike: nextStrike,
+                        iconColors: nextIconColors,
                     },
                 },
             };
@@ -733,6 +741,49 @@ export default function App() {
                     [buttonId]: {
                         ...prev,
                         strike: { ...prevStrike, [tap]: checked },
+                    },
+                },
+            };
+        });
+    };
+
+    const setIconColor = (buttonId: string, tap: TapType, color?: string) => {
+        setState((s) => {
+            const prev = s.buttonConfigs[buttonId] ?? { icons: {} };
+            const prevColors = prev.iconColors ?? {};
+            const nextColors: Partial<Record<TapType, string>> = { ...prevColors };
+
+            if (color) {
+                nextColors[tap] = color;
+            } else {
+                delete nextColors[tap];
+            }
+
+            return {
+                ...s,
+                buttonConfigs: {
+                    ...s.buttonConfigs,
+                    [buttonId]: {
+                        ...prev,
+                        iconColors: nextColors,
+                    },
+                },
+            };
+        });
+    };
+
+    const setButtonFill = (buttonId: string, color?: string) => {
+        setState((s) => {
+            const prev = s.buttonConfigs[buttonId] ?? { icons: {} };
+            const nextFill = color || undefined;
+
+            return {
+                ...s,
+                buttonConfigs: {
+                    ...s.buttonConfigs,
+                    [buttonId]: {
+                        ...prev,
+                        buttonFill: nextFill,
                     },
                 },
             };
@@ -1057,7 +1108,18 @@ export default function App() {
                                     <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} />
                                 </>
                             }
-                            full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} highlightedButtonId={highlightedButtonId} />}
+                            full={
+                                <ButtonsSection
+                                    buttonIds={buttonIds}
+                                    state={state}
+                                    tapLabel={tapLabel}
+                                    onSetIcon={setIcon}
+                                    onToggleStrike={toggleStrike}
+                                    onSetIconColor={setIconColor}
+                                    onSetButtonFill={setButtonFill}
+                                    highlightedButtonId={highlightedButtonId}
+                                />
+                            }
                         />
                     }
                     preview={

@@ -25,8 +25,26 @@ export function isSupportedHaIcon(icon: string): boolean {
     return false;
 }
 
-export function renderHaIconAtMm({ icon, cx, cy, iconMm, strike }: { icon: string; cx: number; cy: number; iconMm: number; strike?: boolean }) {
+export function renderHaIconAtMm({
+    icon,
+    cx,
+    cy,
+    iconMm,
+    strike,
+    color,
+    strikeBgColor,
+}: {
+    icon: string;
+    cx: number;
+    cy: number;
+    iconMm: number;
+    strike?: boolean;
+    color?: string;
+    strikeBgColor?: string;
+}) {
     // MDI (24x24)
+    const strikeColor = color || "black";
+    const highlightColor = strikeBgColor || "white";
     const strikeOverlay = strike ? (
         <>
             {(() => {
@@ -49,9 +67,9 @@ export function renderHaIconAtMm({ icon, cx, cy, iconMm, strike }: { icon: strin
                 return (
                     <>
                         {/* white highlight line (parallel, offset) */}
-                        <line x1={x1 + ox} y1={y1 + oy} x2={x2 + ox} y2={y2 + oy} stroke="white" strokeWidth={whiteW} strokeLinecap="butt" />
+                        <line x1={x1 + ox} y1={y1 + oy} x2={x2 + ox} y2={y2 + oy} stroke={highlightColor} strokeWidth={whiteW} strokeLinecap="butt" />
                         {/* black strike line */}
-                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="black" strokeWidth={blackW} strokeLinecap="butt" />
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={strikeColor} strokeWidth={blackW} strokeLinecap="butt" />
                     </>
                 );
             })()}
@@ -59,6 +77,7 @@ export function renderHaIconAtMm({ icon, cx, cy, iconMm, strike }: { icon: strin
     ) : null;
     if (icon.startsWith("mdi:")) {
         if (!getMdiPath(icon)) return null;
+        const fill = color || "black";
         return (
             <>
                 <g
@@ -67,7 +86,7 @@ export function renderHaIconAtMm({ icon, cx, cy, iconMm, strike }: { icon: strin
         translate(${-iconMm / 2}, ${-iconMm / 2})
         scale(${iconMm / 24})
       `}
-                    fill="black"
+                    fill={fill}
                 >
                     <MdiPath name={icon} />
                 </g>
@@ -88,6 +107,7 @@ export function renderHaIconAtMm({ icon, cx, cy, iconMm, strike }: { icon: strin
         const sx = iconMm / vb.w;
         const sy = iconMm / vb.h;
 
+        const hueStyle = color ? { color, fill: color, stroke: color } : undefined;
         return (
             <>
                 <g
@@ -97,6 +117,7 @@ export function renderHaIconAtMm({ icon, cx, cy, iconMm, strike }: { icon: strin
         scale(${sx} ${sy})
         translate(${-vb.minX} ${-vb.minY})
       `}
+                    style={hueStyle}
                     dangerouslySetInnerHTML={{ __html: inner }}
                 />
 

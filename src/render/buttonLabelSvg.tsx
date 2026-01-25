@@ -35,21 +35,21 @@ function isUniformRadii(r: CornerRadii) {
     return r.tl === r.tr && r.tr === r.br && r.br === r.bl;
 }
 
-function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; sizeMm?: number; fillMode?: "outline" | "filled" }) {
+function TapMarker({ tap, sizeMm = 3, fillMode = "outline", color = "black" }: { tap: TapType; sizeMm?: number; fillMode?: "outline" | "filled"; color?: string }) {
     const stroke = 0.35;
     const rr = sizeMm / 2 - stroke;
-    const fill = fillMode === "filled" ? "black" : "none";
+    const fill = fillMode === "filled" ? color : "none";
 
     if (tap === "single") {
-        return <circle cx="0" cy="0" r={rr} fill={fill} stroke="black" strokeWidth={stroke} />;
+        return <circle cx="0" cy="0" r={rr} fill={fill} stroke={color} strokeWidth={stroke} />;
     }
 
     if (tap === "double") {
         const dx = rr + 0.6;
         return (
             <g>
-                <circle cx={-dx} cy="0" r={rr} fill={fill} stroke="black" strokeWidth={stroke} />
-                <circle cx={dx} cy="0" r={rr} fill={fill} stroke="black" strokeWidth={stroke} />
+                <circle cx={-dx} cy="0" r={rr} fill={fill} stroke={color} strokeWidth={stroke} />
+                <circle cx={dx} cy="0" r={rr} fill={fill} stroke={color} strokeWidth={stroke} />
             </g>
         );
     }
@@ -58,11 +58,16 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; si
     const h = sizeMm * 0.8;
     const w = sizeMm * 2.6;
 
-    return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} ry={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
+    return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} ry={h / 2} fill={fill} stroke={color} strokeWidth={stroke} />;
 }
 
 export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, showWatermark, watermarkText, watermarkOpacity, xMm, yMm }: { state: DesignState; button: ButtonDef; labelWidthMm: number; labelHeightMm: number; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; xMm?: number; yMm?: number }) {
-    const cfg = state.buttonConfigs[button.id]?.icons ?? {};
+    const buttonCfg = state.buttonConfigs[button.id] ?? {};
+    const cfg = buttonCfg.icons ?? {};
+    const iconColors = buttonCfg.iconColors ?? {};
+    const buttonFill = buttonCfg.buttonFill;
+    const strikeBgColor = buttonFill ?? "white";
+    const defaultIconColor = state.options.iconColor;
 
     const enabledTaps = state.tapsEnabled.length ? state.tapsEnabled : (["single"] as TapType[]);
     const taps = TAP_ORDER.filter((t) => enabledTaps.includes(t) && !!cfg[t]);
@@ -80,6 +85,7 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
     const markerMm = 3;
     const gapMm = 1;
     const markerFill = state.options.tapMarkerFill;
+    const markerColorMode = state.options.tapMarkerColorMode;
 
     const wmEnabled = !!showWatermark && !!watermarkText;
     const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
@@ -96,6 +102,11 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
             <rect x="0" y="0" width={labelWidthMm} height={labelHeightMm} fill="white" />
 
             {/* Button cut frame (with radii) */}
+            {typeof buttonFill === "string" && buttonFill.length > 0
+                ? isUniformRadii(radii)
+                    ? <rect x={bx} y={by} width={button.wMm} height={button.hMm} rx={radii.tl} ry={radii.tl} fill={buttonFill} stroke="none" />
+                    : <path d={roundedRectPath(bx, by, button.wMm, button.hMm, radii)} fill={buttonFill} stroke="none" />
+                : null}
             {isUniformRadii(radii) ? <rect x={bx} y={by} width={button.wMm} height={button.hMm} rx={radii.tl} ry={radii.tl} fill="none" stroke={outlineColor} strokeWidth={outlineStroke} /> : <path d={roundedRectPath(bx, by, button.wMm, button.hMm, radii)} fill="none" stroke={outlineColor} strokeWidth={outlineStroke} />}
 
             {/* Icons + markers inside the button frame */}
@@ -113,6 +124,7 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                         const topY = by + (button.hMm - groupH) / 2;
                         const iconCy = topY + iconMm / 2;
                         const markerCy = topY + iconMm + gapMm + markerMm / 2;
+                        const markerColor = markerColorMode === "icon" ? iconColors[tap] ?? defaultIconColor : "black";
 
                         return (
                             <g>
@@ -122,9 +134,11 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                                     cy: iconCy,
                                     iconMm,
                                     strike: state.buttonConfigs[button.id]?.strike?.[tap] ?? false,
+                                    color: iconColors[tap] ?? defaultIconColor,
+                                    strikeBgColor,
                                 })}
                                 <g transform={`translate(${buttonCx}, ${markerCy})`}>
-                                    <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} />
+                                    <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} color={markerColor} />
                                 </g>
                             </g>
                         );
@@ -139,6 +153,8 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                                 cy: buttonCy,
                                 iconMm,
                                 strike: state.buttonConfigs[button.id]?.strike?.[tap] ?? false,
+                                color: iconColors[tap] ?? defaultIconColor,
+                                strikeBgColor,
                             })}
                         </g>
                     );
@@ -153,6 +169,7 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                     const topY = by + (button.hMm - groupH) / 2;
                     const iconCy = topY + iconMm / 2;
                     const markerCy = topY + iconMm + gapMm + markerMm / 2;
+                    const resolveMarkerColor = (tap: TapType) => (markerColorMode === "icon" ? iconColors[tap] ?? defaultIconColor : "black");
 
                     const showDividers = state.options.showTapDividers;
 
@@ -176,9 +193,11 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                                             cy: iconCy,
                                             iconMm,
                                             strike: state.buttonConfigs[button.id]?.strike?.[tap] ?? false,
+                                            color: iconColors[tap] ?? defaultIconColor,
+                                            strikeBgColor,
                                         })}
                                         <g transform={`translate(${iconCx}, ${markerCy})`}>
-                                            <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} />
+                                            <TapMarker tap={tap} fillMode={markerFill} sizeMm={markerMm} color={resolveMarkerColor(tap)} />
                                         </g>
                                     </g>
                                 );

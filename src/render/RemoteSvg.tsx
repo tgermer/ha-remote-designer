@@ -58,33 +58,33 @@ function isUniformRadii(r: CornerRadii) {
     return r.tl === r.tr && r.tr === r.br && r.br === r.bl;
 }
 
-function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; sizeMm?: number; fillMode?: "outline" | "filled" }) {
+function TapMarker({ tap, sizeMm = 3, fillMode = "outline", color = "black" }: { tap: TapType; sizeMm?: number; fillMode?: "outline" | "filled"; color?: string }) {
     const stroke = 0.35;
     const r = sizeMm / 2 - stroke;
-    const fill = fillMode === "filled" ? "black" : "none";
+    const fill = fillMode === "filled" ? color : "none";
 
     if (tap === "single") {
-        return <circle cx="0" cy="0" r={r} fill={fill} stroke="black" strokeWidth={stroke} />;
+        return <circle cx="0" cy="0" r={r} fill={fill} stroke={color} strokeWidth={stroke} />;
     }
 
     if (tap === "double") {
         const dx = r + 0.6;
         return (
             <g>
-                <circle cx={-dx} cy="0" r={r} fill={fill} stroke="black" strokeWidth={stroke} />
-                <circle cx={dx} cy="0" r={r} fill={fill} stroke="black" strokeWidth={stroke} />
+                <circle cx={-dx} cy="0" r={r} fill={fill} stroke={color} strokeWidth={stroke} />
+                <circle cx={dx} cy="0" r={r} fill={fill} stroke={color} strokeWidth={stroke} />
             </g>
         );
     }
 
     const h = sizeMm * 0.7;
     const w = sizeMm * 2.3;
-    return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
+    return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke={color} strokeWidth={stroke} />;
 }
 
 export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity, background, onSelectButton, renderPreviewElements = true }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; background?: "white" | "remote" | "transparent"; onSelectButton?: (buttonId: string) => void; renderPreviewElements?: boolean }) {
     const options = { ...state.options, ...overrides };
-    const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showCutouts, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
+    const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showCutouts, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill, tapMarkerColorMode, iconColor } = options;
 
     const outlineColor = options.labelOutlineColor ?? "#ccc";
     const outlineStrokeMm = typeof options.labelOutlineStrokeMm === "number" ? options.labelOutlineStrokeMm : 0.1;
@@ -152,7 +152,11 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                 })}
 
             {template.buttons.map((b) => {
-                const cfg = state.buttonConfigs[b.id]?.icons ?? {};
+                const buttonCfg = state.buttonConfigs[b.id] ?? {};
+                const cfg = buttonCfg.icons ?? {};
+                const iconColors = buttonCfg.iconColors ?? {};
+                const buttonFill = buttonCfg.buttonFill;
+                const strikeBgColor = buttonFill ?? "white";
                 const activeTaps = TAP_ORDER.filter((t) => enabledTaps.includes(t) && !!cfg[t]);
                 const n = activeTaps.length;
 
@@ -161,6 +165,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
                 const radii = getButtonRadiiMm(b, exportMode?.squareButtons);
 
+                const fill = typeof buttonFill === "string" && buttonFill.length > 0 ? (isUniformRadii(radii) ? <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={radii.tl} fill={buttonFill} stroke="none" /> : <path d={roundedRectPath(b.xMm, b.yMm, b.wMm, b.hMm, radii)} fill={buttonFill} stroke="none" />) : null;
                 const outline = showButtonOutlines ? isUniformRadii(radii) ? <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={radii.tl} fill="none" stroke={outlineColor} strokeWidth={outlineStrokeMm} /> : <path d={roundedRectPath(b.xMm, b.yMm, b.wMm, b.hMm, radii)} fill="none" stroke={outlineColor} strokeWidth={outlineStrokeMm} /> : null;
                 const hitPaddingMm = onSelectButton ? 1.5 : 0;
                 const hitX = b.xMm - hitPaddingMm;
@@ -208,6 +213,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                 if (n === 0) {
                     return (
                         <g key={b.id}>
+                            {fill}
                             {outline}
                             {buttonGuides}
                             {hitTarget}
@@ -226,9 +232,11 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                         const gapMm = 1;
                         const groupH = iconMm + gapMm + markerMm;
                         const topY = b.yMm + (b.hMm - groupH) / 2;
+                        const markerColor = tapMarkerColorMode === "icon" ? iconColors[tap] ?? iconColor : "black";
 
                         return (
                             <g key={b.id}>
+                                {fill}
                                 {outline}
                                 {buttonGuides}
                                 {renderHaIconAtMm({
@@ -237,9 +245,11 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                                     cy: topY + iconMm / 2,
                                     iconMm,
                                     strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                                    color: iconColors[tap] ?? iconColor,
+                                    strikeBgColor,
                                 })}
                                 <g transform={`translate(${buttonCx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
-                                    <TapMarker tap={tap} fillMode={tapMarkerFill} />
+                                    <TapMarker tap={tap} fillMode={tapMarkerFill} color={markerColor} />
                                 </g>
                                 {hitTarget}
                             </g>
@@ -248,6 +258,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
                     return (
                         <g key={b.id}>
+                            {fill}
                             {outline}
                             {buttonGuides}
                             {renderHaIconAtMm({
@@ -256,6 +267,8 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                                 cy: buttonCy,
                                 iconMm,
                                 strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                                color: iconColors[tap] ?? iconColor,
+                                strikeBgColor,
                             })}
                             {hitTarget}
                         </g>
@@ -272,6 +285,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
                 return (
                     <g key={b.id}>
+                        {fill}
                         {outline}
                         {buttonGuides}
 
@@ -283,6 +297,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
 
                         {activeTaps.map((tap, i) => {
                             const cx = b.xMm + colW * (i + 0.5);
+                            const markerColor = tapMarkerColorMode === "icon" ? iconColors[tap] ?? iconColor : "black";
                             return (
                                 <g key={tap}>
                                     {renderHaIconAtMm({
@@ -291,9 +306,11 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                                         cy: topY + iconMm / 2,
                                         iconMm,
                                         strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                                        color: iconColors[tap] ?? iconColor,
+                                        strikeBgColor,
                                     })}
                                     <g transform={`translate(${cx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
-                                        <TapMarker tap={tap} fillMode={tapMarkerFill} />
+                                        <TapMarker tap={tap} fillMode={tapMarkerFill} color={markerColor} />
                                     </g>
                                 </g>
                             );

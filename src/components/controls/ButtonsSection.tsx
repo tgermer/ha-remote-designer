@@ -8,11 +8,14 @@ type ButtonsSectionProps = {
     tapLabel: (tap: TapType) => string;
     onSetIcon: (buttonId: string, tap: TapType, icon?: string) => void;
     onToggleStrike: (buttonId: string, tap: TapType, checked: boolean) => void;
+    onSetIconColor: (buttonId: string, tap: TapType, color?: string) => void;
+    onSetButtonFill: (buttonId: string, color?: string) => void;
     highlightedButtonId?: string | null;
 };
 
 export function ButtonsSection(props: ButtonsSectionProps) {
-    const { buttonIds, state, tapLabel, onSetIcon, onToggleStrike, highlightedButtonId } = props;
+    const { buttonIds, state, tapLabel, onSetIcon, onToggleStrike, onSetIconColor, onSetButtonFill, highlightedButtonId } = props;
+    const defaultButtonFill = "#e6e6e6";
 
     return (
         <section>
@@ -25,6 +28,29 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                     className={`button-config${highlightedButtonId === id ? " button-config--flash" : ""}`}
                 >
                     <h3>{id.startsWith("label_") ? `Sticker ${id.slice("label_".length)}` : `${id.toUpperCase()} Button`}</h3>
+                    {(() => {
+                        const buttonFill = state.buttonConfigs[id]?.buttonFill;
+                        const hasButtonFill = typeof buttonFill === "string" && buttonFill.length > 0;
+
+                        return (
+                            <>
+                                <label className="option">
+                                    <input
+                                        type="checkbox"
+                                        checked={hasButtonFill}
+                                        onChange={(e) => onSetButtonFill(id, e.target.checked ? buttonFill || defaultButtonFill : undefined)}
+                                    />
+                                    Custom button background
+                                </label>
+                                {hasButtonFill && (
+                                    <label className="option">
+                                        Background color
+                                        <input type="color" value={buttonFill} onChange={(e) => onSetButtonFill(id, e.target.value)} />
+                                    </label>
+                                )}
+                            </>
+                        );
+                    })()}
                     {TAP_ORDER.map((tap) => (
                         <div key={tap}>
                             <h4>{tapLabel(tap)}</h4>
@@ -46,6 +72,34 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                             />
                                             Strikethrough (manual “off”)
                                         </label>
+                                    );
+                                })()}
+                            </p>
+                            <p>
+                                {(() => {
+                                    const iconName = state.buttonConfigs[id]?.icons?.[tap];
+                                    if (!iconName) return null;
+
+                                    const iconColor = state.buttonConfigs[id]?.iconColors?.[tap];
+                                    const hasIconColor = typeof iconColor === "string" && iconColor.length > 0;
+
+                                    return (
+                                        <>
+                                            <label className="option">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={hasIconColor}
+                                                    onChange={(e) => onSetIconColor(id, tap, e.target.checked ? iconColor || state.options.iconColor || "#000000" : undefined)}
+                                                />
+                                                Custom icon color
+                                            </label>
+                                            {hasIconColor && (
+                                                <label className="option">
+                                                    Icon color
+                                                    <input type="color" value={iconColor} onChange={(e) => onSetIconColor(id, tap, e.target.value)} />
+                                                </label>
+                                            )}
+                                        </>
                                     );
                                 })()}
                             </p>

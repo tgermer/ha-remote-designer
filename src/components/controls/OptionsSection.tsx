@@ -33,6 +33,14 @@ export function OptionsSection(props: OptionsSectionProps) {
                 </label>
 
                 <label className="option">
+                    Tap marker color
+                    <select value={options.tapMarkerColorMode} onChange={(e) => onUpdateOptions({ tapMarkerColorMode: e.target.value as DesignOptions["tapMarkerColorMode"] })}>
+                        <option value="black">Black</option>
+                        <option value="icon">Icon color</option>
+                    </select>
+                </label>
+
+                <label className="option">
                     <input type="checkbox" checked={options.showRemoteOutline} onChange={(e) => onUpdateOptions({ showRemoteOutline: e.target.checked })} />
                     {outlineLabel}
                 </label>
@@ -67,6 +75,11 @@ export function OptionsSection(props: OptionsSectionProps) {
                 <label className="option">
                     <input type="checkbox" checked={options.autoIconSizing} onChange={(e) => onUpdateOptions({ autoIconSizing: e.target.checked })} />
                     Auto icon sizing
+                </label>
+
+                <label className="option">
+                    Default icon color
+                    <input type="color" value={options.iconColor} onChange={(e) => onUpdateOptions({ iconColor: e.target.value })} />
                 </label>
 
                 {!options.autoIconSizing && (
