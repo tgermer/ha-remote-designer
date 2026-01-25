@@ -53,7 +53,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
             </label>
             {saveNameError ? <p style={{ margin: 0, fontSize: "0.85rem", color: "#b00020" }}>{saveNameError}</p> : null}
 
-            <div className="row">
+            <div className="row row--spaced">
                 <button type="button" onClick={onSaveActive} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
                     Save
                 </button>
@@ -75,7 +75,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                 </select>
             </label>
 
-            <div className="row">
+            <div className="row row--spaced">
                 <button type="button" onClick={onLoadSelected} disabled={!selectedSavedId}>
                     Load
                 </button>
@@ -84,7 +84,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                 </button>
             </div>
 
-            <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>
+            <p style={{ margin: "0.5rem 0 0", fontSize: "0.85rem", opacity: 0.85 }}>
                 Saved in your browser (localStorage). It remains after reloads, but will be removed if you clear site data.
             </p>
         </fieldset>
