@@ -212,7 +212,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  align-items: center;
+  align-items: flex-end;
 }
 
 .galleryFilters__title {
@@ -1127,9 +1127,9 @@ button:disabled {
 
   .previewOverlay__close {
     position: absolute;
-    right: 0;
+    right: -4px;
     top: 0;
-    width: 30px;
+    width: 40px;
     aspect-ratio: 1 / 1;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.8);
