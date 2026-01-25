@@ -452,6 +452,26 @@ main {
   justify-self: stretch;
 }
 
+.previewStack {
+  display: grid;
+  gap: 0.6rem;
+  justify-items: start;
+}
+
+.tipJar__imageLink {
+  display: inline-flex;
+  margin-top: 1rem;
+}
+
+.tipJar__image {
+  width: 217px;
+  height: 60px;
+  max-width: 100%;
+  object-fit: contain;
+  transform: scale(0.7);
+  transform-origin: left top;
+}
+
 .rightRail {
   display: grid;
   gap: 1rem;

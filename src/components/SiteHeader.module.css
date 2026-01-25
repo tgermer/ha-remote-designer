@@ -13,6 +13,19 @@
   gap: 0.6rem;
 }
 
+.tipLink {
+  display: none;
+}
+
+.tipImage {
+  width: 217px;
+  height: 60px;
+  max-width: 100%;
+  object-fit: contain;
+  transform: scale(0.6);
+  transform-origin: center top;
+}
+
 @media (max-width: 900px) {
   .header {
     justify-content: center;
@@ -23,6 +36,11 @@
     justify-content: center;
     text-align: center;
     gap: 0.35rem;
+  }
+
+  .tipLink {
+    display: inline-flex;
+    margin-top: 0.35rem;
   }
 }
 
