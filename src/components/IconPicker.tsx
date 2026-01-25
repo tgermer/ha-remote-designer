@@ -140,7 +140,11 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     }, [mdiQuery, allMdiIcons]);
 
     const hueIconsLoaded = useSyncExternalStore(subscribeHueIcons, getHueIconsLoadedSnapshot);
-    const allHueIcons = useMemo(() => (FEATURES.HUE_ICONS ? listHueIcons() : []), [hueIconsLoaded]);
+    const allHueIcons = useMemo(() => {
+        if (!FEATURES.HUE_ICONS) return [];
+        if (!hueIconsLoaded) return [];
+        return listHueIcons();
+    }, [hueIconsLoaded]);
 
     const hueFiltered = useMemo(() => {
         if (!FEATURES.HUE_ICONS) return [];
