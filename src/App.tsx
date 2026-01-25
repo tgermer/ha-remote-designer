@@ -1182,7 +1182,7 @@ export default function App() {
                                     <div className="previewStack">
                                         <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--desktop" />
                                         <a className="tipJar__imageLink" href="https://www.buymeacoffee.com/tgermer" target="_blank" rel="noopener noreferrer">
-                                            <img className="tipJar__image" src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" />
+                                            <img className="tipJar__image" src="/buyMeACoffee.png" alt="Buy Me A Coffee" />
                                         </a>
                                     </div>
                                 }

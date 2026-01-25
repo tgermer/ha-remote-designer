@@ -12,7 +12,7 @@ export function SiteHeader({ isAdmin = false, title = "Remote Label Designer for
                 <img className={styles.logo} src="/dimmer-switch.svg" alt="" aria-hidden="true" />
                 <h1>{title}</h1>
                 <a className={styles.tipLink} href="https://www.buymeacoffee.com/tgermer" target="_blank" rel="noopener noreferrer">
-                    <img className={styles.tipImage} src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" />
+                    <img className={styles.tipImage} src="/buyMeACoffee.png" alt="Buy Me A Coffee" />
                 </a>
             </div>
             {isAdmin && <span className={styles.badge}>Admin</span>}

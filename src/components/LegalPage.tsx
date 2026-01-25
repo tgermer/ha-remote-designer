@@ -199,6 +199,10 @@ export function LegalPage({ kind, contact, backHref, onBack }: Props) {
                     <section className={styles.section}>
                         <h2>Externe Inhalte</h2>
                         <p>Es werden keine externen Inhalte, Schriftarten oder eingebettete Dienste von Drittanbietern geladen.</p>
+                        <p>
+                            Auf der Website gibt es lediglich einen externen Link zu Buy Me a Coffee. Beim Klick auf den Link werden Sie auf die Website
+                            des Anbieters weitergeleitet; dort gilt die jeweilige Datenschutzerklärung.
+                        </p>
                     </section>
 
                     <section className={styles.section}>
