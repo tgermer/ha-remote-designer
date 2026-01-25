@@ -8,16 +8,22 @@ type ButtonsSectionProps = {
     tapLabel: (tap: TapType) => string;
     onSetIcon: (buttonId: string, tap: TapType, icon?: string) => void;
     onToggleStrike: (buttonId: string, tap: TapType, checked: boolean) => void;
+    highlightedButtonId?: string | null;
 };
 
 export function ButtonsSection(props: ButtonsSectionProps) {
-    const { buttonIds, state, tapLabel, onSetIcon, onToggleStrike } = props;
+    const { buttonIds, state, tapLabel, onSetIcon, onToggleStrike, highlightedButtonId } = props;
 
     return (
         <section>
             <h2>Buttons</h2>
             {buttonIds.map((id) => (
-                <section key={id} className="button-config">
+                <section
+                    key={id}
+                    id={`button-config-${id}`}
+                    data-button-id={id}
+                    className={`button-config${highlightedButtonId === id ? " button-config--flash" : ""}`}
+                >
                     <h3>{id.startsWith("label_") ? `Sticker ${id.slice("label_".length)}` : `${id.toUpperCase()} Button`}</h3>
                     {TAP_ORDER.map((tap) => (
                         <div key={tap}>

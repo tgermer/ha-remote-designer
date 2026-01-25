@@ -629,6 +629,7 @@ export default function App() {
     const [previewHeightVh, setPreviewHeightVh] = useState(32);
     const previewHeightRef = useRef(32);
     const dragStateRef = useRef<{ startY: number; startHeight: number } | null>(null);
+    const [highlightedButtonId, setHighlightedButtonId] = useState<string | null>(null);
 
     useEffect(() => {
         if (!shouldPreloadFullMdi || fullMdiLoaded) return;
@@ -921,6 +922,18 @@ export default function App() {
         }));
     };
 
+    const jumpToButtonConfig = (buttonId: string) => {
+        const isMobile = window.matchMedia("(max-width: 900px)").matches;
+        if (previewOpen && !isMobile) setPreviewOpen(false);
+        setHighlightedButtonId(buttonId);
+        window.setTimeout(() => setHighlightedButtonId(null), 2200);
+        window.setTimeout(() => {
+            const target = document.getElementById(`button-config-${buttonId}`);
+            if (!target) return;
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 0);
+    };
+
     /* -------------------------------- render -------------------------------- */
 
     // Removed effect: Keep the dropdown selection in sync with the name field
@@ -1043,7 +1056,7 @@ export default function App() {
                                     <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} />
                                 </>
                             }
-                            full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} />}
+                            full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} highlightedButtonId={highlightedButtonId} />}
                         />
                     }
                     preview={
@@ -1057,6 +1070,7 @@ export default function App() {
                             pageIndex={stickerPageIndexSafe}
                             pages={stickerPages}
                             onChangePage={setStickerPageIndex}
+                            onSelectButton={jumpToButtonConfig}
                             className="preview--desktop"
                         />
                     }
@@ -1097,6 +1111,7 @@ export default function App() {
                                       pageIndex={stickerPageIndexSafe}
                                       pages={stickerPages}
                                       onChangePage={setStickerPageIndex}
+                                      onSelectButton={jumpToButtonConfig}
                                       className="preview--overlay"
                                   />
                               </div>

@@ -62,7 +62,7 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline" }: { tap: TapType; si
     return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke="black" strokeWidth={stroke} />;
 }
 
-export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity, background }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; background?: "white" | "remote" | "transparent" }) {
+export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity, background, onSelectButton }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; background?: "white" | "remote" | "transparent"; onSelectButton?: (buttonId: string) => void }) {
     const options = { ...state.options, ...overrides };
     const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill } = options;
 
@@ -102,6 +102,42 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                 const radii = getButtonRadiiMm(b, exportMode?.squareButtons);
 
                 const outline = showButtonOutlines ? isUniformRadii(radii) ? <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={radii.tl} fill="none" stroke={outlineColor} strokeWidth={outlineStrokeMm} /> : <path d={roundedRectPath(b.xMm, b.yMm, b.wMm, b.hMm, radii)} fill="none" stroke={outlineColor} strokeWidth={outlineStrokeMm} /> : null;
+                const hitPaddingMm = onSelectButton ? 1.5 : 0;
+                const hitX = b.xMm - hitPaddingMm;
+                const hitY = b.yMm - hitPaddingMm;
+                const hitW = b.wMm + hitPaddingMm * 2;
+                const hitH = b.hMm + hitPaddingMm * 2;
+                const hitRadii = {
+                    tl: radii.tl + hitPaddingMm,
+                    tr: radii.tr + hitPaddingMm,
+                    br: radii.br + hitPaddingMm,
+                    bl: radii.bl + hitPaddingMm,
+                };
+                const hitTarget = onSelectButton ? (
+                    isUniformRadii(radii) ? (
+                        <rect
+                            className="preview__buttonHit"
+                            x={hitX}
+                            y={hitY}
+                            width={hitW}
+                            height={hitH}
+                            rx={hitRadii.tl}
+                            fill="transparent"
+                            stroke="none"
+                            pointerEvents="all"
+                            onClick={() => onSelectButton(b.id)}
+                        />
+                    ) : (
+                        <path
+                            className="preview__buttonHit"
+                            d={roundedRectPath(hitX, hitY, hitW, hitH, hitRadii)}
+                            fill="transparent"
+                            stroke="none"
+                            pointerEvents="all"
+                            onClick={() => onSelectButton(b.id)}
+                        />
+                    )
+                ) : null;
                 const buttonGuides = showGuides ? (
                     <g opacity={0.25}>
                         <line x1={buttonCx} y1={b.yMm} x2={buttonCx} y2={b.yMm + b.hMm} stroke="black" strokeWidth="0.2" />
@@ -114,6 +150,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                         <g key={b.id}>
                             {outline}
                             {buttonGuides}
+                            {hitTarget}
                         </g>
                     );
                 }
@@ -144,6 +181,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                                 <g transform={`translate(${buttonCx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
                                     <TapMarker tap={tap} fillMode={tapMarkerFill} />
                                 </g>
+                                {hitTarget}
                             </g>
                         );
                     }
@@ -159,6 +197,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                                 iconMm,
                                 strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
                             })}
+                            {hitTarget}
                         </g>
                     );
                 }
@@ -199,6 +238,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                                 </g>
                             );
                         })}
+                        {hitTarget}
                     </g>
                 );
             })}
