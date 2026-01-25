@@ -1,10 +1,42 @@
 import styles from "./Footer.module.css";
 
-export function SiteFooter() {
+type LegalPageKind = "impressum" | "datenschutz";
+
+type Props = {
+    impressumHref: string;
+    datenschutzHref: string;
+    onOpenLegal?: (page: LegalPageKind, event: React.MouseEvent<HTMLAnchorElement>) => void;
+};
+
+export function SiteFooter({ impressumHref, datenschutzHref, onOpenLegal }: Props) {
     return (
         <footer className={styles.footer} aria-label="Legal and credits">
             <div className={styles.row}>
                 <span>© {new Date().getFullYear()} Tristan Germer</span>
+
+                <span className={styles.sep}>•</span>
+                <a
+                    href={impressumHref}
+                    onClick={(event) => {
+                        if (!onOpenLegal) return;
+                        event.preventDefault();
+                        onOpenLegal("impressum", event);
+                    }}
+                >
+                    Impressum
+                </a>
+
+                <span className={styles.sep}>•</span>
+                <a
+                    href={datenschutzHref}
+                    onClick={(event) => {
+                        if (!onOpenLegal) return;
+                        event.preventDefault();
+                        onOpenLegal("datenschutz", event);
+                    }}
+                >
+                    Datenschutz
+                </a>
 
                 <span className={styles.sep}>•</span>
                 <a href="https://github.com/tgermer/ha-remote-designer" target="_blank" rel="noopener noreferrer">

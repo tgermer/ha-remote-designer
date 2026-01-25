@@ -20,6 +20,7 @@ import { ButtonsSection } from "./components/controls/ButtonsSection";
 import { PreviewPane } from "./components/PreviewPane";
 import { HelpSection } from "./components/HelpSection";
 import { HiddenExportRenderers } from "./components/HiddenExportRenderers";
+import { LegalPage } from "./components/LegalPage";
 import { UiIcon } from "./components/UiIcon";
 
 import { loadFromHash, saveToHash } from "./app/urlState";
@@ -118,6 +119,14 @@ const initial: DesignState = {
     },
 };
 
+const LEGAL_CONTACT = {
+    projectName: "Remote Label Designer for Home Automation",
+    name: "Tristan Germer",
+    addressLines: ["Petrarcatraße 32", "80933 München", "Deutschland"],
+    email: "nachspeise.haltegurt.1e@icloud.com",
+    updatedAt: "25. Januar 2026",
+};
+
 /* ------------------------------- helpers -------------------------------- */
 
 function normalizeState(input: DesignState): DesignState {
@@ -176,6 +185,16 @@ function getUrlView(): "editor" | "gallery" {
     return sp.get("view") === "gallery" ? "gallery" : "editor";
 }
 
+type LegalPageKind = "impressum" | "datenschutz";
+type LegalPageState = LegalPageKind | null;
+
+function getUrlLegalPage(): LegalPageState {
+    const sp = new URLSearchParams(window.location.search);
+    const page = sp.get("page");
+    if (page === "impressum" || page === "datenschutz") return page;
+    return null;
+}
+
 function setUrlView(view: "editor" | "gallery") {
     const url = new URL(window.location.href);
     if (view === "gallery") url.searchParams.set("view", "gallery");
@@ -189,6 +208,25 @@ function getViewHref(view: "editor" | "gallery") {
     const url = new URL(window.location.href);
     if (view === "gallery") url.searchParams.set("view", "gallery");
     else url.searchParams.delete("view");
+    return url.toString();
+}
+
+function setUrlLegalPage(page: LegalPageState) {
+    const url = new URL(window.location.href);
+    if (page) url.searchParams.set("page", page);
+    else url.searchParams.delete("page");
+    window.history.pushState(null, "", url.toString());
+}
+
+function getLegalHref(page: LegalPageKind) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("page", page);
+    return url.toString();
+}
+
+function getAppHref() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("page");
     return url.toString();
 }
 
@@ -294,15 +332,28 @@ function remotesUseFullMdi() {
 /* --------------------------------- App ---------------------------------- */
 
 export default function App() {
-    useEffect(() => {
-        document.title = "Remote Label Designer for Home Automation";
-    }, []);
-
     const [view, setView] = useState<"editor" | "gallery">(() => getUrlView());
     const isGallery = view === "gallery";
+    const [legalPage, setLegalPage] = useState<LegalPageState>(() => getUrlLegalPage());
+    const isLegal = legalPage !== null;
 
     useEffect(() => {
-        const onPopState = () => setView(getUrlView());
+        if (legalPage === "impressum") {
+            document.title = "Impressum – Remote Designer";
+            return;
+        }
+        if (legalPage === "datenschutz") {
+            document.title = "Datenschutzerklärung – Remote Designer";
+            return;
+        }
+        document.title = "Remote Label Designer for Home Automation";
+    }, [legalPage]);
+
+    useEffect(() => {
+        const onPopState = () => {
+            setView(getUrlView());
+            setLegalPage(getUrlLegalPage());
+        };
         window.addEventListener("popstate", onPopState);
         return () => window.removeEventListener("popstate", onPopState);
     }, []);
@@ -1022,135 +1073,131 @@ export default function App() {
         };
     }, []);
 
+    const legalKind = legalPage ?? "impressum";
+
     return (
         <>
             <main className="app">
-            <SiteHeader isAdmin={isAdmin} />
+                <SiteHeader isAdmin={isAdmin} />
 
-            <TopNav
-                view={view}
-                editorHref={getViewHref("editor")}
-                galleryHref={getViewHref("gallery")}
-                onGoEditor={(event) => {
-                    event.preventDefault();
-                    goTo("editor");
-                }}
-                onGoGallery={(event) => {
-                    event.preventDefault();
-                    goTo("gallery");
-                }}
-            />
-
-            {isGallery ? (
-                <GalleryLayout>
-                    <GalleryView
-                        remotes={REMOTES}
-                        savedDesigns={savedDesigns}
-                        buildStateFromExample={buildStateFromExample}
-                        showWatermark={showWatermark}
-                        watermarkText={watermarkText}
-                        watermarkOpacity={watermarkOpacity}
-                        onOpenPreview={({ state: nextState }) => {
-                            setState(normalizeState(nextState));
-                            goTo("editor");
-                            requestAnimationFrame(() => {
-                                window.scrollTo({ top: 0, behavior: "smooth" });
-                            });
-                        }}
-                        onOpenSaved={(design) => {
-                            openSavedDesign(design);
-                            goTo("editor");
-                            requestAnimationFrame(() => {
-                                window.scrollTo({ top: 0, behavior: "smooth" });
-                            });
+                {isLegal ? (
+                    <LegalPage
+                        kind={legalKind}
+                        contact={LEGAL_CONTACT}
+                        backHref={getAppHref()}
+                        onBack={(event) => {
+                            event.preventDefault();
+                            setLegalPage(null);
+                            setUrlLegalPage(null);
                         }}
                     />
-                </GalleryLayout>
-            ) : (
-                <EditorLayout
-                    controls={
-                        <ControlsLayout
-                            left={
-                                <>
-                                    <RemoteSection remotes={REMOTES} remoteId={state.remoteId} remoteImageUrl={remoteImageUrl} onChangeRemote={handleRemoteChange} onResetRemote={resetCurrentRemote} />
+                ) : (
+                    <>
+                        <TopNav
+                            view={view}
+                            editorHref={getViewHref("editor")}
+                            galleryHref={getViewHref("gallery")}
+                            onGoEditor={(event) => {
+                                event.preventDefault();
+                                goTo("editor");
+                            }}
+                            onGoGallery={(event) => {
+                                event.preventDefault();
+                                goTo("gallery");
+                            }}
+                        />
 
-                                    <SavedDesignsSection
-                                        saveName={saveName}
-                                        saveNameError={saveNameError}
-                                        onChangeSaveName={handleSaveNameChange}
-                                        onBlurSaveName={handleSaveNameBlur}
-                                        activeSavedId={activeSavedId}
-                                        hasUnsavedChanges={hasUnsavedChanges}
-                                        showSavedStatus={showSavedStatus}
-                                        onSaveActive={saveActiveDesign}
-                                        onSaveAsNew={saveAsNewDesign}
-                                        savedDesigns={savedDesigns}
-                                        selectedSavedId={selectedSavedId}
-                                        onSelectSavedId={setSelectedSavedId}
-                                        onRefreshSavedDesigns={refreshSavedDesigns}
-                                        onLoadSelected={loadSelectedDesign}
-                                        onDeleteSelected={deleteSelectedDesign}
-                                        onExportAll={exportAllSavedDesigns}
-                                        onImportFile={(file) => {
-                                            void importSavedDesignsFromFile(file);
-                                        }}
-                                        importExportStatus={importExportStatus}
-                                        remoteNameById={remoteNameById}
-                                    />
-                                </>
-                            }
-                            right={
-                                <>
-                                    {isStickerSheet && stickerLayout ? <StickerTemplateSection options={o} layout={stickerLayout} onUpdateOptions={updateOptions} /> : null}
-
-                                    <OptionsSection options={o} onUpdateOptions={updateOptions} remoteOutlineLabel={isStickerSheet ? "Show paper outline" : "Show remote outline"} />
-
-                                    <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} />
-                                </>
-                            }
-                            full={
-                                <ButtonsSection
-                                    buttonIds={buttonIds}
-                                    state={state}
-                                    tapLabel={tapLabel}
-                                    onSetIcon={setIcon}
-                                    onToggleStrike={toggleStrike}
-                                    onSetIconColor={setIconColor}
-                                    onSetButtonFill={setButtonFill}
-                                    highlightedButtonId={highlightedButtonId}
+                        {isGallery ? (
+                            <GalleryLayout>
+                                <GalleryView
+                                    remotes={REMOTES}
+                                    savedDesigns={savedDesigns}
+                                    buildStateFromExample={buildStateFromExample}
+                                    showWatermark={showWatermark}
+                                    watermarkText={watermarkText}
+                                    watermarkOpacity={watermarkOpacity}
+                                    onOpenPreview={({ state: nextState }) => {
+                                        setState(normalizeState(nextState));
+                                        goTo("editor");
+                                        requestAnimationFrame(() => {
+                                            window.scrollTo({ top: 0, behavior: "smooth" });
+                                        });
+                                    }}
+                                    onOpenSaved={(design) => {
+                                        openSavedDesign(design);
+                                        goTo("editor");
+                                        requestAnimationFrame(() => {
+                                            window.scrollTo({ top: 0, behavior: "smooth" });
+                                        });
+                                    }}
                                 />
-                            }
-                        />
-                    }
-                    preview={
-                        <PreviewPane
-                            template={template}
-                            state={previewState}
-                            showWatermark={showWatermark}
-                            watermarkText={watermarkText}
-                            watermarkOpacity={watermarkOpacity}
-                            isStickerSheet={isStickerSheet}
-                            pageIndex={stickerPageIndexSafe}
-                            pages={stickerPages}
-                            onChangePage={setStickerPageIndex}
-                            onSelectButton={jumpToButtonConfig}
-                            className="preview--desktop"
-                        />
-                    }
-                    help={<HelpSection />}
+                            </GalleryLayout>
+                        ) : (
+                            <EditorLayout
+                                controls={
+                                    <ControlsLayout
+                                        left={
+                                            <>
+                                                <RemoteSection remotes={REMOTES} remoteId={state.remoteId} remoteImageUrl={remoteImageUrl} onChangeRemote={handleRemoteChange} onResetRemote={resetCurrentRemote} />
+
+                                                <SavedDesignsSection
+                                                    saveName={saveName}
+                                                    saveNameError={saveNameError}
+                                                    onChangeSaveName={handleSaveNameChange}
+                                                    onBlurSaveName={handleSaveNameBlur}
+                                                    activeSavedId={activeSavedId}
+                                                    hasUnsavedChanges={hasUnsavedChanges}
+                                                    showSavedStatus={showSavedStatus}
+                                                    onSaveActive={saveActiveDesign}
+                                                    onSaveAsNew={saveAsNewDesign}
+                                                    savedDesigns={savedDesigns}
+                                                    selectedSavedId={selectedSavedId}
+                                                    onSelectSavedId={setSelectedSavedId}
+                                                    onRefreshSavedDesigns={refreshSavedDesigns}
+                                                    onLoadSelected={loadSelectedDesign}
+                                                    onDeleteSelected={deleteSelectedDesign}
+                                                    onExportAll={exportAllSavedDesigns}
+                                                    onImportFile={(file) => {
+                                                        void importSavedDesignsFromFile(file);
+                                                    }}
+                                                    importExportStatus={importExportStatus}
+                                                    remoteNameById={remoteNameById}
+                                                />
+                                            </>
+                                        }
+                                        right={
+                                            <>
+                                                {isStickerSheet && stickerLayout ? <StickerTemplateSection options={o} layout={stickerLayout} onUpdateOptions={updateOptions} /> : null}
+
+                                                <OptionsSection options={o} onUpdateOptions={updateOptions} remoteOutlineLabel={isStickerSheet ? "Show paper outline" : "Show remote outline"} />
+
+                                                <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} />
+                                            </>
+                                        }
+                                        full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} onSetIconColor={setIconColor} onSetButtonFill={setButtonFill} highlightedButtonId={highlightedButtonId} />}
+                                    />
+                                }
+                                preview={<PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--desktop" />}
+                                help={<HelpSection />}
+                            />
+                        )}
+
+                        <HiddenExportRenderers exportRemoteHostRef={exportRemoteHostRef} exportButtonHostRef={exportButtonHostRef} template={template} state={state} exportButton={exportButton} labelWidthMm={labelWidthMm} labelHeightMm={labelHeightMm} showScaleBar={isStickerSheet ? false : o.showScaleBar} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
+                    </>
+                )}
+
+                <SiteFooter
+                    impressumHref={getLegalHref("impressum")}
+                    datenschutzHref={getLegalHref("datenschutz")}
+                    onOpenLegal={(page, _event) => {
+                        setLegalPage(page);
+                        setUrlLegalPage(page);
+                    }}
                 />
-            )}
-
-            <HiddenExportRenderers exportRemoteHostRef={exportRemoteHostRef} exportButtonHostRef={exportButtonHostRef} template={template} state={state} exportButton={exportButton} labelWidthMm={labelWidthMm} labelHeightMm={labelHeightMm} showScaleBar={isStickerSheet ? false : o.showScaleBar} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
-
-            <SiteFooter />
-        </main>
-            {!isGallery && overlayRoot
+            </main>
+            {!isGallery && !isLegal && overlayRoot
                 ? createPortal(
-                      <div
-                          className={`previewOverlay ${previewOpen ? "previewOverlay--open" : "previewOverlay--closed"}`}
-                          style={{ ["--preview-height" as string]: `${previewHeightVh}vh` }}
-                      >
+                      <div className={`previewOverlay ${previewOpen ? "previewOverlay--open" : "previewOverlay--closed"}`} style={{ ["--preview-height" as string]: `${previewHeightVh}vh` }}>
                           {previewOpen ? (
                               <div className="previewOverlay__sheet" role="dialog" aria-label="Preview">
                                   <div
@@ -1164,19 +1211,7 @@ export default function App() {
                                           <UiIcon name="mdi:close-circle-outline" className="icon" />
                                       </button>
                                   </div>
-                                  <PreviewPane
-                                      template={template}
-                                      state={previewState}
-                                      showWatermark={showWatermark}
-                                      watermarkText={watermarkText}
-                                      watermarkOpacity={watermarkOpacity}
-                                      isStickerSheet={isStickerSheet}
-                                      pageIndex={stickerPageIndexSafe}
-                                      pages={stickerPages}
-                                      onChangePage={setStickerPageIndex}
-                                      onSelectButton={jumpToButtonConfig}
-                                      className="preview--overlay"
-                                  />
+                                  <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--overlay" />
                               </div>
                           ) : (
                               <button type="button" className="previewOverlay__bar" onClick={() => setPreviewOpen(true)}>
