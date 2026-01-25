@@ -342,6 +342,10 @@ main {
   width: 60%;
 }
 
+.galleryCard[data-remote-id="generic"] .galleryThumb {
+  width: 65%;
+}
+
 .galleryCard__meta {
   background: #fff;
   padding: 0.75rem;
@@ -474,10 +478,32 @@ main {
   gap: 0.5rem;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+.preview__pagerBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  padding: 0.25rem 0.5rem;
+  min-height: 28px;
 }
 
 .preview__pager select {
   margin: 0 0.25rem;
+  font: inherit;
+  line-height: 1.1;
+}
+
+.preview__pager .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.preview__pager > span {
+  white-space: nowrap;
 }
 
 
@@ -1057,6 +1083,8 @@ button:disabled {
     z-index: 9999;
     padding: 8px 12px calc(env(safe-area-inset-bottom) + 8px);
     pointer-events: auto;
+    font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
   }
 
   .previewOverlay__sheet {
@@ -1120,7 +1148,8 @@ button:disabled {
   }
 
   .preview--overlay {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     position: static;
     width: 100%;
     height: 100%;
@@ -1129,8 +1158,27 @@ button:disabled {
     border: none;
     background: transparent;
     padding: 0 12px 12px;
-    place-items: center;
+    align-items: center;
     overflow: hidden;
+  }
+
+  .previewOverlay .preview__pager {
+    order: 2;
+    justify-content: space-between;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    width: 100%;
+    margin-top: 0.35rem;
+    margin-bottom: 0;
+  }
+
+  .previewOverlay .preview__pagerBtn {
+    padding: 0.2rem 0.45rem;
+    min-height: 24px;
+  }
+
+  .previewOverlay .preview__pager > span {
+    font-size: 0.85rem;
   }
 
   .previewOverlay__bar {

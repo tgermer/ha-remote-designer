@@ -25,9 +25,9 @@ export function PreviewPane(props: PreviewPaneProps) {
         <aside className={`preview ${isStickerSheet ? "preview--sheet" : ""} ${className ?? ""}`.trim()}>
             {showPager && (
                 <div className="preview__pager">
-                    <button type="button" onClick={() => onChangePage?.(Math.max(0, currentPage - 1))} disabled={currentPage <= 0}>
+                    <button type="button" className="preview__pagerBtn" onClick={() => onChangePage?.(Math.max(0, currentPage - 1))} disabled={currentPage <= 0}>
                         <UiIcon name="mdi:chevron-left" className="icon" />
-                        Prev
+                        <span>Prev</span>
                     </button>
                     <span>
                         Page{" "}
@@ -40,8 +40,9 @@ export function PreviewPane(props: PreviewPaneProps) {
                         </select>{" "}
                         of {pages}
                     </span>
-                    <button type="button" onClick={() => onChangePage?.(Math.min(pages - 1, currentPage + 1))} disabled={currentPage >= pages - 1}>
-                        Next <UiIcon name="mdi:chevron-right" className="icon" />
+                    <button type="button" className="preview__pagerBtn" onClick={() => onChangePage?.(Math.min(pages - 1, currentPage + 1))} disabled={currentPage >= pages - 1}>
+                        <span>Next</span>
+                        <UiIcon name="mdi:chevron-right" className="icon" />
                     </button>
                 </div>
             )}

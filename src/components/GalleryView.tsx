@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import type { DesignState } from "../app/types";
 import type { RemoteExample, RemoteTemplate } from "../app/remotes";
 import type { SavedDesign } from "../app/savedDesigns";
+import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "../app/stickerSheet";
 import { RemoteSvg } from "../render/RemoteSvg";
 
 type GalleryViewProps = {
@@ -23,6 +24,45 @@ export function GalleryView(props: GalleryViewProps) {
 
     const remoteById = useMemo(() => new Map(remotes.map((r) => [r.id, r])), [remotes]);
     const remoteOptions = useMemo(() => remotes.map((r) => ({ id: r.id, name: r.name })), [remotes]);
+
+    const getRenderTemplate = (base: RemoteTemplate, state: DesignState): RemoteTemplate => {
+        if (!base.isStickerSheet) return base;
+        const o = state.options;
+        const sheetSizeMm = o.sheetSize === "Letter" ? LETTER_SIZE_MM : A4_SIZE_MM;
+        const layout = getStickerSheetLayout({
+            labelWidthMm: o.labelWidthMm,
+            labelHeightMm: o.labelHeightMm,
+            count: o.labelCount,
+            sheetWidthMm: sheetSizeMm.width,
+            sheetHeightMm: sheetSizeMm.height,
+            marginXMm: o.sheetMarginXMm,
+            marginYMm: o.sheetMarginYMm,
+            gapMm: o.sheetGapMm,
+        });
+
+        if (!layout || layout.maxCount <= 0) return base;
+
+        const remaining = Math.max(0, o.labelCount);
+        const count = Math.min(layout.maxCount, remaining);
+        const positions = layout.positions.slice(0, count);
+
+        const buttons = positions.map((pos, index) => ({
+            id: `label_${index + 1}`,
+            xMm: pos.xMm,
+            yMm: pos.yMm,
+            wMm: o.labelWidthMm,
+            hMm: o.labelHeightMm,
+            rMm: o.labelCornerMm,
+        }));
+
+        return {
+            ...base,
+            widthMm: layout.sheetWidthMm,
+            heightMm: layout.sheetHeightMm,
+            cornerMm: 0,
+            buttons,
+        };
+    };
 
     const previewEntries = remotes.flatMap((r) => {
         const exs = r.examples ?? [];
@@ -150,8 +190,8 @@ export function GalleryView(props: GalleryViewProps) {
             <div className="galleryGrid">
                 {filteredEntries.length ? (
                     filteredEntries.map((entry) => {
-                        const { template } = entry;
-                        const isSquareRemote = Math.abs(template.widthMm - template.heightMm) / Math.max(template.widthMm, template.heightMm) <= 0.12;
+                        const renderTemplate = getRenderTemplate(entry.template, entry.state);
+                        const isSquareRemote = Math.abs(renderTemplate.widthMm - renderTemplate.heightMm) / Math.max(renderTemplate.widthMm, renderTemplate.heightMm) <= 0.12;
                         const handleOpen = () => {
                             if (entry.kind === "saved") {
                                 onOpenSaved(entry.saved);
@@ -172,7 +212,7 @@ export function GalleryView(props: GalleryViewProps) {
                                 <div className="galleryCard__media">
                                     <div className="galleryThumb">
                                         <RemoteSvg
-                                            template={template}
+                                            template={renderTemplate}
                                             state={entry.state}
                                             background="remote"
                                             showWatermark={showWatermark}

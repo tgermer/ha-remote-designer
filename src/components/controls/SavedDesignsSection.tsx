@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UiIcon } from "../UiIcon";
 import type { SavedDesign } from "../../app/savedDesigns";
 
@@ -46,6 +46,21 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
     } = props;
 
     const importInputRef = useRef<HTMLInputElement | null>(null);
+    const [showSavedStatus, setShowSavedStatus] = useState(false);
+
+    useEffect(() => {
+        if (!activeSavedId) {
+            setShowSavedStatus(false);
+            return;
+        }
+        if (hasUnsavedChanges) {
+            setShowSavedStatus(false);
+            return;
+        }
+        setShowSavedStatus(true);
+        const t = window.setTimeout(() => setShowSavedStatus(false), 10000);
+        return () => window.clearTimeout(t);
+    }, [activeSavedId, hasUnsavedChanges]);
 
     return (
         <fieldset>
@@ -73,7 +88,18 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                     Save as
                 </button>
             </div>
-            {activeSavedId && <p style={{ margin: 0, fontSize: "0.85rem", opacity: 0.85 }}>{hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}</p>}
+            {activeSavedId && (hasUnsavedChanges || showSavedStatus) ? (
+                <p
+                    style={{
+                        margin: "0.5rem 0 0",
+                        fontSize: "0.85rem",
+                        opacity: hasUnsavedChanges ? 0.85 : 1,
+                        color: hasUnsavedChanges ? "inherit" : "#1b5e20",
+                    }}
+                >
+                    {hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}
+                </p>
+            ) : null}
 
             <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
                 Your saved remotes
