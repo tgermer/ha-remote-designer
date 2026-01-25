@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { getMdiPath, getFullMdiLoadedSnapshot, isMdiInHomeSet, listFullMdiIcons, listHomeMdiIcons, preloadFullMdi, subscribeFullMdi } from "../app/mdi";
 import { UiIcon } from "./UiIcon";
 import { FEATURES } from "../app/featureFlags";
@@ -34,6 +34,7 @@ function IconPreview({ icon }: { icon: string }) {
 export function IconPicker({ value, onChange, placeholder }: { value: string | undefined; onChange: (next: string | undefined) => void; placeholder?: string }) {
     const [draft, setDraft] = useState(value ?? "");
     const [isEditing, setIsEditing] = useState(false);
+    const draftRef = useRef(draft);
 
     // Which browser panel is open: 'mdi' | 'hue' | null
     const [browser, setBrowser] = useState<"mdi" | "hue" | null>(null);
@@ -66,12 +67,6 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     }, [instanceId]);
 
     const effectivePlaceholder = placeholder ?? (FEATURES.HUE_ICONS ? "mdi:... or hue:..." : "mdi:...");
-
-    const valid = useMemo(() => {
-        const t = (isEditing ? draft : value ?? "").trim();
-        if (!t) return true;
-        return isSupportedHaIcon(t);
-    }, [draft, isEditing, value]);
 
     const fullMdiLoaded = useSyncExternalStore(subscribeFullMdi, getFullMdiLoadedSnapshot);
     const [mdiRequested, setMdiRequested] = useState(false);
@@ -151,16 +146,40 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         return allHueIcons.filter((x) => x.toLowerCase().includes(q));
     }, [hueQuery, allHueIcons]);
 
+    const valid = useMemo(() => {
+        const t = (isEditing ? draft : value ?? "").trim();
+        if (!t) return true;
+        if (t.startsWith("mdi:") && !fullMdiLoaded && !isMdiInHomeSet(t)) return true;
+        if (t.startsWith("hue:") && FEATURES.HUE_ICONS && !hueIconsLoaded) return true;
+        return isSupportedHaIcon(t);
+    }, [draft, isEditing, value, fullMdiLoaded, hueIconsLoaded]);
+
     const currentText = isEditing ? draft : value ?? "";
 
     const mdiLoading = mdiRequested && !fullMdiLoaded;
     const hueLoading = hueRequested && !hueIconsLoaded;
 
-    const applyCurrent = () => {
-        const trimmed = currentText.trim();
+    useEffect(() => {
+        draftRef.current = draft;
+    }, [draft]);
+
+    const applyCurrent = (nextText?: string) => {
+        const trimmed = (nextText ?? currentText).trim();
         onChange(trimmed ? trimmed : undefined);
         setIsEditing(false);
     };
+
+    useEffect(() => {
+        const t = (value ?? "").trim();
+        if (t.startsWith("mdi:") && !fullMdiLoaded && !isMdiInHomeSet(t)) {
+            setMdiRequested(true);
+            void preloadFullMdi();
+        }
+        if (t.startsWith("hue:") && FEATURES.HUE_ICONS && !hueIconsLoaded) {
+            setHueRequested(true);
+            void preloadHueIcons();
+        }
+    }, [value, fullMdiLoaded, hueIconsLoaded]);
 
     return (
         <div className="iconpicker">
@@ -268,7 +287,16 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
             <div className="iconpicker__row iconpicker__row--secondary">
                 <div className="iconpicker__preview">{currentText.trim() ? <IconPreview icon={currentText.trim()} /> : null}</div>
 
-                <button type="button" className="iconpicker__btn" onClick={applyCurrent} disabled={!valid}>
+                <button
+                    type="button"
+                    className="iconpicker__btn"
+                    onMouseDown={(e) => {
+                        e.preventDefault();
+                        applyCurrent(draftRef.current);
+                    }}
+                    onClick={() => applyCurrent()}
+                    disabled={!valid}
+                >
                     Apply
                 </button>
 
