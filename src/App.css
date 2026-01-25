@@ -307,6 +307,21 @@ label {
   margin-top: 0.75rem;
 }
 
+/* Saved designs import/export grouping */
+.savedDesigns__io {
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  border: 1px dashed #c9c3dd;
+  border-radius: 6px;
+  background: #faf8ff;
+}
+
+.savedDesigns__ioTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a4a6a;
+}
+
 /* Buttons */
 button {
   padding: 0.4rem 0.6rem;
@@ -725,6 +740,10 @@ button:disabled {
   margin-top: 0.75rem;
   display: grid;
   gap: 0.5rem;
+}
+
+.help__content p {
+  margin: 0.35rem 0;
 }
 
 .help__note {

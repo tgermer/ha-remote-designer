@@ -23,6 +23,15 @@ export function HelpSection() {
                     <p className="help__note">Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.</p>
                 </div>
             </details>
+
+            <details className="help__details">
+                <summary>Saved remotes: export & import</summary>
+                <div className="help__content">
+                    <p>Use Export to download a JSON backup of your saved remotes. Import merges the file with your current saved remotes.</p>
+                    <p>If a name already exists for the same remote model, it will be auto-renamed with a timestamp to avoid overwriting.</p>
+                    <p className="help__note">Note: Saved remotes live in your browser storage. Clearing site data removes them, so keep backups if needed.</p>
+                </div>
+            </details>
         </section>
     );
 }

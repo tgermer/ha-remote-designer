@@ -24,7 +24,7 @@ import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
 import { svgTextToPngBlobMm, downloadBlob } from "./app/exportPng";
 import { downloadPdfFromSvg, downloadPdfFromSvgs } from "./app/exportPdf";
-import { readSavedDesigns, writeSavedDesigns, newId, nameExistsForRemote, withTimestamp, normalizeName, type SavedDesign } from "./app/savedDesigns";
+import { readSavedDesigns, writeSavedDesigns, newId, nameExistsForRemote, withTimestamp, normalizeName, encodeSavedDesignsExport, parseSavedDesignsImport, type SavedDesign } from "./app/savedDesigns";
 import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "./app/stickerSheet";
 
 import { FEATURES } from "./app/featureFlags";
@@ -76,6 +76,12 @@ function getExportBaseName(params: { saveName: string; remoteId: string }) {
     const safe = sanitizeFilenameBase(n);
     // Always include the model id for clarity
     return `${safe}-${params.remoteId}`;
+}
+
+function getDateStamp() {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 /* ----------------------------- initial state ----------------------------- */
@@ -322,6 +328,14 @@ export default function App() {
     const [loadedSnapshot, setLoadedSnapshot] = useState<DesignState | null>(null);
     const [loadedName, setLoadedName] = useState<string>("");
 
+    const [importExportStatus, setImportExportStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+    useEffect(() => {
+        if (!importExportStatus) return;
+        const t = window.setTimeout(() => setImportExportStatus(null), 10000);
+        return () => window.clearTimeout(t);
+    }, [importExportStatus]);
+
     const refreshSavedDesigns = () => {
         const items = readSavedDesigns().sort((a, b) => b.updatedAt - a.updatedAt);
         setSavedDesigns(items);
@@ -442,6 +456,80 @@ export default function App() {
         }
 
         refreshSavedDesigns();
+    };
+
+    const exportAllSavedDesigns = () => {
+        const items = readSavedDesigns();
+        if (!items.length) return;
+
+        const payload = encodeSavedDesignsExport(items);
+        const filename = `ha-remote-designer-saved-remotes-${getDateStamp()}.json`;
+        downloadTextFile(filename, JSON.stringify(payload, null, 2), "application/json");
+        setImportExportStatus({ type: "success", message: `Exported ${items.length} saved remotes.` });
+    };
+
+    const exportSelectedDesign = () => {
+        if (!selectedSavedId) return;
+        const items = readSavedDesigns();
+        const found = items.find((d) => d.id === selectedSavedId);
+        if (!found) {
+            setImportExportStatus({ type: "error", message: "Selected remote no longer exists." });
+            return;
+        }
+
+        const payload = encodeSavedDesignsExport([found]);
+        const base = `${sanitizeFilenameBase(found.name)}-${found.state.remoteId || "remote"}`;
+        const filename = `${base}-${getDateStamp()}.json`;
+        downloadTextFile(filename, JSON.stringify(payload, null, 2), "application/json");
+        setImportExportStatus({ type: "success", message: "Exported selected remote." });
+    };
+
+    const importSavedDesignsFromFile = async (file: File) => {
+        setImportExportStatus(null);
+        let text = "";
+        try {
+            text = await file.text();
+        } catch {
+            setImportExportStatus({ type: "error", message: "Failed to read the file." });
+            return;
+        }
+
+        const parsed = parseSavedDesignsImport(text);
+        if (parsed.error) {
+            setImportExportStatus({ type: "error", message: parsed.error });
+            return;
+        }
+
+        if (!parsed.items.length) {
+            setImportExportStatus({ type: "error", message: "No valid remotes found in the file." });
+            return;
+        }
+
+        const now = Date.now();
+        const existing = readSavedDesigns();
+        const next = [...existing];
+        const usedIds = new Set(existing.map((d) => d.id));
+
+        for (const item of parsed.items) {
+            let nextItem = item;
+            if (usedIds.has(nextItem.id)) {
+                nextItem = { ...nextItem, id: newId() };
+            }
+            usedIds.add(nextItem.id);
+
+            const remoteId = typeof nextItem.state?.remoteId === "string" ? nextItem.state.remoteId : "";
+            if (remoteId && nameExistsForRemote(next, remoteId, nextItem.name)) {
+                nextItem = { ...nextItem, name: withTimestamp(nextItem.name), updatedAt: now };
+            }
+
+            next.push(nextItem);
+        }
+
+        writeSavedDesigns(next);
+        refreshSavedDesigns();
+
+        const invalidNote = parsed.invalidCount ? ` (${parsed.invalidCount} skipped)` : "";
+        setImportExportStatus({ type: "success", message: `Imported ${parsed.items.length} remotes${invalidNote}.` });
     };
 
     /* persist state in URL */
@@ -692,12 +780,7 @@ export default function App() {
         setIsZipping(false);
     };
 
-    const exportButton =
-        exportButtonId
-            ? isStickerSheet
-                ? { id: exportButtonId, xMm: 0, yMm: 0, wMm: o.labelWidthMm, hMm: o.labelHeightMm, rMm: o.labelCornerMm }
-                : template.buttons.find((b) => b.id === exportButtonId) ?? null
-            : null;
+    const exportButton = exportButtonId ? (isStickerSheet ? { id: exportButtonId, xMm: 0, yMm: 0, wMm: o.labelWidthMm, hMm: o.labelHeightMm, rMm: o.labelCornerMm } : (template.buttons.find((b) => b.id === exportButtonId) ?? null)) : null;
 
     const exportA4Pdf = async () => {
         if (!isStickerSheet) {
@@ -862,6 +945,11 @@ export default function App() {
                                         onRefreshSavedDesigns={refreshSavedDesigns}
                                         onLoadSelected={loadSelectedDesign}
                                         onDeleteSelected={deleteSelectedDesign}
+                                        onExportAll={exportAllSavedDesigns}
+                                        onImportFile={(file) => {
+                                            void importSavedDesignsFromFile(file);
+                                        }}
+                                        importExportStatus={importExportStatus}
                                         remoteNameById={remoteNameById}
                                     />
                                 </>
@@ -870,62 +958,20 @@ export default function App() {
                                 <>
                                     {isStickerSheet && stickerLayout ? <StickerTemplateSection options={o} layout={stickerLayout} onUpdateOptions={updateOptions} /> : null}
 
-                                    <OptionsSection
-                                        options={o}
-                                        onUpdateOptions={updateOptions}
-                                        remoteOutlineLabel={isStickerSheet ? "Show paper outline" : "Show remote outline"}
-                                    />
+                                    <OptionsSection options={o} onUpdateOptions={updateOptions} remoteOutlineLabel={isStickerSheet ? "Show paper outline" : "Show remote outline"} />
 
-                                    <ShareExportSection
-                                        shareStatus={shareStatus}
-                                        onCopyShareLink={copyShareLink}
-                                        shareUrl={shareUrl}
-                                        isAdmin={isAdmin}
-                                        onExportRemoteSvg={exportRemoteSvg}
-                                        onExportZip={exportZip}
-                                        isZipping={isZipping}
-                                        dpi={dpi}
-                                        onChangeDpi={setDpi}
-                                        showA4Pdf={isStickerSheet}
-                                        onExportA4Pdf={exportA4Pdf}
-                                        showSvgAllPages={isStickerSheet && stickerPages > 1}
-                                        onExportAllPagesSvgZip={exportAllPagesSvgZip}
-                                    />
+                                    <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} />
                                 </>
                             }
                             full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} />}
                         />
                     }
-                    preview={
-                        <PreviewPane
-                            template={template}
-                            state={previewState}
-                            showWatermark={showWatermark}
-                            watermarkText={watermarkText}
-                            watermarkOpacity={watermarkOpacity}
-                            isStickerSheet={isStickerSheet}
-                            pageIndex={stickerPageIndexSafe}
-                            pages={stickerPages}
-                            onChangePage={setStickerPageIndex}
-                        />
-                    }
+                    preview={<PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} />}
                     help={<HelpSection />}
                 />
             )}
 
-            <HiddenExportRenderers
-                exportRemoteHostRef={exportRemoteHostRef}
-                exportButtonHostRef={exportButtonHostRef}
-                template={template}
-                state={state}
-                exportButton={exportButton}
-                labelWidthMm={labelWidthMm}
-                labelHeightMm={labelHeightMm}
-                showScaleBar={isStickerSheet ? false : o.showScaleBar}
-                showWatermark={showWatermark}
-                watermarkText={watermarkText}
-                watermarkOpacity={watermarkOpacity}
-            />
+            <HiddenExportRenderers exportRemoteHostRef={exportRemoteHostRef} exportButtonHostRef={exportButtonHostRef} template={template} state={state} exportButton={exportButton} labelWidthMm={labelWidthMm} labelHeightMm={labelHeightMm} showScaleBar={isStickerSheet ? false : o.showScaleBar} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
 
             <SiteFooter />
         </main>

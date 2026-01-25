@@ -6,6 +6,7 @@ type ShareExportSectionProps = {
     shareUrl: string;
     isAdmin: boolean;
     onExportRemoteSvg: () => void;
+    onExportRemoteJson?: () => void;
     onExportAllPagesSvgZip?: () => void;
     showSvgAllPages?: boolean;
     onExportA4Pdf?: () => void;
@@ -17,7 +18,7 @@ type ShareExportSectionProps = {
 };
 
 export function ShareExportSection(props: ShareExportSectionProps) {
-    const { shareStatus, onCopyShareLink, shareUrl, isAdmin, onExportRemoteSvg, onExportAllPagesSvgZip, showSvgAllPages, onExportA4Pdf, showA4Pdf, onExportZip, isZipping, dpi, onChangeDpi } = props;
+    const { shareStatus, onCopyShareLink, shareUrl, isAdmin, onExportRemoteSvg, onExportRemoteJson, onExportAllPagesSvgZip, showSvgAllPages, onExportA4Pdf, showA4Pdf, onExportZip, isZipping, dpi, onChangeDpi } = props;
 
     return (
         <fieldset>
@@ -41,9 +42,15 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                 </div>
             )}
 
-            <div className="row">
-                <button onClick={onExportRemoteSvg}>Export as SVG</button>
-                {showSvgAllPages && onExportAllPagesSvgZip ? <button onClick={onExportAllPagesSvgZip}>Export all pages as SVG (ZIP)</button> : null}
+            {onExportRemoteJson ? (
+                <div className="row row--spaced">
+                    <button onClick={onExportRemoteJson}>Export JSON</button>
+                </div>
+            ) : null}
+
+            <div className="row row--spaced">
+                <button onClick={onExportRemoteSvg}>Export SVG</button>
+                {showSvgAllPages && onExportAllPagesSvgZip ? <button onClick={onExportAllPagesSvgZip}>Export all pages SVG (ZIP)</button> : null}
             </div>
 
             {showA4Pdf && onExportA4Pdf ? (

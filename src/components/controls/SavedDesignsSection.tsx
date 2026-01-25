@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import type { SavedDesign } from "../../app/savedDesigns";
 
 type SavedDesignsSectionProps = {
@@ -15,6 +16,9 @@ type SavedDesignsSectionProps = {
     onRefreshSavedDesigns: () => void;
     onLoadSelected: () => void;
     onDeleteSelected: () => void;
+    onExportAll: () => void;
+    onImportFile: (file: File) => void;
+    importExportStatus: { type: "success" | "error"; message: string } | null;
     remoteNameById: Map<string, string>;
 };
 
@@ -34,8 +38,13 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
         onRefreshSavedDesigns,
         onLoadSelected,
         onDeleteSelected,
+        onExportAll,
+        onImportFile,
+        importExportStatus,
         remoteNameById,
     } = props;
+
+    const importInputRef = useRef<HTMLInputElement | null>(null);
 
     return (
         <fieldset>
@@ -83,6 +92,40 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                     Delete
                 </button>
             </div>
+
+            <div className="savedDesigns__io">
+                <div className="savedDesigns__ioTitle">Backup (Export/Import)</div>
+                <div className="row row--spaced" style={{ marginTop: "0.25rem" }}>
+                    <button type="button" onClick={onExportAll} disabled={!savedDesigns.length}>
+                        Export all
+                    </button>
+                </div>
+
+                <div className="row row--spaced">
+                    <button type="button" onClick={() => importInputRef.current?.click()}>
+                        Import
+                    </button>
+                    <input
+                        ref={importInputRef}
+                        type="file"
+                        accept="application/json,.json"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                            const file = e.currentTarget.files?.[0];
+                            if (file) onImportFile(file);
+                            e.currentTarget.value = "";
+                        }}
+                    />
+                </div>
+
+                <p style={{ margin: "0.5rem 0 0", fontSize: "0.85rem", opacity: 0.85 }}>
+                    Export creates a JSON backup you can import later (or on another device). Import merges with your existing saved remotes.
+                </p>
+            </div>
+
+            {importExportStatus ? (
+                <p style={{ margin: "0.5rem 0 0", fontSize: "0.85rem", color: importExportStatus.type === "error" ? "#b00020" : "#1b5e20" }}>{importExportStatus.message}</p>
+            ) : null}
 
             <p style={{ margin: "0.5rem 0 0", fontSize: "0.85rem", opacity: 0.85 }}>
                 Saved in your browser (localStorage). It remains after reloads, but will be removed if you clear site data.
