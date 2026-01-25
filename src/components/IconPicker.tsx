@@ -47,6 +47,11 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     // Unique instance id for focus tracking and global focus event handler
     const [instanceId] = useState(() => `ip_${Math.random().toString(36).slice(2)}`);
 
+    const openBrowserExclusive = (next: "mdi" | "hue") => {
+        window.dispatchEvent(new CustomEvent("iconpicker:focus", { detail: instanceId }));
+        setBrowser(next);
+    };
+
     useEffect(() => {
         const handler = (e: Event) => {
             const otherId = (e as CustomEvent<string>).detail;
@@ -82,11 +87,11 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                 setHueRequested(true);
                 void preloadHueIcons();
             }
-            setBrowser("hue");
+            openBrowserExclusive("hue");
             return;
         }
         if (t === "m") {
-            setBrowser("mdi");
+            openBrowserExclusive("mdi");
             return;
         }
 
@@ -96,11 +101,11 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                 setHueRequested(true);
                 void preloadHueIcons();
             }
-            setBrowser("hue");
+            openBrowserExclusive("hue");
             return;
         }
         if (t.startsWith("mdi") || t.startsWith("mdi:")) {
-            setBrowser("mdi");
+            openBrowserExclusive("mdi");
             return;
         }
 
@@ -110,11 +115,11 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                 setHueRequested(true);
                 void preloadHueIcons();
             }
-            setBrowser("hue");
+            openBrowserExclusive("hue");
             return;
         }
         if (t.startsWith("mdi:")) {
-            setBrowser("mdi");
+            openBrowserExclusive("mdi");
             return;
         }
     };
@@ -186,9 +191,9 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                                 setHueRequested(true);
                                 void preloadHueIcons();
                             }
-                            setBrowser("hue");
+                            openBrowserExclusive("hue");
                         }
-                        else if (t === "m" || t.startsWith("mdi")) setBrowser("mdi");
+                        else if (t === "m" || t.startsWith("mdi")) openBrowserExclusive("mdi");
                     }}
                     onBlur={() => {
                         setIsEditing(false);
@@ -206,7 +211,11 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                             setMdiRequested(true);
                             void preloadFullMdi();
                         }
-                        setBrowser((b) => (b === "mdi" ? null : "mdi"));
+                        setBrowser((b) => {
+                            if (b === "mdi") return null;
+                            window.dispatchEvent(new CustomEvent("iconpicker:focus", { detail: instanceId }));
+                            return "mdi";
+                        });
                     }}
                     title="Browse MDI icons"
                 >
@@ -223,7 +232,11 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                                 setHueRequested(true);
                                 void preloadHueIcons();
                             }
-                            setBrowser((b) => (b === "hue" ? null : "hue"));
+                            setBrowser((b) => {
+                                if (b === "hue") return null;
+                                window.dispatchEvent(new CustomEvent("iconpicker:focus", { detail: instanceId }));
+                                return "hue";
+                            });
                         }}
                         title="Browse Hue icons"
                     >
