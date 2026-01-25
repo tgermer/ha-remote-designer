@@ -33,7 +33,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                         const hasButtonFill = typeof buttonFill === "string" && buttonFill.length > 0;
 
                         return (
-                            <>
+                            <div className="option-row">
                                 <label className="option">
                                     <input
                                         type="checkbox"
@@ -43,48 +43,39 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                     Custom button background
                                 </label>
                                 {hasButtonFill && (
-                                    <label className="option">
+                                    <label className="option option--inline">
                                         Background color
                                         <input type="color" value={buttonFill} onChange={(e) => onSetButtonFill(id, e.target.value)} />
                                     </label>
                                 )}
-                            </>
+                            </div>
                         );
                     })()}
                     {TAP_ORDER.map((tap) => (
                         <div key={tap}>
                             <h4>{tapLabel(tap)}</h4>
                             <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => onSetIcon(id, tap, v)} />
-                            <p>
+                            <div className="option-row">
                                 {(() => {
                                     const iconName = state.buttonConfigs[id]?.icons?.[tap];
                                     if (!iconName) return null;
 
-                                    // Hide strikethrough toggle if the icon already represents an "off" state
-                                    if (typeof iconName === "string" && iconName.toLowerCase().includes("off")) return null;
-
-                                    return (
-                                        <label className="option">
-                                            <input
-                                                type="checkbox"
-                                                checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
-                                                onChange={(e) => onToggleStrike(id, tap, e.target.checked)}
-                                            />
-                                            Strikethrough (manual “off”)
-                                        </label>
-                                    );
-                                })()}
-                            </p>
-                            <p>
-                                {(() => {
-                                    const iconName = state.buttonConfigs[id]?.icons?.[tap];
-                                    if (!iconName) return null;
-
+                                    const isOffIcon = typeof iconName === "string" && iconName.toLowerCase().includes("off");
                                     const iconColor = state.buttonConfigs[id]?.iconColors?.[tap];
                                     const hasIconColor = typeof iconColor === "string" && iconColor.length > 0;
 
                                     return (
                                         <>
+                                            {!isOffIcon && (
+                                                <label className="option">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
+                                                        onChange={(e) => onToggleStrike(id, tap, e.target.checked)}
+                                                    />
+                                                    Strikethrough (manual “off”)
+                                                </label>
+                                            )}
                                             <label className="option">
                                                 <input
                                                     type="checkbox"
@@ -94,7 +85,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                                 Custom icon color
                                             </label>
                                             {hasIconColor && (
-                                                <label className="option">
+                                                <label className="option option--inline">
                                                     Icon color
                                                     <input type="color" value={iconColor} onChange={(e) => onSetIconColor(id, tap, e.target.value)} />
                                                 </label>
@@ -102,7 +93,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                         </>
                                     );
                                 })()}
-                            </p>
+                            </div>
                         </div>
                     ))}
                 </section>
