@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { UiIcon } from "../UiIcon";
 import type { SavedDesign } from "../../app/savedDesigns";
 
@@ -9,6 +9,7 @@ type SavedDesignsSectionProps = {
     onBlurSaveName: () => void;
     activeSavedId: string | null;
     hasUnsavedChanges: boolean;
+    showSavedStatus: boolean;
     onSaveActive: () => void;
     onSaveAsNew: () => void;
     savedDesigns: SavedDesign[];
@@ -31,6 +32,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
         onBlurSaveName,
         activeSavedId,
         hasUnsavedChanges,
+        showSavedStatus,
         onSaveActive,
         onSaveAsNew,
         savedDesigns,
@@ -46,21 +48,6 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
     } = props;
 
     const importInputRef = useRef<HTMLInputElement | null>(null);
-    const [showSavedStatus, setShowSavedStatus] = useState(false);
-
-    useEffect(() => {
-        if (!activeSavedId) {
-            setShowSavedStatus(false);
-            return;
-        }
-        if (hasUnsavedChanges) {
-            setShowSavedStatus(false);
-            return;
-        }
-        setShowSavedStatus(true);
-        const t = window.setTimeout(() => setShowSavedStatus(false), 10000);
-        return () => window.clearTimeout(t);
-    }, [activeSavedId, hasUnsavedChanges]);
 
     return (
         <fieldset>

@@ -302,11 +302,6 @@ export default function App() {
         return () => window.removeEventListener("popstate", onPopState);
     }, []);
 
-    const goTo = (next: "editor" | "gallery") => {
-        setUrlView(next);
-        setView(next);
-    };
-
     const [state, setState] = useState<DesignState>(() => {
         // In gallery view we do not try to parse the hash as state.
         if (getUrlView() === "gallery") return initial;
@@ -331,6 +326,8 @@ export default function App() {
     const [loadedName, setLoadedName] = useState<string>("");
 
     const [importExportStatus, setImportExportStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+    const [showSavedStatus, setShowSavedStatus] = useState(false);
+    const savedStatusTimerRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (!importExportStatus) return;
@@ -358,9 +355,24 @@ export default function App() {
         }
     };
 
-    useEffect(() => {
-        if (isGallery) refreshSavedDesigns();
-    }, [isGallery, selectedSavedId, activeSavedId]);
+    const triggerSavedStatus = () => {
+        if (savedStatusTimerRef.current) {
+            window.clearTimeout(savedStatusTimerRef.current);
+        }
+        setShowSavedStatus(true);
+        savedStatusTimerRef.current = window.setTimeout(() => {
+            setShowSavedStatus(false);
+            savedStatusTimerRef.current = null;
+        }, 10000);
+    };
+
+    const goTo = (next: "editor" | "gallery") => {
+        if (next === "gallery") {
+            refreshSavedDesigns();
+        }
+        setUrlView(next);
+        setView(next);
+    };
 
     const exportBase = useMemo(() => getExportBaseName({ saveName, remoteId: state.remoteId }), [saveName, state.remoteId]);
 
@@ -391,6 +403,7 @@ export default function App() {
         setSaveName(design.name);
         setSaveNameError("");
         setSelectedSavedId(design.id);
+        setShowSavedStatus(false);
     };
 
     const saveAsNewDesign = () => {
@@ -422,6 +435,7 @@ export default function App() {
         setSaveName(finalName);
 
         refreshSavedDesigns();
+        triggerSavedStatus();
     };
 
     const saveActiveDesign = () => {
@@ -457,6 +471,7 @@ export default function App() {
         setSelectedSavedId(activeSavedId);
 
         refreshSavedDesigns();
+        triggerSavedStatus();
     };
 
     const deleteSelectedDesign = () => {
@@ -1001,6 +1016,7 @@ export default function App() {
                                         onBlurSaveName={handleSaveNameBlur}
                                         activeSavedId={activeSavedId}
                                         hasUnsavedChanges={hasUnsavedChanges}
+                                        showSavedStatus={showSavedStatus}
                                         onSaveActive={saveActiveDesign}
                                         onSaveAsNew={saveAsNewDesign}
                                         savedDesigns={savedDesigns}
