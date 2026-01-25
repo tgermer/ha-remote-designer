@@ -306,11 +306,6 @@ export default function App() {
     });
     const [stickerPageIndex, setStickerPageIndex] = useState(0);
 
-    useEffect(() => {
-        if (REMOTES.some((r) => r.id === state.remoteId)) return;
-        setState((s) => normalizeState(s));
-    }, [state.remoteId]);
-
     /* ----------------------------- Saved designs UI state ----------------------------- */
     const initialSavedDesigns = useMemo(() => readSavedDesigns().sort((a, b) => b.updatedAt - a.updatedAt), []);
     const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>(initialSavedDesigns);
@@ -476,46 +471,6 @@ export default function App() {
         });
     }, [isStickerSheet, o.labelWidthMm, o.labelHeightMm, o.labelCount, o.sheetMarginXMm, o.sheetMarginYMm, o.sheetGapMm, sheetSizeMm.width, sheetSizeMm.height]);
 
-    const template = useMemo(() => {
-        const base = baseTemplate;
-        if (!isStickerSheet) return base;
-
-        const layout =
-            stickerLayout ??
-            getStickerSheetLayout({
-                labelWidthMm: o.labelWidthMm,
-                labelHeightMm: o.labelHeightMm,
-                count: o.labelCount,
-                sheetWidthMm: sheetSizeMm.width,
-                sheetHeightMm: sheetSizeMm.height,
-                marginXMm: o.sheetMarginXMm,
-                marginYMm: o.sheetMarginYMm,
-                gapMm: o.sheetGapMm,
-            });
-        const pageIndex = Math.max(0, stickerPageIndex);
-        const offset = pageIndex * layout.maxCount;
-        const remaining = Math.max(0, o.labelCount - offset);
-        const count = Math.min(layout.maxCount, remaining);
-        const positions = layout.positions.slice(0, count);
-
-        const buttons = positions.map((pos, index) => ({
-            id: `label_${offset + index + 1}`,
-            xMm: pos.xMm,
-            yMm: pos.yMm,
-            wMm: o.labelWidthMm,
-            hMm: o.labelHeightMm,
-            rMm: o.labelCornerMm,
-        }));
-
-        return {
-            ...base,
-            widthMm: layout.sheetWidthMm,
-            heightMm: layout.sheetHeightMm,
-            cornerMm: 0,
-            buttons,
-        };
-    }, [baseTemplate, isStickerSheet, stickerLayout, o.labelWidthMm, o.labelHeightMm, o.labelCornerMm, o.labelCount, o.sheetMarginXMm, o.sheetMarginYMm, o.sheetGapMm, sheetSizeMm.width, sheetSizeMm.height, stickerPageIndex]);
-
     const remoteNameById = useMemo(() => {
         return new Map(REMOTES.map((r) => [r.id, r.name] as const));
     }, []);
@@ -556,18 +511,52 @@ export default function App() {
         void preloadFullMdi();
     }, [shouldPreloadFullMdi, fullMdiLoaded]);
 
+    const stickerPages = stickerLayout?.pages ?? 0;
+    const stickerPageIndexSafe = isStickerSheet ? Math.min(stickerPageIndex, Math.max(0, stickerPages - 1)) : 0;
+
+    const template = useMemo(() => {
+        const base = baseTemplate;
+        if (!isStickerSheet) return base;
+
+        const layout =
+            stickerLayout ??
+            getStickerSheetLayout({
+                labelWidthMm: o.labelWidthMm,
+                labelHeightMm: o.labelHeightMm,
+                count: o.labelCount,
+                sheetWidthMm: sheetSizeMm.width,
+                sheetHeightMm: sheetSizeMm.height,
+                marginXMm: o.sheetMarginXMm,
+                marginYMm: o.sheetMarginYMm,
+                gapMm: o.sheetGapMm,
+            });
+        const pageIndex = Math.max(0, stickerPageIndexSafe);
+        const offset = pageIndex * layout.maxCount;
+        const remaining = Math.max(0, o.labelCount - offset);
+        const count = Math.min(layout.maxCount, remaining);
+        const positions = layout.positions.slice(0, count);
+
+        const buttons = positions.map((pos, index) => ({
+            id: `label_${offset + index + 1}`,
+            xMm: pos.xMm,
+            yMm: pos.yMm,
+            wMm: o.labelWidthMm,
+            hMm: o.labelHeightMm,
+            rMm: o.labelCornerMm,
+        }));
+
+        return {
+            ...base,
+            widthMm: layout.sheetWidthMm,
+            heightMm: layout.sheetHeightMm,
+            cornerMm: 0,
+            buttons,
+        };
+    }, [baseTemplate, isStickerSheet, stickerLayout, o.labelWidthMm, o.labelHeightMm, o.labelCornerMm, o.labelCount, o.sheetMarginXMm, o.sheetMarginYMm, o.sheetGapMm, sheetSizeMm.width, sheetSizeMm.height, stickerPageIndexSafe]);
+
     const buttonIds = isStickerSheet ? Array.from({ length: Math.max(0, o.labelCount) }, (_, i) => `label_${i + 1}`) : template.buttons.map((b) => b.id);
     const labelWidthMm = o.labelWidthMm;
     const labelHeightMm = o.labelHeightMm;
-    const stickerPages = stickerLayout?.pages ?? 0;
-
-    useEffect(() => {
-        if (!isStickerSheet) return;
-        const maxIndex = Math.max(0, stickerPages - 1);
-        if (stickerPageIndex > maxIndex) {
-            setStickerPageIndex(maxIndex);
-        }
-    }, [isStickerSheet, stickerPages, stickerPageIndex]);
 
     const setIcon = (buttonId: string, tap: TapType, icon?: string) => {
         setState((s) => {
@@ -729,7 +718,7 @@ export default function App() {
         const totalPages = Math.max(1, layout.pages);
         const svgTexts: string[] = [];
 
-        const prevPage = stickerPageIndex;
+        const prevPage = stickerPageIndexSafe;
         for (let page = 0; page < totalPages; page += 1) {
             setStickerPageIndex(page);
             await nextFrame();
@@ -915,7 +904,7 @@ export default function App() {
                             watermarkText={watermarkText}
                             watermarkOpacity={watermarkOpacity}
                             isStickerSheet={isStickerSheet}
-                            pageIndex={stickerPageIndex}
+                            pageIndex={stickerPageIndexSafe}
                             pages={stickerPages}
                             onChangePage={setStickerPageIndex}
                         />

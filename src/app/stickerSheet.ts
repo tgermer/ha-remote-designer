@@ -52,6 +52,7 @@ export function getStickerSheetLayout(params: StickerLayoutParams): StickerSheet
             rows: 0,
             maxCount: 0,
             effectiveCount: 0,
+            pages: 0,
             positions: [],
         };
     }
