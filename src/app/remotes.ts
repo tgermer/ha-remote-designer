@@ -322,7 +322,7 @@ export const REMOTES: RemoteTemplate[] = [
         id: "tuya_ts0044",
         name: "MOES 4 Button Scene (TS0044)",
         isDraft: true,
-        productIds: ["TS0044", "TS0044_1"],
+        productIds: ["TS0044"],
         links: [
             { label: "Zigbee2MQTT", url: "https://www.zigbee2mqtt.io/devices/TS0044.html" },
             // { label: "Manufacturer", url: "https://moeshouse.com/products/zigbee-4-gang-scene-remote" },
