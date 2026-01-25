@@ -6,6 +6,10 @@
 
 Design printable button labels for physical smart-home remotes – without graphic design tools.
 
+<p>
+  <img src="public/buyMeACoffee.png" alt="Buy me a coffee" width="220">
+</p>
+
 ---
 
 ## Why this exists
@@ -177,6 +181,15 @@ You are free to use, modify and share it. Attribution is appreciated.
 
 ## Updates
 
+### 2026-01-25 (Update 2)
+
+- Added gallery filters + sorting to browse presets and saved designs
+- Added custom icon colors and per-button background fills
+- Added click-to-jump from preview to the matching button settings
+- Added cutouts and preview design elements for specific remotes (e.g., BILRESA, Aqara W100)
+- Added remote image thumbnails in the remote selector
+- Added safer export filenames (sanitized base names + date suffix for JSON exports)
+
 ### 2026-01-25
 
 - Added preset gallery view to preview and start from examples
@@ -210,3 +223,7 @@ Open sourcing the tool allows:
 Future services (such as printed stickers or material-based solutions) are intentionally **out of scope** for this repository.
 
 Open source code and optional paid services are not a contradiction. They solve different problems.
+
+<p>
+  <img src="public/buyMeACoffee.png" alt="Buy me a coffee" width="220">
+</p>
