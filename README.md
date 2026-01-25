@@ -53,10 +53,16 @@ No installation required. No account needed.
 
 - Design simple, consistent labels for physical smart-home remotes
 - Focus on **buttons**, not full remote skins
-- Export labels as **SVG**
-- Optional print calibration reference (10 mm)
-- Save your configured remotes locally in your browser (localStorage)
-- Reload and continue editing later
+- Built-in **preset gallery** to start from real examples
+- Icon picker with **Material Design Icons (MDI)** plus optional Hue icons
+- Save multiple remotes locally in your browser (localStorage)
+- Load, rename, or delete saved remotes
+- Export/import saved remotes as **JSON** backups
+- Share your current design via a **copyable link**
+- Export labels as **SVG** and sticker sheets as **PDF (A4/Letter)**
+- Export **all sticker-sheet pages** as SVG in a ZIP
+- Optional **PNG label ZIP export** (admin-only)
+- Optional **1 cm scale bar** for print accuracy checks
 - No accounts
 - No cloud
 - No vendor lock-in
@@ -67,8 +73,6 @@ This is intentionally a **community prototype**.
 
 ## What this tool is NOT (yet)
 
-- No PDF export
-- No PNG export
 - No perfect print templates
 - No professional sticker service
 
@@ -99,9 +103,9 @@ High resolution (300 DPI) ensures:
 
 ## Print calibration (important)
 
-Exported PNGs can include an optional calibration reference:
+Exports can include an optional calibration reference:
 
-- 10 mm line
+- 1 cm scale bar
 
 Before judging size accuracy:
 
@@ -170,6 +174,16 @@ This project is licensed under the MIT License.
 You are free to use, modify and share it. Attribution is appreciated.
 
 ---
+
+## Updates
+
+### 2026-01-25
+
+- Added preset gallery view to preview and start from examples
+- Added save/load flows with JSON export/import backups
+- Added shareable links via URL state
+- Added sticker-sheet builder (A4/Letter) with size/margin/gap controls
+- Added PDF export for sticker sheets and SVG multi-page ZIP export
 
 ## Status
 
