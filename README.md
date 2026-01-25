@@ -7,7 +7,7 @@
 Design printable button labels for physical smart-home remotes – without graphic design tools.
 
 <p>
-  <img src="public/buyMeACoffee.png" alt="Buy me a coffee" width="220">
+  <img src="public/buyMeACoffee.png" alt="Buy me a coffee" width="150">
 </p>
 
 ---
@@ -225,5 +225,5 @@ Future services (such as printed stickers or material-based solutions) are inten
 Open source code and optional paid services are not a contradiction. They solve different problems.
 
 <p>
-  <img src="public/buyMeACoffee.png" alt="Buy me a coffee" width="220">
+  <img src="public/buyMeACoffee.png" alt="Buy me a coffee" width="150">
 </p>
