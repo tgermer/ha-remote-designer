@@ -204,6 +204,38 @@ main {
   color: var(--ink-muted);
 }
 
+.gallery__status {
+  margin: 0.45rem 0 0;
+  color: var(--ink);
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.statusSpinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(37, 37, 69, 0.2);
+  border-top-color: rgba(37, 37, 69, 0.7);
+  animation: gallerySpin 0.9s linear infinite;
+}
+
+@keyframes gallerySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.previewStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  margin: 0 0 0.5rem;
+}
 .galleryFiltersBlock {
   margin: 1.5rem 0 1.5rem;
 }

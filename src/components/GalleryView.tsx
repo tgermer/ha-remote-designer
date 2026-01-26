@@ -14,10 +14,11 @@ type GalleryViewProps = {
     showWatermark: boolean;
     watermarkText: string;
     watermarkOpacity: number;
+    iconLoadStatus?: string | null;
 };
 
 export function GalleryView(props: GalleryViewProps) {
-    const { remotes, savedDesigns, buildStateFromExample, onOpenPreview, onOpenSaved, showWatermark, watermarkText, watermarkOpacity } = props;
+    const { remotes, savedDesigns, buildStateFromExample, onOpenPreview, onOpenSaved, showWatermark, watermarkText, watermarkOpacity, iconLoadStatus } = props;
     const [selectedRemoteId, setSelectedRemoteId] = useState<string>("all");
     const [sourceFilter, setSourceFilter] = useState<"all" | "preview" | "saved">("all");
     const [sortKey, setSortKey] = useState<"recent" | "type" | "name" | "source">("name");
@@ -138,6 +139,12 @@ export function GalleryView(props: GalleryViewProps) {
             <header className="gallery__header">
                 <h2 className="gallery__title">Gallery</h2>
                 <p className="gallery__subtitle">Browse preview presets and your saved remotes. Click any card to open it in the editor.</p>
+                {iconLoadStatus ? (
+                    <p className="gallery__status" role="status" aria-live="polite">
+                        <span className="statusSpinner" aria-hidden="true" />
+                        {iconLoadStatus}
+                    </p>
+                ) : null}
                 <div className="galleryFiltersBlock">
                     <div className="galleryFilters__title">Filters</div>
                     <div className="galleryFilters" role="group" aria-label="Gallery filters">
@@ -218,6 +225,7 @@ export function GalleryView(props: GalleryViewProps) {
                                             showWatermark={showWatermark}
                                             watermarkText={watermarkText}
                                             watermarkOpacity={watermarkOpacity}
+                                            showMissingIconPlaceholder
                                             overrides={{
                                                 showScaleBar: false,
                                                 showGuides: false,

@@ -697,16 +697,30 @@ export default function App() {
     const watermarkOpacity = 0.2;
 
     const hueIconsLoaded = useSyncExternalStore(subscribeHueIcons, getHueIconsLoadedSnapshot);
-    const galleryUsesHueIcons = useMemo(() => remotesUseHueIcons(), []);
+    const galleryUsesHueIcons = useMemo(() => remotesUseHueIcons() || savedDesigns.some((d) => stateUsesHueIcons(d.state)), [savedDesigns]);
     const shouldPreloadHueIcons = useMemo(() => (isGallery ? galleryUsesHueIcons : stateUsesHueIcons(state)), [isGallery, galleryUsesHueIcons, state]);
 
     useEffect(() => {
         if (!shouldPreloadHueIcons || hueIconsLoaded) return;
-        void preloadHueIcons();
-    }, [shouldPreloadHueIcons, hueIconsLoaded]);
+        if (!isGallery) {
+            void preloadHueIcons();
+            return;
+        }
+        const idle = typeof window !== "undefined" ? (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback : undefined;
+        if (idle) {
+            const handle = idle(() => void preloadHueIcons(), { timeout: 2500 });
+            return () => {
+                if (typeof window !== "undefined" && (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback) {
+                    (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback!(handle);
+                }
+            };
+        }
+        const t = window.setTimeout(() => void preloadHueIcons(), 1500);
+        return () => window.clearTimeout(t);
+    }, [shouldPreloadHueIcons, hueIconsLoaded, isGallery]);
 
     const fullMdiLoaded = useSyncExternalStore(subscribeFullMdi, getFullMdiLoadedSnapshot);
-    const galleryUsesFullMdi = useMemo(() => remotesUseFullMdi(), []);
+    const galleryUsesFullMdi = useMemo(() => remotesUseFullMdi() || savedDesigns.some((d) => stateUsesFullMdi(d.state)), [savedDesigns]);
     const shouldPreloadFullMdi = useMemo(() => (isGallery ? galleryUsesFullMdi : stateUsesFullMdi(state)), [isGallery, galleryUsesFullMdi, state]);
     const overlayRoot = typeof document !== "undefined" ? document.getElementById("overlay-root") : null;
     const [previewOpen, setPreviewOpen] = useState(false);
@@ -717,8 +731,30 @@ export default function App() {
 
     useEffect(() => {
         if (!shouldPreloadFullMdi || fullMdiLoaded) return;
-        void preloadFullMdi();
-    }, [shouldPreloadFullMdi, fullMdiLoaded]);
+        if (!isGallery) {
+            void preloadFullMdi();
+            return;
+        }
+        const idle = typeof window !== "undefined" ? (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback : undefined;
+        if (idle) {
+            const handle = idle(() => void preloadFullMdi(), { timeout: 2500 });
+            return () => {
+                if (typeof window !== "undefined" && (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback) {
+                    (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback!(handle);
+                }
+            };
+        }
+        const t = window.setTimeout(() => void preloadFullMdi(), 1500);
+        return () => window.clearTimeout(t);
+    }, [shouldPreloadFullMdi, fullMdiLoaded, isGallery]);
+
+    const iconLoadStatus = useMemo(() => {
+        const parts: string[] = [];
+        if (shouldPreloadFullMdi && !fullMdiLoaded) parts.push("MDI");
+        if (shouldPreloadHueIcons && !hueIconsLoaded) parts.push("Hue");
+        if (!parts.length) return null;
+        return `Loading icon libraries: ${parts.join(" + ")}…`;
+    }, [shouldPreloadFullMdi, fullMdiLoaded, shouldPreloadHueIcons, hueIconsLoaded]);
 
 
     const stickerPages = stickerLayout?.pages ?? 0;
@@ -1311,6 +1347,7 @@ export default function App() {
                                     showWatermark={showWatermark}
                                     watermarkText={watermarkText}
                                     watermarkOpacity={watermarkOpacity}
+                                    iconLoadStatus={isGallery ? iconLoadStatus : null}
                                     onOpenPreview={({ state: nextState }) => {
                                         setState(normalizeState(nextState));
                                         goTo("editor");
@@ -1402,7 +1439,13 @@ export default function App() {
                                 }
                                 preview={
                                     <div className="previewStack">
-                                        <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--desktop" />
+                                        {!isGallery && iconLoadStatus ? (
+                                            <div className="previewStatus" role="status" aria-live="polite">
+                                                <span className="statusSpinner" aria-hidden="true" />
+                                                {iconLoadStatus}
+                                            </div>
+                                        ) : null}
+                                        <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--desktop" showMissingIconPlaceholder={!!iconLoadStatus} />
                                         <a className="tipJar__imageLink" href="https://www.buymeacoffee.com/tgermer" target="_blank" rel="noopener noreferrer">
                                             <img className="tipJar__image" src="/buyMeACoffee.png" alt="Buy Me A Coffee" />
                                         </a>
@@ -1441,7 +1484,7 @@ export default function App() {
                                           <UiIcon name="mdi:close-circle-outline" className="icon" />
                                       </button>
                                   </div>
-                                  <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--overlay" />
+                                  <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--overlay" showMissingIconPlaceholder={!!iconLoadStatus} />
                               </div>
                           ) : (
                               <button type="button" className="previewOverlay__bar" onClick={() => setPreviewOpen(true)}>
