@@ -232,9 +232,7 @@ export function GalleryView(props: GalleryViewProps) {
             ? "No gallery entries yet."
             : "No entries match the selected filters.";
 
-    useEffect(() => {
-        setVisibleCount(12);
-    }, [selectedRemoteId, sourceFilter, sortKey, filteredEntries.length]);
+    const safeVisibleCount = Math.min(visibleCount, filteredEntries.length);
 
     useEffect(() => {
         if (!sentinelRef.current) return;
@@ -266,7 +264,13 @@ export function GalleryView(props: GalleryViewProps) {
                     <div className="galleryFilters" role="group" aria-label="Gallery filters">
                         <label className="galleryFilters__control">
                             Remote type
-                            <select value={selectedRemoteId} onChange={(e) => setSelectedRemoteId(e.target.value)}>
+                            <select
+                                value={selectedRemoteId}
+                                onChange={(e) => {
+                                    setSelectedRemoteId(e.target.value);
+                                    setVisibleCount(12);
+                                }}
+                            >
                                 <option value="all">All types</option>
                                 {remoteOptions.map((option) => (
                                     <option key={option.id} value={option.id}>
@@ -277,7 +281,13 @@ export function GalleryView(props: GalleryViewProps) {
                         </label>
                         <label className="galleryFilters__control">
                             Source
-                            <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value as "all" | "preview" | "saved")}>
+                            <select
+                                value={sourceFilter}
+                                onChange={(e) => {
+                                    setSourceFilter(e.target.value as "all" | "preview" | "saved");
+                                    setVisibleCount(12);
+                                }}
+                            >
                                 <option value="all">All sources</option>
                                 <option value="preview">Preview presets</option>
                                 <option value="saved">My saved remotes</option>
@@ -285,7 +295,13 @@ export function GalleryView(props: GalleryViewProps) {
                         </label>
                         <label className="galleryFilters__control">
                             Sort
-                            <select value={sortKey} onChange={(e) => setSortKey(e.target.value as "recent" | "type" | "name" | "source")}>
+                            <select
+                                value={sortKey}
+                                onChange={(e) => {
+                                    setSortKey(e.target.value as "recent" | "type" | "name" | "source");
+                                    setVisibleCount(12);
+                                }}
+                            >
                                 <option value="recent">Recently saved</option>
                                 <option value="type">Remote type</option>
                                 <option value="source">Source</option>
@@ -299,12 +315,13 @@ export function GalleryView(props: GalleryViewProps) {
                                 setSelectedRemoteId("all");
                                 setSourceFilter("all");
                                 setSortKey("name");
+                                setVisibleCount(12);
                             }}
                         >
                             Clear filters
                         </button>
                         <div className="galleryFilters__summary">
-                            Showing {Math.min(visibleCount, filteredEntries.length)} of {filteredEntries.length}
+                            Showing {safeVisibleCount} of {filteredEntries.length}
                         </div>
                     </div>
                 </div>
@@ -312,7 +329,7 @@ export function GalleryView(props: GalleryViewProps) {
 
             <div className="galleryGrid">
                 {filteredEntries.length ? (
-                    filteredEntries.slice(0, visibleCount).map((entry) => {
+                    filteredEntries.slice(0, safeVisibleCount).map((entry) => {
                         const renderTemplate = getRenderTemplate(entry.template, entry.state);
                         const isSquareRemote = Math.abs(renderTemplate.widthMm - renderTemplate.heightMm) / Math.max(renderTemplate.widthMm, renderTemplate.heightMm) <= 0.12;
 
@@ -334,7 +351,7 @@ export function GalleryView(props: GalleryViewProps) {
                     <div className="galleryEmpty">{emptyMessage}</div>
                 )}
             </div>
-            {filteredEntries.length > visibleCount ? <div ref={sentinelRef} className="gallerySentinel" aria-hidden="true" /> : null}
+            {filteredEntries.length > safeVisibleCount ? <div ref={sentinelRef} className="gallerySentinel" aria-hidden="true" /> : null}
         </section>
     );
 }
