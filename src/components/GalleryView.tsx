@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { DesignState } from "../app/types";
 import type { RemoteExample, RemoteTemplate } from "../app/remotes";
 import type { SavedDesign } from "../app/savedDesigns";
@@ -17,11 +17,109 @@ type GalleryViewProps = {
     iconLoadStatus?: string | null;
 };
 
+type GalleryEntry = {
+    id: string;
+    kind: "preview" | "saved";
+    remoteId: string;
+    remoteName: string;
+    title: string;
+    description?: string;
+    state: DesignState;
+    template: RemoteTemplate;
+    updatedAt: number;
+    saved?: SavedDesign;
+};
+
+const GalleryCard = memo(function GalleryCard({
+    entry,
+    renderTemplate,
+    isSquareRemote,
+    showWatermark,
+    watermarkText,
+    watermarkOpacity,
+    onOpenPreview,
+    onOpenSaved,
+}: {
+    entry: GalleryEntry;
+    renderTemplate: RemoteTemplate;
+    isSquareRemote: boolean;
+    showWatermark: boolean;
+    watermarkText: string;
+    watermarkOpacity: number;
+    onOpenPreview: (params: { state: DesignState }) => void;
+    onOpenSaved: (design: SavedDesign) => void;
+}) {
+    const handleOpen = () => {
+        if (entry.kind === "saved") {
+            onOpenSaved(entry.saved!);
+        } else {
+            onOpenPreview({ state: entry.state });
+        }
+    };
+
+    return (
+        <button
+            type="button"
+            className={`galleryCard${isSquareRemote ? " galleryCard--square" : ""}`}
+            data-remote-id={entry.remoteId}
+            data-entry-kind={entry.kind}
+            onClick={handleOpen}
+        >
+            <div className="galleryCard__media">
+                <div className="galleryThumb">
+                    <RemoteSvg
+                        template={renderTemplate}
+                        state={entry.state}
+                        background="remote"
+                        showWatermark={showWatermark}
+                        watermarkText={watermarkText}
+                        watermarkOpacity={watermarkOpacity}
+                        showMissingIconPlaceholder
+                        overrides={{
+                            showScaleBar: false,
+                            showGuides: false,
+                            showRemoteOutline: true,
+                            showButtonOutlines: true,
+                        }}
+                    />
+                </div>
+            </div>
+
+            <div className="galleryCard__meta">
+                <div className="galleryCard__title">{entry.title}</div>
+                <div className="galleryCard__model">{entry.remoteName}</div>
+                {entry.kind === "saved" ? <div className="galleryCard__tag">Saved</div> : null}
+                {entry.description ? <div className="galleryCard__desc">{entry.description}</div> : null}
+            </div>
+        </button>
+    );
+}, (prev, next) => {
+    return (
+        prev.entry.id === next.entry.id &&
+        prev.entry.updatedAt === next.entry.updatedAt &&
+        prev.entry.title === next.entry.title &&
+        prev.entry.description === next.entry.description &&
+        prev.entry.remoteId === next.entry.remoteId &&
+        prev.entry.remoteName === next.entry.remoteName &&
+        prev.entry.kind === next.entry.kind &&
+        prev.entry.state === next.entry.state &&
+        prev.renderTemplate === next.renderTemplate &&
+        prev.isSquareRemote === next.isSquareRemote &&
+        prev.showWatermark === next.showWatermark &&
+        prev.watermarkText === next.watermarkText &&
+        prev.watermarkOpacity === next.watermarkOpacity
+    );
+});
+
+GalleryCard.displayName = "GalleryCard";
+
 export function GalleryView(props: GalleryViewProps) {
     const { remotes, savedDesigns, buildStateFromExample, onOpenPreview, onOpenSaved, showWatermark, watermarkText, watermarkOpacity, iconLoadStatus } = props;
     const [selectedRemoteId, setSelectedRemoteId] = useState<string>("all");
     const [sourceFilter, setSourceFilter] = useState<"all" | "preview" | "saved">("all");
     const [sortKey, setSortKey] = useState<"recent" | "type" | "name" | "source">("name");
+    const [visibleCount, setVisibleCount] = useState(12);
+    const sentinelRef = useRef<HTMLDivElement | null>(null);
 
     const remoteById = useMemo(() => new Map(remotes.map((r) => [r.id, r])), [remotes]);
     const remoteOptions = useMemo(() => remotes.map((r) => ({ id: r.id, name: r.name })), [remotes]);
@@ -65,7 +163,7 @@ export function GalleryView(props: GalleryViewProps) {
         };
     };
 
-    const previewEntries = remotes.flatMap((r) => {
+    const previewEntries: GalleryEntry[] = remotes.flatMap((r) => {
         const exs = r.examples ?? [];
         return exs.map((ex) => {
             const state = buildStateFromExample({ remoteId: r.id, example: ex });
@@ -83,7 +181,7 @@ export function GalleryView(props: GalleryViewProps) {
         });
     });
 
-    const savedEntries = savedDesigns.flatMap((design) => {
+    const savedEntries: GalleryEntry[] = savedDesigns.flatMap((design) => {
         const remote = remoteById.get(design.state.remoteId);
         if (!remote) return [];
         return [
@@ -133,6 +231,24 @@ export function GalleryView(props: GalleryViewProps) {
         allEntries.length === 0
             ? "No gallery entries yet."
             : "No entries match the selected filters.";
+
+    useEffect(() => {
+        setVisibleCount(12);
+    }, [selectedRemoteId, sourceFilter, sortKey, filteredEntries.length]);
+
+    useEffect(() => {
+        if (!sentinelRef.current) return;
+        const sentinel = sentinelRef.current;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (!entries.some((entry) => entry.isIntersecting)) return;
+                setVisibleCount((prev) => Math.min(filteredEntries.length, prev + 12));
+            },
+            { root: null, rootMargin: "600px 0px", threshold: 0 },
+        );
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [filteredEntries.length]);
 
     return (
         <section className="gallery" aria-label="Gallery">
@@ -188,7 +304,7 @@ export function GalleryView(props: GalleryViewProps) {
                             Clear filters
                         </button>
                         <div className="galleryFilters__summary">
-                            Showing {filteredEntries.length} of {allEntries.length}
+                            Showing {Math.min(visibleCount, filteredEntries.length)} of {filteredEntries.length}
                         </div>
                     </div>
                 </div>
@@ -196,59 +312,29 @@ export function GalleryView(props: GalleryViewProps) {
 
             <div className="galleryGrid">
                 {filteredEntries.length ? (
-                    filteredEntries.map((entry) => {
+                    filteredEntries.slice(0, visibleCount).map((entry) => {
                         const renderTemplate = getRenderTemplate(entry.template, entry.state);
                         const isSquareRemote = Math.abs(renderTemplate.widthMm - renderTemplate.heightMm) / Math.max(renderTemplate.widthMm, renderTemplate.heightMm) <= 0.12;
-                        const handleOpen = () => {
-                            if (entry.kind === "saved") {
-                                onOpenSaved(entry.saved);
-                            } else {
-                                onOpenPreview({ state: entry.state });
-                            }
-                        };
 
                         return (
-                            <button
+                            <GalleryCard
                                 key={entry.id}
-                                type="button"
-                                className={`galleryCard${isSquareRemote ? " galleryCard--square" : ""}`}
-                                data-remote-id={entry.remoteId}
-                                data-entry-kind={entry.kind}
-                                onClick={handleOpen}
-                            >
-                                <div className="galleryCard__media">
-                                    <div className="galleryThumb">
-                                        <RemoteSvg
-                                            template={renderTemplate}
-                                            state={entry.state}
-                                            background="remote"
-                                            showWatermark={showWatermark}
-                                            watermarkText={watermarkText}
-                                            watermarkOpacity={watermarkOpacity}
-                                            showMissingIconPlaceholder
-                                            overrides={{
-                                                showScaleBar: false,
-                                                showGuides: false,
-                                                showRemoteOutline: true,
-                                                showButtonOutlines: true,
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="galleryCard__meta">
-                                    <div className="galleryCard__title">{entry.title}</div>
-                                    <div className="galleryCard__model">{entry.remoteName}</div>
-                                    {entry.kind === "saved" ? <div className="galleryCard__tag">Saved</div> : null}
-                                    {entry.description ? <div className="galleryCard__desc">{entry.description}</div> : null}
-                                </div>
-                            </button>
+                                entry={entry}
+                                renderTemplate={renderTemplate}
+                                isSquareRemote={isSquareRemote}
+                                showWatermark={showWatermark}
+                                watermarkText={watermarkText}
+                                watermarkOpacity={watermarkOpacity}
+                                onOpenPreview={onOpenPreview}
+                                onOpenSaved={onOpenSaved}
+                            />
                         );
                     })
                 ) : (
                     <div className="galleryEmpty">{emptyMessage}</div>
                 )}
             </div>
+            {filteredEntries.length > visibleCount ? <div ref={sentinelRef} className="gallerySentinel" aria-hidden="true" /> : null}
         </section>
     );
 }

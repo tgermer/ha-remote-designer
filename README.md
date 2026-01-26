@@ -7,7 +7,7 @@
 Design printable button labels for physical smart-home remotes – without graphic design tools.
 
 <p>
-  <img src="public/buyMeACoffee.png" alt="Buy me a coffee" width="150">
+  <img src="public/buyMeACoffee.webp" alt="Buy me a coffee" width="150">
 </p>
 
 ---
@@ -39,7 +39,7 @@ Labeling sounds trivial, but in practice it isn’t:
 
 **Remote Label Designer** closes the gap between automation logic and the physical remote in your hand.
 
-<img src="public/hero-image.jpg" alt="Printed button labels applied to smart-home remotes" width="400">
+<img src="public/hero-image.webp" alt="Printed button labels applied to smart-home remotes" width="400">
 
 ---
 
@@ -225,5 +225,5 @@ Future services (such as printed stickers or material-based solutions) are inten
 Open source code and optional paid services are not a contradiction. They solve different problems.
 
 <p>
-  <img src="public/buyMeACoffee.png" alt="Buy me a coffee" width="150">
+  <img src="public/buyMeACoffee.webp" alt="Buy me a coffee" width="150">
 </p>
