@@ -699,6 +699,7 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+
 /* Hidden render targets (exports) */
 .hidden {
   position: absolute;
@@ -971,6 +972,15 @@ button:disabled {
   gap: 0.75rem;
   flex-wrap: wrap;
   margin-top: 0.75rem;
+}
+
+.exportRow__status {
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+}
+
+.exportRow__status--error {
+  color: #b00020;
 }
 
 .exportRow__label {

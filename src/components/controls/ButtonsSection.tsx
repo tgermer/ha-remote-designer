@@ -1,7 +1,6 @@
 import type { DesignState, TapType } from "../../app/types";
 import { TAP_ORDER } from "../../app/types";
 import { IconPicker } from "../IconPicker";
-
 type ButtonsSectionProps = {
     buttonIds: string[];
     state: DesignState;

@@ -69,6 +69,8 @@ export type RemoteExample = {
     tapsEnabled: TapType[];
     buttonIcons: Record<string, Partial<Record<TapType, string>>>;
     buttonStrike?: Record<string, Partial<Record<TapType, boolean>>>;
+    buttonIconColors?: Record<string, Partial<Record<TapType, string>>>;
+    buttonFill?: Record<string, string>;
     options?: Partial<DesignOptions>;
 };
 
@@ -393,6 +395,54 @@ export const REMOTES: RemoteTemplate[] = [
                     // showScaleBar: false, // meist nicht als Example speichern
                 },
             },
+            {
+                id: "fdd061b2-a0d9-43da-a5cc-f5a4683b8299",
+                name: "Home Automation Master Switch in Color",
+                description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
+                tapsEnabled: ["single", "long"],
+                buttonIcons: {
+                    top_left: {
+                        single: "mdi:lightbulb-group-outline",
+                    },
+                    top_right: {
+                        single: "mdi:lightbulb-group-off-outline",
+                    },
+                    center_left: {
+                        single: "mdi:window-closed-variant",
+                    },
+                    center_right: {
+                        single: "mdi:pool",
+                    },
+                    bottom_left: {
+                        single: "mdi:weather-sunny",
+                    },
+                    bottom_right: {
+                        single: "mdi:weather-night",
+                    },
+                },
+                buttonIconColors: {
+                    center_right: {
+                        single: "#0033ff",
+                    },
+                    bottom_left: {
+                        single: "#fab700",
+                    },
+                    bottom_right: {
+                        single: "#0933dc",
+                    },
+                },
+                buttonFill: {
+                    center_left: "#e6e6e6",
+                    center_right: "#c7eeff",
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    autoIconSizing: false,
+                    fixedIconMm: 6.5,
+                    labelOutlineColor: "#000000",
+                    labelOutlineStrokeMm: 0.2,
+                },
+            },
         ],
     },
     {
@@ -445,6 +495,38 @@ export const REMOTES: RemoteTemplate[] = [
                     labelOutlineColor: "#464646",
                     labelOutlineStrokeMm: 0.2,
                     // showScaleBar: false, // meist nicht als Example speichern
+                },
+            },
+            {
+                id: "b2474432-4a02-4871-a4b2-978528f6f51e",
+                name: "Light, scene and cover switch.",
+                description: "Light + covers on single tap, scenes on long press.",
+                tapsEnabled: ["single", "long"],
+                buttonIcons: {
+                    top_left: {
+                        single: "mdi:lightbulb-group",
+                        long: "mdi:palette",
+                    },
+                    top_right: {
+                        single: "mdi:roller-shade",
+                    },
+                    bottom_left: {
+                        single: "mdi:lightbulb-group-off-outline",
+                    },
+                    bottom_right: {
+                        single: "mdi:roller-shade-closed",
+                    },
+                },
+                buttonIconColors: {
+                    top_left: {
+                        long: "#c933ff",
+                    },
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    fixedIconMm: 6.5,
+                    labelOutlineColor: "#464646",
+                    labelOutlineStrokeMm: 0.2,
                 },
             },
         ],

@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect, useRef, useSyncExternalStore } from "reac
 import { createPortal } from "react-dom";
 import "./App.css";
 
-import { type DesignState, type TapType } from "./app/types";
+import { TAP_ORDER, type DesignOptions, type DesignState, type TapType } from "./app/types";
 import { REMOTES, type RemoteExample, type RemoteTemplate } from "./app/remotes";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
@@ -242,13 +242,17 @@ function buildStateFromExample(params: { remoteId: RemoteTemplate["id"]; example
         options: { ...initial.options },
     };
 
-    // Apply example icons (+ strike)
+    // Apply example icons (+ strike/colors/fill)
     if (example?.buttonIcons) {
         for (const [buttonId, iconsByTap] of Object.entries(example.buttonIcons) as [string, RemoteExample["buttonIcons"][string]][]) {
             const id = String(buttonId);
+            const iconColors = example?.buttonIconColors?.[id] ?? {};
+            const buttonFill = example?.buttonFill?.[id];
             base.buttonConfigs[id] = {
                 icons: { ...iconsByTap },
                 strike: { ...(example?.buttonStrike?.[id] ?? {}) },
+                iconColors: { ...iconColors },
+                buttonFill,
             };
         }
     }
@@ -261,6 +265,30 @@ function buildStateFromExample(params: { remoteId: RemoteTemplate["id"]; example
             base.buttonConfigs[id] = {
                 ...prev,
                 strike: { ...(prev.strike ?? {}), ...strikeByTap },
+            };
+        }
+    }
+
+    // Apply icon colors even for buttons that have no icons in the example
+    if (example?.buttonIconColors) {
+        for (const [buttonId, colorsByTap] of Object.entries(example.buttonIconColors) as [string, NonNullable<RemoteExample["buttonIconColors"]>[string]][]) {
+            const id = String(buttonId);
+            const prev = base.buttonConfigs[id] ?? { icons: {} };
+            base.buttonConfigs[id] = {
+                ...prev,
+                iconColors: { ...(prev.iconColors ?? {}), ...colorsByTap },
+            };
+        }
+    }
+
+    if (example?.buttonFill) {
+        for (const [buttonId, fill] of Object.entries(example.buttonFill) as [string, NonNullable<RemoteExample["buttonFill"]>[string]][]) {
+            const id = String(buttonId);
+            if (typeof fill !== "string" || !fill) continue;
+            const prev = base.buttonConfigs[id] ?? { icons: {} };
+            base.buttonConfigs[id] = {
+                ...prev,
+                buttonFill: fill,
             };
         }
     }
@@ -864,6 +892,173 @@ export default function App() {
         }
     };
 
+    /* ------------------------- copy remote example ------------------------- */
+
+    const [remoteExampleStatus, setRemoteExampleStatus] = useState<"idle" | "copied" | "failed">("idle");
+
+    const buildRemoteExampleSnippet = () => {
+        const exampleName = saveName.trim() || `${baseTemplate.name} Example`;
+        const exampleId =
+            typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+                ? crypto.randomUUID()
+                : `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        const exampleDescription = "";
+        const isValidKey = (key: string) => /^[A-Za-z_$][0-9A-Za-z_$]*$/.test(key);
+        const formatKey = (key: string) => (isValidKey(key) ? key : JSON.stringify(key));
+
+        const buttonIconsById: Record<string, Partial<Record<TapType, string>>> = {};
+        const buttonStrikeById: Record<string, Partial<Record<TapType, boolean>>> = {};
+        const buttonIconColorsById: Record<string, Partial<Record<TapType, string>>> = {};
+        const buttonFillById: Record<string, string> = {};
+
+        for (const [buttonId, cfg] of Object.entries(state.buttonConfigs)) {
+            const iconsByTap: Partial<Record<TapType, string>> = {};
+            const strikeByTap: Partial<Record<TapType, boolean>> = {};
+            const iconColorsByTap: Partial<Record<TapType, string>> = {};
+
+            for (const tap of TAP_ORDER) {
+                const icon = cfg?.icons?.[tap];
+                if (typeof icon === "string" && icon.trim()) {
+                    iconsByTap[tap] = icon;
+                }
+                if (cfg?.strike?.[tap]) {
+                    strikeByTap[tap] = true;
+                }
+                const iconColor = cfg?.iconColors?.[tap];
+                if (typeof iconColor === "string" && iconColor.trim()) {
+                    iconColorsByTap[tap] = iconColor;
+                }
+            }
+
+            if (Object.keys(iconsByTap).length) {
+                buttonIconsById[buttonId] = iconsByTap;
+            }
+            if (Object.keys(strikeByTap).length) {
+                buttonStrikeById[buttonId] = strikeByTap;
+            }
+            if (Object.keys(iconColorsByTap).length) {
+                buttonIconColorsById[buttonId] = iconColorsByTap;
+            }
+            if (typeof cfg?.buttonFill === "string" && cfg.buttonFill.trim()) {
+                buttonFillById[buttonId] = cfg.buttonFill;
+            }
+        }
+
+        const optionDiff: Partial<DesignOptions> = {};
+        for (const key of Object.keys(initial.options) as (keyof DesignOptions)[]) {
+            if (state.options[key] !== initial.options[key]) {
+                optionDiff[key] = state.options[key];
+            }
+        }
+
+        const orderedIconIds = [
+            ...buttonIds.filter((id) => buttonIconsById[id]),
+            ...Object.keys(buttonIconsById).filter((id) => !buttonIds.includes(id)),
+        ];
+        const orderedStrikeIds = [
+            ...buttonIds.filter((id) => buttonStrikeById[id]),
+            ...Object.keys(buttonStrikeById).filter((id) => !buttonIds.includes(id)),
+        ];
+        const orderedIconColorIds = [
+            ...buttonIds.filter((id) => buttonIconColorsById[id]),
+            ...Object.keys(buttonIconColorsById).filter((id) => !buttonIds.includes(id)),
+        ];
+        const orderedFillIds = [
+            ...buttonIds.filter((id) => buttonFillById[id]),
+            ...Object.keys(buttonFillById).filter((id) => !buttonIds.includes(id)),
+        ];
+
+        const lines: string[] = [
+            "{",
+            `    id: ${JSON.stringify(exampleId)},`,
+            `    name: ${JSON.stringify(exampleName)},`,
+            `    description: ${JSON.stringify(exampleDescription)},`,
+            `    tapsEnabled: ${JSON.stringify(state.tapsEnabled)},`,
+            "    buttonIcons: {",
+        ];
+
+        for (const buttonId of orderedIconIds) {
+            const iconsByTap = buttonIconsById[buttonId];
+            if (!iconsByTap) continue;
+            lines.push(`        ${formatKey(buttonId)}: {`);
+            for (const tap of TAP_ORDER) {
+                const icon = iconsByTap[tap];
+                if (icon) {
+                    lines.push(`            ${tap}: ${JSON.stringify(icon)},`);
+                }
+            }
+            lines.push("        },");
+        }
+        lines.push("    },");
+
+        if (orderedStrikeIds.length) {
+            lines.push("    buttonStrike: {");
+            for (const buttonId of orderedStrikeIds) {
+                const strikeByTap = buttonStrikeById[buttonId];
+                if (!strikeByTap) continue;
+                lines.push(`        ${formatKey(buttonId)}: {`);
+                for (const tap of TAP_ORDER) {
+                    if (strikeByTap[tap]) {
+                        lines.push(`            ${tap}: true,`);
+                    }
+                }
+                lines.push("        },");
+            }
+            lines.push("    },");
+        }
+
+        if (orderedIconColorIds.length) {
+            lines.push("    buttonIconColors: {");
+            for (const buttonId of orderedIconColorIds) {
+                const colorsByTap = buttonIconColorsById[buttonId];
+                if (!colorsByTap) continue;
+                lines.push(`        ${formatKey(buttonId)}: {`);
+                for (const tap of TAP_ORDER) {
+                    const color = colorsByTap[tap];
+                    if (color) {
+                        lines.push(`            ${tap}: ${JSON.stringify(color)},`);
+                    }
+                }
+                lines.push("        },");
+            }
+            lines.push("    },");
+        }
+
+        if (orderedFillIds.length) {
+            lines.push("    buttonFill: {");
+            for (const buttonId of orderedFillIds) {
+                const fill = buttonFillById[buttonId];
+                if (!fill) continue;
+                lines.push(`        ${formatKey(buttonId)}: ${JSON.stringify(fill)},`);
+            }
+            lines.push("    },");
+        }
+
+        const optionKeys = Object.keys(optionDiff) as (keyof DesignOptions)[];
+        if (optionKeys.length) {
+            lines.push("    options: {");
+            for (const key of optionKeys) {
+                lines.push(`        ${key}: ${JSON.stringify(optionDiff[key])},`);
+            }
+            lines.push("    },");
+        }
+
+        lines.push("},");
+        return lines.join("\n");
+    };
+
+    const copyRemoteExampleSnippet = async () => {
+        try {
+            const snippet = buildRemoteExampleSnippet();
+            await navigator.clipboard.writeText(snippet);
+            setRemoteExampleStatus("copied");
+            window.setTimeout(() => setRemoteExampleStatus("idle"), 2000);
+        } catch {
+            setRemoteExampleStatus("failed");
+            window.setTimeout(() => setRemoteExampleStatus("idle"), 2000);
+        }
+    };
+
     /* ------------------------------ rest ----------------------------------- */
 
     const resetCurrentRemote = () => {
@@ -1172,10 +1367,38 @@ export default function App() {
 
                                                 <OptionsSection options={o} onUpdateOptions={updateOptions} remoteOutlineLabel={isStickerSheet ? "Show paper outline" : "Show remote outline"} />
 
-                                                <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} />
+                                                <ShareExportSection
+                                                    shareStatus={shareStatus}
+                                                    onCopyShareLink={copyShareLink}
+                                                    shareUrl={shareUrl}
+                                                    isAdmin={isAdmin}
+                                                    onExportRemoteSvg={exportRemoteSvg}
+                                                    onExportZip={exportZip}
+                                                    isZipping={isZipping}
+                                                    dpi={dpi}
+                                                    onChangeDpi={setDpi}
+                                                    showA4Pdf={isStickerSheet}
+                                                    onExportA4Pdf={exportA4Pdf}
+                                                    showSvgAllPages={isStickerSheet && stickerPages > 1}
+                                                    onExportAllPagesSvgZip={exportAllPagesSvgZip}
+                                                    onExportRemoteJson={exportSelectedDesign}
+                                                    onCopyRemoteExample={copyRemoteExampleSnippet}
+                                                    remoteExampleStatus={remoteExampleStatus}
+                                                />
                                             </>
                                         }
-                                        full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} onSetIconColor={setIconColor} onSetButtonFill={setButtonFill} highlightedButtonId={highlightedButtonId} />}
+                                        full={
+                                            <ButtonsSection
+                                                buttonIds={buttonIds}
+                                                state={state}
+                                                tapLabel={tapLabel}
+                                                onSetIcon={setIcon}
+                                                onToggleStrike={toggleStrike}
+                                                onSetIconColor={setIconColor}
+                                                onSetButtonFill={setButtonFill}
+                                                highlightedButtonId={highlightedButtonId}
+                                            />
+                                        }
                                     />
                                 }
                                 preview={

@@ -13,6 +13,8 @@ type ShareExportSectionProps = {
     showSvgAllPages?: boolean;
     onExportA4Pdf?: () => void;
     showA4Pdf?: boolean;
+    onCopyRemoteExample?: () => void;
+    remoteExampleStatus?: ShareStatus;
     onExportZip: () => void;
     isZipping: boolean;
     dpi: number;
@@ -20,7 +22,7 @@ type ShareExportSectionProps = {
 };
 
 export function ShareExportSection(props: ShareExportSectionProps) {
-    const { shareStatus, onCopyShareLink, shareUrl, isAdmin, onExportRemoteSvg, onExportRemoteJson, onExportAllPagesSvgZip, showSvgAllPages, onExportA4Pdf, showA4Pdf, onExportZip, isZipping, dpi, onChangeDpi } = props;
+    const { shareStatus, onCopyShareLink, shareUrl, isAdmin, onExportRemoteSvg, onExportRemoteJson, onExportAllPagesSvgZip, showSvgAllPages, onExportA4Pdf, showA4Pdf, onCopyRemoteExample, remoteExampleStatus, onExportZip, isZipping, dpi, onChangeDpi } = props;
 
     return (
         <fieldset>
@@ -77,20 +79,32 @@ export function ShareExportSection(props: ShareExportSectionProps) {
             ) : null}
 
             {isAdmin ? (
-                <div className="exportRow">
-                    <button className="btn" onClick={onExportZip} disabled={isZipping}>
-                        <UiIcon name="mdi:folder-zip-outline" className="icon" />
-                        {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
-                    </button>
+                <>
+                    {onCopyRemoteExample ? (
+                        <div className="exportRow">
+                            <button className="btn" onClick={onCopyRemoteExample}>
+                                <UiIcon name="mdi:content-copy" className="icon" />
+                                Copy remote example
+                            </button>
+                            {remoteExampleStatus === "copied" && <span className="exportRow__status">Copied!</span>}
+                            {remoteExampleStatus === "failed" && <span className="exportRow__status exportRow__status--error">Copy failed</span>}
+                        </div>
+                    ) : null}
+                    <div className="exportRow">
+                        <button className="btn" onClick={onExportZip} disabled={isZipping}>
+                            <UiIcon name="mdi:folder-zip-outline" className="icon" />
+                            {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
+                        </button>
 
-                    <label className="exportRow__label">
-                        DPI
-                        <select value={dpi} onChange={(e) => onChangeDpi(Number(e.target.value))}>
-                            <option value={203}>203</option>
-                            <option value={300}>300</option>
-                        </select>
-                    </label>
-                </div>
+                        <label className="exportRow__label">
+                            DPI
+                            <select value={dpi} onChange={(e) => onChangeDpi(Number(e.target.value))}>
+                                <option value={203}>203</option>
+                                <option value={300}>300</option>
+                            </select>
+                        </label>
+                    </div>
+                </>
             ) : null}
         </fieldset>
     );
