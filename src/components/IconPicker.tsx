@@ -156,8 +156,17 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
     const currentText = isEditing ? draft : value ?? "";
 
-    const mdiLoading = mdiRequested && !fullMdiLoaded;
-    const hueLoading = hueRequested && !hueIconsLoaded;
+    const mdiRequestedByValue = useMemo(() => {
+        const t = (value ?? "").trim();
+        return t.startsWith("mdi:") && !fullMdiLoaded && !isMdiInHomeSet(t);
+    }, [value, fullMdiLoaded]);
+    const hueRequestedByValue = useMemo(() => {
+        const t = (value ?? "").trim();
+        return t.startsWith("hue:") && FEATURES.HUE_ICONS && !hueIconsLoaded;
+    }, [value, hueIconsLoaded]);
+
+    const mdiLoading = (mdiRequested || mdiRequestedByValue) && !fullMdiLoaded;
+    const hueLoading = (hueRequested || hueRequestedByValue) && !hueIconsLoaded;
 
     useEffect(() => {
         draftRef.current = draft;
@@ -172,11 +181,9 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     useEffect(() => {
         const t = (value ?? "").trim();
         if (t.startsWith("mdi:") && !fullMdiLoaded && !isMdiInHomeSet(t)) {
-            setMdiRequested(true);
             void preloadFullMdi();
         }
         if (t.startsWith("hue:") && FEATURES.HUE_ICONS && !hueIconsLoaded) {
-            setHueRequested(true);
             void preloadHueIcons();
         }
     }, [value, fullMdiLoaded, hueIconsLoaded]);

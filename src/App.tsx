@@ -1420,7 +1420,7 @@ export default function App() {
                 <SiteFooter
                     impressumHref={getLegalHref("impressum")}
                     datenschutzHref={getLegalHref("datenschutz")}
-                    onOpenLegal={(page, _event) => {
+                    onOpenLegal={(page) => {
                         setLegalPage(page);
                         setUrlLegalPage(page);
                     }}
