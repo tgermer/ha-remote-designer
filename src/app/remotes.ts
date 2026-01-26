@@ -403,16 +403,23 @@ export const REMOTES: RemoteTemplate[] = [
         links: [
             { label: "Zigbee2MQTT", url: "https://www.zigbee2mqtt.io/devices/TS0044.html" },
             // { label: "Manufacturer", url: "https://moeshouse.com/products/zigbee-4-gang-scene-remote" },
+            // { label: "Manual", url: "https://qistore.ru/instructions/ESW-0ZAA-EU.pdf" }
         ],
         // Placeholder measurements — adjust after measuring the real device
         widthMm: 86,
         heightMm: 86,
         cornerMm: 6,
+        cutoutElements: [
+            { kind: "rect", xMm: 18.3, yMm: 40.3, wMm: 10.2, hMm: 1.5, rMm: 0, fill: "#cccccc", stroke: "none" },
+            { kind: "rect", xMm: 57.45, yMm: 40.3, wMm: 10.2, hMm: 1.5, rMm: 0, fill: "#cccccc", stroke: "none" },
+            { kind: "rect", xMm: 18.3, yMm: 78, wMm: 10.2, hMm: 1.5, rMm: 0, fill: "#cccccc", stroke: "none" },
+            { kind: "rect", xMm: 57.45, yMm: 78, wMm: 10.2, hMm: 1.5, rMm: 0, fill: "#cccccc", stroke: "none" },
+        ],
         buttons: [
-            { id: "top_left", xMm: 4, yMm: 4, wMm: 39, hMm: 39, r: { tl: 3, tr: 0, br: 0, bl: 0 } },
-            { id: "top_right", xMm: 44, yMm: 4, wMm: 39, hMm: 39, r: { tl: 0, tr: 3, br: 0, bl: 0 } },
-            { id: "bottom_left", xMm: 4, yMm: 44, wMm: 39, hMm: 39, r: { tl: 0, tr: 0, br: 0, bl: 3 } },
-            { id: "bottom_right", xMm: 44, yMm: 44, wMm: 39, hMm: 39, r: { tl: 0, tr: 0, br: 3, bl: 0 } },
+            { id: "top_left", xMm: 3.8, yMm: 3.9, wMm: 39.2, hMm: 37.9, r: { tl: 4, tr: 0, br: 0, bl: 0 } },
+            { id: "top_right", xMm: 43, yMm: 3.9, wMm: 39.1, hMm: 37.9, r: { tl: 0, tr: 4, br: 0, bl: 0 } },
+            { id: "bottom_left", xMm: 3.8, yMm: 41.8, wMm: 39.2, hMm: 37.7, r: { tl: 0, tr: 0, br: 0, bl: 4 } },
+            { id: "bottom_right", xMm: 43, yMm: 41.8, wMm: 39.1, hMm: 37.7, r: { tl: 0, tr: 0, br: 4, bl: 0 } },
         ],
         examples: [
             {
