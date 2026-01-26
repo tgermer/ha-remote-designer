@@ -944,12 +944,11 @@ export default function App() {
             }
         }
 
-        const optionDiff: Partial<DesignOptions> = {};
-        for (const key of Object.keys(initial.options) as (keyof DesignOptions)[]) {
-            if (state.options[key] !== initial.options[key]) {
-                optionDiff[key] = state.options[key];
-            }
-        }
+        const optionDiff = Object.fromEntries(
+            (Object.keys(initial.options) as (keyof DesignOptions)[])
+                .filter((key) => state.options[key] !== initial.options[key])
+                .map((key) => [key, state.options[key]] as const),
+        ) as Partial<DesignOptions>;
 
         const orderedIconIds = [
             ...buttonIds.filter((id) => buttonIconsById[id]),
