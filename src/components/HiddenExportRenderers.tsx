@@ -25,6 +25,7 @@ export function HiddenExportRenderers(props: HiddenExportRenderersProps) {
         <>
             <div ref={exportRemoteHostRef} className="hidden">
                 <RemoteSvg
+                    key={`${template.id}-${template.widthMm}-${template.heightMm}-${template.cornerMm}`}
                     template={template}
                     state={state}
                     background="white"
