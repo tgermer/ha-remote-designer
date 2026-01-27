@@ -99,6 +99,18 @@ function getRandomId() {
     return `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+function getIconSetName(icon: string) {
+    const idx = icon.indexOf(":");
+    if (idx > 0) return icon.slice(0, idx);
+    return "custom";
+}
+
+function getIconName(icon: string) {
+    const idx = icon.indexOf(":");
+    if (idx > 0) return icon.slice(idx + 1);
+    return icon;
+}
+
 /* ----------------------------- initial state ----------------------------- */
 
 const initial: DesignState = {
@@ -413,6 +425,20 @@ export default function App() {
     const [legalPage, setLegalPage] = useState<LegalPageState>(() => getUrlLegalPage());
     const isLegal = legalPage !== null;
     const plausibleInitializedRef = useRef(false);
+    const trackEvent = (name: string, props?: Record<string, string | number | boolean | null | undefined>) => {
+        if (!import.meta.env.PROD) return;
+        if (!plausibleInitializedRef.current) return;
+        if (props && Object.keys(props).length > 0) {
+            const safeProps: Record<string, string> = {};
+            for (const [key, value] of Object.entries(props)) {
+                if (value === null || typeof value === "undefined") continue;
+                safeProps[key] = String(value);
+            }
+            plausibleTrack(name, { props: safeProps });
+            return;
+        }
+        plausibleTrack(name, {});
+    };
 
     useEffect(() => {
         if (legalPage === "impressum") {
@@ -648,6 +674,7 @@ export default function App() {
         const filename = `ha-remote-designer-saved-remotes-${getDateStamp()}.json`;
         downloadTextFile(filename, JSON.stringify(payload, null, 2), "application/json");
         setImportExportStatus({ type: "success", message: `Exported ${items.length} saved remotes.` });
+        trackEvent("export_saved_designs", { count: items.length });
     };
 
     const exportSelectedDesign = () => {
@@ -664,6 +691,7 @@ export default function App() {
         const filename = `${base}-${getDateStamp()}.json`;
         downloadTextFile(filename, JSON.stringify(payload, null, 2), "application/json");
         setImportExportStatus({ type: "success", message: "Exported selected remote." });
+        trackEvent("export_saved_design", { remote_id: found.state.remoteId || "remote" });
     };
 
     const importSavedDesignsFromFile = async (file: File) => {
@@ -712,6 +740,7 @@ export default function App() {
 
         const invalidNote = parsed.invalidCount ? ` (${parsed.invalidCount} skipped)` : "";
         setImportExportStatus({ type: "success", message: `Imported ${parsed.items.length} remotes${invalidNote}.` });
+        trackEvent("import_saved_designs", { count: parsed.items.length, skipped: parsed.invalidCount });
     };
 
     /* persist state in URL */
@@ -876,6 +905,14 @@ export default function App() {
     const labelHeightMm = o.labelHeightMm;
 
     const setIcon = (buttonId: string, tap: TapType, icon?: string) => {
+        if (icon) {
+            trackEvent("icon_selected", {
+                remote_id: state.remoteId,
+                icon_set: getIconSetName(icon),
+                icon_name: getIconName(icon),
+                tap,
+            });
+        }
         setState((s) => {
             // If user sets a double/long icon, auto-enable that tap mode globally
             let nextTapsEnabled = s.tapsEnabled;
@@ -1090,6 +1127,7 @@ export default function App() {
             await navigator.clipboard.writeText(url);
             setShareStatus("copied");
             window.setTimeout(() => setShareStatus("idle"), 2000);
+            trackEvent("share_link_copied", { remote_id: state.remoteId });
         } catch {
             setShareStatus("failed");
         }
@@ -1171,6 +1209,7 @@ export default function App() {
         const svg = exportRemoteHostRef.current?.querySelector("svg");
         if (!svg) return;
         downloadTextFile(`${exportBase}-remote.svg`, serializeSvg(svg), "image/svg+xml");
+        trackEvent("export", { type: "remote_svg", remote_id: state.remoteId });
     };
 
     const [dpi, setDpi] = useState(203);
@@ -1203,6 +1242,7 @@ export default function App() {
         setExportButtonId(null);
         downloadBlob(`${exportBase}-labels.zip`, await zip.generateAsync({ type: "blob" }));
         setIsZipping(false);
+        trackEvent("export", { type: "labels_zip", remote_id: state.remoteId });
     };
 
     const exportButton = exportButtonId ? (isStickerSheet ? { id: exportButtonId, xMm: 0, yMm: 0, wMm: o.labelWidthMm, hMm: o.labelHeightMm, rMm: o.labelCornerMm } : (template.buttons.find((b) => b.id === exportButtonId) ?? null)) : null;
@@ -1218,6 +1258,7 @@ export default function App() {
                 widthMm: sheetSizeMm.width,
                 heightMm: sheetSizeMm.height,
             });
+            trackEvent("export", { type: "remote_pdf", remote_id: state.remoteId, sheet: "A4" });
             return;
         }
 
@@ -1244,6 +1285,7 @@ export default function App() {
             widthMm: sheetSizeMm.width,
             heightMm: sheetSizeMm.height,
         });
+        trackEvent("export", { type: "sticker_pdf", remote_id: state.remoteId, sheet: o.sheetSize });
     };
 
     const exportAllPagesSvgZip = async () => {
@@ -1268,9 +1310,11 @@ export default function App() {
         setStickerPageIndex(prevPage);
 
         downloadBlob(`${exportBase}-all-pages.svg.zip`, await zip.generateAsync({ type: "blob" }));
+        trackEvent("export", { type: "sticker_svg_zip", remote_id: state.remoteId, pages: layout.pages });
     };
 
     const handleRemoteChange = (nextRemoteId: DesignState["remoteId"]) => {
+        trackEvent("remote_selected", { remote_id: nextRemoteId });
         // Clear mappings when switching remotes (prevents accidental carry-over)
         setState((s) => ({
             ...s,

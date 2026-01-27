@@ -201,7 +201,8 @@ export function LegalPage({ kind, contact, backHref, onBack }: Props) {
                         <p>
                             Wir nutzen Plausible Analytics zur Reichweitenmessung und statistischen Auswertung der Nutzung. Plausible arbeitet ohne
                             Cookies und ohne geräteübergreifende Identifikatoren. Dabei werden u. a. IP-Adresse (gekürzt bzw. gehasht), User-Agent,
-                            Referrer und aufgerufene Seite verarbeitet, um aggregierte Statistiken zu erstellen.
+                            Referrer und aufgerufene Seite verarbeitet, um aggregierte Statistiken zu erstellen. Zusätzlich erfassen wir
+                            Nutzungsereignisse (z. B. Remote- oder Icon-Auswahl sowie Exporte) in aggregierter Form.
                         </p>
                         <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Analyse und Verbesserung des Angebots).</p>
                         <p>Empfänger/Auftragsverarbeiter: Plausible Analytics OÜ.</p>
