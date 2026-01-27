@@ -482,6 +482,148 @@ main {
   display: none;
 }
 
+.sharePromptOverlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.55), rgba(10, 12, 15, 0.35) 45%, rgba(10, 12, 15, 0.55));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 10050;
+  font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  touch-action: none;
+}
+
+.sharePrompt {
+  width: min(560px, 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 247, 255, 0.55));
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(15, 25, 60, 0.18), 0 6px 18px rgba(15, 25, 60, 0.12);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-family: inherit;
+  backdrop-filter: blur(28px) saturate(180%);
+  max-height: min(86vh, 680px);
+  overflow: hidden;
+  z-index: 5000;
+}
+
+.sharePrompt__body {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 2px;
+  flex: 1 1 auto;
+  touch-action: pan-y;
+}
+
+.sharePrompt__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: relative;
+}
+
+.sharePrompt__header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-family: inherit;
+}
+
+.sharePrompt__close {
+  border: none;
+  aspect-ratio: 1/1;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 0;
+  cursor: pointer;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  box-shadow: 0 10px 18px rgba(15, 25, 60, 0.18);
+}
+
+.sharePrompt p {
+  margin: 0 0 .8rem 0;
+}
+
+.sharePrompt ul {
+  margin: -.5 rem 0 .5rem 0;
+  padding-left: 1.2rem;
+}
+
+.sharePrompt ul li {
+  margin: 0 0 .2rem 0;
+}
+
+.sharePrompt__divider {
+  border: none;
+  border-top: 1px solid rgba(140, 160, 210, 0.25);
+  margin: 1rem;
+}
+
+.sharePrompt__section {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.sharePrompt__subtitle {
+  font-weight: 600;
+}
+
+.sharePrompt__consentRequired {
+  color: #b1262b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.sharePrompt__consent {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.sharePrompt__consent--error {
+  border: 1px solid rgba(177, 38, 43, 0.4);
+  border-radius: 10px;
+  padding: 0.5rem;
+  background: rgba(255, 245, 246, 0.8);
+}
+
+.sharePrompt__consent label {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.sharePrompt__consent input[type="radio"] {
+  margin-top: 0.2rem;
+}
+
+.sharePrompt__error {
+  color: #b1262b;
+  font-size: 0.9rem;
+}
+
+.sharePrompt__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 0.4rem;
+  flex: 0 0 auto;
+}
+
+
 .preview--sheet {
   width: 100%;
   max-width: 100%;
@@ -623,7 +765,7 @@ label {
 
 /* Buttons */
 button {
-  padding: 0.45rem 0.75rem;
+  padding: 0 0.75rem;
   border-radius: 999px;
   border: 1px solid rgba(37, 37, 69, 0.16);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 244, 255, 0.85));
@@ -634,6 +776,24 @@ button {
   min-height: 36px;
   line-height: 1;
 }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 37, 69, 0.16);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 244, 255, 0.85));
+  color: var(--ink);
+  box-shadow: 0 6px 16px rgba(25, 25, 50, 0.14);
+  backdrop-filter: blur(10px) saturate(130%);
+  cursor: pointer;
+  min-height: 36px;
+  line-height: 1;
+  text-decoration: none;
+}
+
 
 button.btn {
   display: inline-flex;
@@ -656,6 +816,10 @@ button.btn {
 }
 
 button:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(236, 235, 252, 0.95));
+}
+
+.btn:hover {
   background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(236, 235, 252, 0.95));
 }
 
@@ -1194,6 +1358,29 @@ button:disabled {
     pointer-events: auto;
     font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont,
       "Segoe UI", sans-serif;
+  }
+
+  .sharePromptOverlay {
+    align-items: center;
+    padding: 16px 16px calc(env(safe-area-inset-bottom) + 16px);
+  }
+
+  .sharePrompt {
+    width: 100%;
+    height: min(80dvh, 720px);
+    max-height: 80dvh;
+    border-radius: 24px;
+    overflow: hidden;
+    padding: 20px 20px 16px;
+    gap: 0.8rem;
+  }
+
+  .sharePrompt__body {
+    padding-bottom: 16px;
+  }
+
+  .sharePrompt__actions {
+    padding-bottom: 6px;
   }
 
   .previewOverlay__sheet {

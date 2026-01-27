@@ -2,8 +2,8 @@ import { useMemo, useState, useEffect, useRef, useSyncExternalStore } from "reac
 import { createPortal } from "react-dom";
 import "./App.css";
 
-import { TAP_ORDER, type DesignOptions, type DesignState, type TapType } from "./app/types";
-import { REMOTES, type RemoteExample, type RemoteTemplate } from "./app/remotes";
+import { type DesignOptions, type DesignState, type TapType } from "./app/types";
+import { REMOTES, isUserExample, type ExampleEntry, type RemoteExample, type RemoteTemplate } from "./app/remotes";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
 import { TopNav } from "./components/TopNav";
@@ -87,6 +87,17 @@ function getDateStamp() {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
+function getNowTimestamp() {
+    return Date.now();
+}
+
+function getRandomId() {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+    }
+    return `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
 /* ----------------------------- initial state ----------------------------- */
 
 const initial: DesignState = {
@@ -127,11 +138,32 @@ const LEGAL_CONTACT = {
     updatedAt: "25. Januar 2026",
 };
 
+const SHARE_MAIL_SUBJECT = "Shared remote configuration";
+const SHARE_MAIL_BODY_TEMPLATE = `Hi Tristan,
+
+I created a configuration with the Remote Label Designer.
+Remote: {remoteName} ({remoteId})
+
+Here is the share link:
+{url}
+
+Gallery consent: {galleryConsent}
+Saved ID: {savedId}
+
+Paste into remoteExamples.ts under REMOTE_EXAMPLES["{remoteId}"]:
+{config}
+
+Thanks and best regards`;
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || "dev";
+const SEND_PROMPT_COUNT_KEY = "ha-remote-send-prompt-count";
+
 /* ------------------------------- helpers -------------------------------- */
 
-function normalizeState(input: DesignState): DesignState {
-    const fallbackRemoteId = REMOTES[0]?.id ?? initial.remoteId;
-    const nextRemoteId = REMOTES.some((r) => r.id === input.remoteId) ? input.remoteId : fallbackRemoteId;
+type NormalizableState = Omit<Partial<DesignState>, "options"> & { options?: Partial<DesignOptions> };
+
+function normalizeState(input: NormalizableState): DesignState {
+    const fallbackRemoteId: DesignState["remoteId"] = REMOTES[0]?.id ?? initial.remoteId;
+    const nextRemoteId: DesignState["remoteId"] = input.remoteId && REMOTES.some((r) => r.id === input.remoteId) ? input.remoteId : fallbackRemoteId;
     const mergedOptions = {
         ...initial.options,
         ...(input.options ?? {}),
@@ -230,8 +262,12 @@ function getAppHref() {
     return url.toString();
 }
 
-function buildStateFromExample(params: { remoteId: RemoteTemplate["id"]; example: RemoteExample }): DesignState {
+function buildStateFromExample(params: { remoteId: RemoteTemplate["id"]; example: ExampleEntry }): DesignState {
     const { remoteId, example } = params;
+
+    if (isUserExample(example)) {
+        return normalizeState({ ...example.state, remoteId });
+    }
 
     // Start from app defaults for consistent behaviour
     const base: DesignState = {
@@ -309,8 +345,9 @@ function buildStateFromExample(params: { remoteId: RemoteTemplate["id"]; example
     return base;
 }
 
-function stateUsesHueIcons(state: DesignState) {
-    for (const cfg of Object.values(state.buttonConfigs)) {
+function stateUsesHueIcons(state: NormalizableState) {
+    const buttonConfigs = state.buttonConfigs ?? {};
+    for (const cfg of Object.values(buttonConfigs)) {
         const icons = cfg?.icons ?? {};
         for (const icon of Object.values(icons)) {
             if (typeof icon === "string" && icon.startsWith("hue:")) return true;
@@ -323,6 +360,10 @@ function remotesUseHueIcons() {
     for (const remote of REMOTES) {
         const examples = remote.examples ?? [];
         for (const ex of examples) {
+            if (isUserExample(ex)) {
+                if (stateUsesHueIcons(ex.state)) return true;
+                continue;
+            }
             for (const iconsByTap of Object.values(ex.buttonIcons)) {
                 for (const icon of Object.values(iconsByTap)) {
                     if (typeof icon === "string" && icon.startsWith("hue:")) return true;
@@ -333,8 +374,9 @@ function remotesUseHueIcons() {
     return false;
 }
 
-function stateUsesFullMdi(state: DesignState) {
-    for (const cfg of Object.values(state.buttonConfigs)) {
+function stateUsesFullMdi(state: NormalizableState) {
+    const buttonConfigs = state.buttonConfigs ?? {};
+    for (const cfg of Object.values(buttonConfigs)) {
         const icons = cfg?.icons ?? {};
         for (const icon of Object.values(icons)) {
             if (typeof icon === "string" && icon.startsWith("mdi:") && !isMdiInHomeSet(icon)) return true;
@@ -347,6 +389,10 @@ function remotesUseFullMdi() {
     for (const remote of REMOTES) {
         const examples = remote.examples ?? [];
         for (const ex of examples) {
+            if (isUserExample(ex)) {
+                if (stateUsesFullMdi(ex.state)) return true;
+                continue;
+            }
             for (const iconsByTap of Object.values(ex.buttonIcons)) {
                 for (const icon of Object.values(iconsByTap)) {
                     if (typeof icon === "string" && icon.startsWith("mdi:") && !isMdiInHomeSet(icon)) return true;
@@ -494,7 +540,7 @@ export default function App() {
         const name = saveName.trim();
         if (!name) return;
 
-        const now = Date.now();
+        const now = getNowTimestamp();
         const existing = readSavedDesigns();
 
         // If the name already exists for this remote model, auto-append a timestamp.
@@ -520,6 +566,7 @@ export default function App() {
 
         refreshSavedDesigns();
         triggerSavedStatus();
+        maybePromptSendConfig(created.id);
     };
 
     const saveActiveDesign = () => {
@@ -527,7 +574,7 @@ export default function App() {
         const name = saveName.trim();
         if (!name) return;
 
-        const now = Date.now();
+        const now = getNowTimestamp();
         const existing = readSavedDesigns();
         const idx = existing.findIndex((d) => d.id === activeSavedId);
         if (idx < 0) return;
@@ -556,6 +603,7 @@ export default function App() {
 
         refreshSavedDesigns();
         triggerSavedStatus();
+        maybePromptSendConfig(activeSavedId);
     };
 
     const deleteSelectedDesign = () => {
@@ -692,6 +740,11 @@ export default function App() {
         return url.toString();
     };
 
+    const buildShareMailto = (params: { url: string; configCode: string; galleryConsent: string; remoteName: string; remoteId: string; savedId: string }) => {
+        const body = SHARE_MAIL_BODY_TEMPLATE.replace("{url}", params.url).replace("{config}", params.configCode).replace("{galleryConsent}", params.galleryConsent).replace("{remoteName}", params.remoteName).replace("{remoteId}", params.remoteId).replace("{savedId}", params.savedId);
+        return `mailto:${LEGAL_CONTACT.email}?subject=${encodeURIComponent(SHARE_MAIL_SUBJECT)}&body=${encodeURIComponent(body)}`;
+    };
+
     const showWatermark = FEATURES.WATERMARK;
     const watermarkText = "PREVIEW PREVIEW PREVIEW";
     const watermarkOpacity = 0.2;
@@ -755,7 +808,6 @@ export default function App() {
         if (!parts.length) return null;
         return `Loading icon libraries: ${parts.join(" + ")}…`;
     }, [shouldPreloadFullMdi, fullMdiLoaded, shouldPreloadHueIcons, hueIconsLoaded]);
-
 
     const stickerPages = stickerLayout?.pages ?? 0;
     const stickerPageIndexSafe = isStickerSheet ? Math.min(stickerPageIndex, Math.max(0, stickerPages - 1)) : 0;
@@ -909,6 +961,102 @@ export default function App() {
     /* ------------------------------ share link ----------------------------- */
 
     const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "failed">("idle");
+    const [sendConfigOpen, setSendConfigOpen] = useState(false);
+    const [sendConfigUrl, setSendConfigUrl] = useState("");
+    const [galleryConsent, setGalleryConsent] = useState<"yes" | "no" | null>(null);
+    const [showConsentError, setShowConsentError] = useState(false);
+
+    useEffect(() => {
+        if (typeof document === "undefined") return;
+        if (!sendConfigOpen) return;
+        const { body } = document;
+        const prevOverflow = body.style.overflow;
+        const prevPosition = body.style.position;
+        const prevTop = body.style.top;
+        const prevWidth = body.style.width;
+        const scrollY = window.scrollY;
+        body.style.overflow = "hidden";
+        body.style.position = "fixed";
+        body.style.top = `-${scrollY}px`;
+        body.style.width = "100%";
+        return () => {
+            body.style.overflow = prevOverflow;
+            body.style.position = prevPosition;
+            body.style.top = prevTop;
+            body.style.width = prevWidth;
+            window.scrollTo(0, scrollY);
+        };
+    }, [sendConfigOpen]);
+
+    const incrementSendPromptCount = (savedId: string) => {
+        if (typeof window === "undefined") return 0;
+        try {
+            const raw = window.localStorage.getItem(SEND_PROMPT_COUNT_KEY);
+            const map = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+            const current = typeof map[savedId] === "number" ? map[savedId] : 0;
+            const next = current + 1;
+            map[savedId] = next;
+            window.localStorage.setItem(SEND_PROMPT_COUNT_KEY, JSON.stringify(map));
+            return next;
+        } catch {
+            return 0;
+        }
+    };
+
+    const shouldPromptForSend = (count: number) => count >= 2 && (count - 2) % 3 === 0;
+
+    const buildConfigCode = (params: { allowGallery: boolean }) => {
+        const exampleId = getRandomId();
+        const consentId = `consent_${exampleId}`;
+        const options = baseTemplate.isStickerSheet
+            ? state.options
+            : {
+                  ...state.options,
+                  labelWidthMm: undefined,
+                  labelHeightMm: undefined,
+                  labelCornerMm: undefined,
+                  labelCount: undefined,
+                  sheetSize: undefined,
+                  sheetMarginXMm: undefined,
+                  sheetMarginYMm: undefined,
+                  sheetGapMm: undefined,
+              };
+        const payload = {
+            meta: {
+                id: exampleId,
+                userExample: true,
+                allowGallery: params.allowGallery,
+                savedName: saveName.trim() || null,
+                savedId: activeSavedId,
+                exportedAt: new Date().toISOString(),
+                consentId,
+                appVersion: APP_VERSION,
+                stateSig,
+            },
+            state: {
+                ...state,
+                options,
+            },
+        };
+        return JSON.stringify(payload, null, 4);
+    };
+
+    const openSendConfigPrompt = () => {
+        saveToHash(state);
+        const url = getShareUrl();
+        setSendConfigUrl(url);
+        setGalleryConsent(null);
+        setShowConsentError(false);
+        setSendConfigOpen(true);
+    };
+
+    const maybePromptSendConfig = (savedId: string | null) => {
+        if (!savedId) return;
+        const count = incrementSendPromptCount(savedId);
+        if (shouldPromptForSend(count)) {
+            openSendConfigPrompt();
+        }
+    };
 
     const shareUrl = getShareUrl();
 
@@ -933,153 +1081,40 @@ export default function App() {
     const [remoteExampleStatus, setRemoteExampleStatus] = useState<"idle" | "copied" | "failed">("idle");
 
     const buildRemoteExampleSnippet = () => {
-        const exampleName = saveName.trim() || `${baseTemplate.name} Example`;
-        const exampleId =
-            typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-                ? crypto.randomUUID()
-                : `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-        const exampleDescription = "";
-        const isValidKey = (key: string) => /^[A-Za-z_$][0-9A-Za-z_$]*$/.test(key);
-        const formatKey = (key: string) => (isValidKey(key) ? key : JSON.stringify(key));
-
-        const buttonIconsById: Record<string, Partial<Record<TapType, string>>> = {};
-        const buttonStrikeById: Record<string, Partial<Record<TapType, boolean>>> = {};
-        const buttonIconColorsById: Record<string, Partial<Record<TapType, string>>> = {};
-        const buttonFillById: Record<string, string> = {};
-
-        for (const [buttonId, cfg] of Object.entries(state.buttonConfigs)) {
-            const iconsByTap: Partial<Record<TapType, string>> = {};
-            const strikeByTap: Partial<Record<TapType, boolean>> = {};
-            const iconColorsByTap: Partial<Record<TapType, string>> = {};
-
-            for (const tap of TAP_ORDER) {
-                const icon = cfg?.icons?.[tap];
-                if (typeof icon === "string" && icon.trim()) {
-                    iconsByTap[tap] = icon;
-                }
-                if (cfg?.strike?.[tap]) {
-                    strikeByTap[tap] = true;
-                }
-                const iconColor = cfg?.iconColors?.[tap];
-                if (typeof iconColor === "string" && iconColor.trim()) {
-                    iconColorsByTap[tap] = iconColor;
-                }
-            }
-
-            if (Object.keys(iconsByTap).length) {
-                buttonIconsById[buttonId] = iconsByTap;
-            }
-            if (Object.keys(strikeByTap).length) {
-                buttonStrikeById[buttonId] = strikeByTap;
-            }
-            if (Object.keys(iconColorsByTap).length) {
-                buttonIconColorsById[buttonId] = iconColorsByTap;
-            }
-            if (typeof cfg?.buttonFill === "string" && cfg.buttonFill.trim()) {
-                buttonFillById[buttonId] = cfg.buttonFill;
-            }
-        }
-
-        const optionDiff = Object.fromEntries(
-            (Object.keys(initial.options) as (keyof DesignOptions)[])
-                .filter((key) => state.options[key] !== initial.options[key])
-                .map((key) => [key, state.options[key]] as const),
-        ) as Partial<DesignOptions>;
-
-        const orderedIconIds = [
-            ...buttonIds.filter((id) => buttonIconsById[id]),
-            ...Object.keys(buttonIconsById).filter((id) => !buttonIds.includes(id)),
-        ];
-        const orderedStrikeIds = [
-            ...buttonIds.filter((id) => buttonStrikeById[id]),
-            ...Object.keys(buttonStrikeById).filter((id) => !buttonIds.includes(id)),
-        ];
-        const orderedIconColorIds = [
-            ...buttonIds.filter((id) => buttonIconColorsById[id]),
-            ...Object.keys(buttonIconColorsById).filter((id) => !buttonIds.includes(id)),
-        ];
-        const orderedFillIds = [
-            ...buttonIds.filter((id) => buttonFillById[id]),
-            ...Object.keys(buttonFillById).filter((id) => !buttonIds.includes(id)),
-        ];
-
-        const lines: string[] = [
-            "{",
-            `    id: ${JSON.stringify(exampleId)},`,
-            `    name: ${JSON.stringify(exampleName)},`,
-            `    description: ${JSON.stringify(exampleDescription)},`,
-            `    tapsEnabled: ${JSON.stringify(state.tapsEnabled)},`,
-            "    buttonIcons: {",
-        ];
-
-        for (const buttonId of orderedIconIds) {
-            const iconsByTap = buttonIconsById[buttonId];
-            if (!iconsByTap) continue;
-            lines.push(`        ${formatKey(buttonId)}: {`);
-            for (const tap of TAP_ORDER) {
-                const icon = iconsByTap[tap];
-                if (icon) {
-                    lines.push(`            ${tap}: ${JSON.stringify(icon)},`);
-                }
-            }
-            lines.push("        },");
-        }
-        lines.push("    },");
-
-        if (orderedStrikeIds.length) {
-            lines.push("    buttonStrike: {");
-            for (const buttonId of orderedStrikeIds) {
-                const strikeByTap = buttonStrikeById[buttonId];
-                if (!strikeByTap) continue;
-                lines.push(`        ${formatKey(buttonId)}: {`);
-                for (const tap of TAP_ORDER) {
-                    if (strikeByTap[tap]) {
-                        lines.push(`            ${tap}: true,`);
-                    }
-                }
-                lines.push("        },");
-            }
-            lines.push("    },");
-        }
-
-        if (orderedIconColorIds.length) {
-            lines.push("    buttonIconColors: {");
-            for (const buttonId of orderedIconColorIds) {
-                const colorsByTap = buttonIconColorsById[buttonId];
-                if (!colorsByTap) continue;
-                lines.push(`        ${formatKey(buttonId)}: {`);
-                for (const tap of TAP_ORDER) {
-                    const color = colorsByTap[tap];
-                    if (color) {
-                        lines.push(`            ${tap}: ${JSON.stringify(color)},`);
-                    }
-                }
-                lines.push("        },");
-            }
-            lines.push("    },");
-        }
-
-        if (orderedFillIds.length) {
-            lines.push("    buttonFill: {");
-            for (const buttonId of orderedFillIds) {
-                const fill = buttonFillById[buttonId];
-                if (!fill) continue;
-                lines.push(`        ${formatKey(buttonId)}: ${JSON.stringify(fill)},`);
-            }
-            lines.push("    },");
-        }
-
-        const optionKeys = Object.keys(optionDiff) as (keyof DesignOptions)[];
-        if (optionKeys.length) {
-            lines.push("    options: {");
-            for (const key of optionKeys) {
-                lines.push(`        ${key}: ${JSON.stringify(optionDiff[key])},`);
-            }
-            lines.push("    },");
-        }
-
-        lines.push("},");
-        return lines.join("\n");
+        saveToHash(state);
+        const exampleId = getRandomId();
+        const consentId = `consent_${exampleId}`;
+        const options = baseTemplate.isStickerSheet
+            ? state.options
+            : {
+                  ...state.options,
+                  labelWidthMm: undefined,
+                  labelHeightMm: undefined,
+                  labelCornerMm: undefined,
+                  labelCount: undefined,
+                  sheetSize: undefined,
+                  sheetMarginXMm: undefined,
+                  sheetMarginYMm: undefined,
+                  sheetGapMm: undefined,
+              };
+        const payload = {
+            meta: {
+                id: exampleId,
+                userExample: true,
+                allowGallery: true,
+                savedName: saveName.trim() || null,
+                savedId: activeSavedId,
+                exportedAt: new Date().toISOString(),
+                consentId,
+                appVersion: APP_VERSION,
+                stateSig,
+            },
+            state: {
+                ...state,
+                options,
+            },
+        };
+        return `${JSON.stringify(payload, null, 4)},`;
     };
 
     const copyRemoteExampleSnippet = async () => {
@@ -1403,38 +1438,10 @@ export default function App() {
 
                                                 <OptionsSection options={o} onUpdateOptions={updateOptions} remoteOutlineLabel={isStickerSheet ? "Show paper outline" : "Show remote outline"} />
 
-                                                <ShareExportSection
-                                                    shareStatus={shareStatus}
-                                                    onCopyShareLink={copyShareLink}
-                                                    shareUrl={shareUrl}
-                                                    isAdmin={isAdmin}
-                                                    onExportRemoteSvg={exportRemoteSvg}
-                                                    onExportZip={exportZip}
-                                                    isZipping={isZipping}
-                                                    dpi={dpi}
-                                                    onChangeDpi={setDpi}
-                                                    showA4Pdf={isStickerSheet}
-                                                    onExportA4Pdf={exportA4Pdf}
-                                                    showSvgAllPages={isStickerSheet && stickerPages > 1}
-                                                    onExportAllPagesSvgZip={exportAllPagesSvgZip}
-                                                    onExportRemoteJson={exportSelectedDesign}
-                                                    onCopyRemoteExample={copyRemoteExampleSnippet}
-                                                    remoteExampleStatus={remoteExampleStatus}
-                                                />
+                                                <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} onSendConfig={openSendConfigPrompt} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} onCopyRemoteExample={copyRemoteExampleSnippet} remoteExampleStatus={remoteExampleStatus} />
                                             </>
                                         }
-                                        full={
-                                            <ButtonsSection
-                                                buttonIds={buttonIds}
-                                                state={state}
-                                                tapLabel={tapLabel}
-                                                onSetIcon={setIcon}
-                                                onToggleStrike={toggleStrike}
-                                                onSetIconColor={setIconColor}
-                                                onSetButtonFill={setButtonFill}
-                                                highlightedButtonId={highlightedButtonId}
-                                            />
-                                        }
+                                        full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} onSetIconColor={setIconColor} onSetButtonFill={setButtonFill} highlightedButtonId={highlightedButtonId} />}
                                     />
                                 }
                                 preview={
@@ -1491,6 +1498,102 @@ export default function App() {
                                   Preview
                               </button>
                           )}
+                      </div>,
+                      overlayRoot,
+                  )
+                : null}
+            {!isGallery && !isLegal && overlayRoot && sendConfigOpen
+                ? createPortal(
+                      <div
+                          className="sharePromptOverlay"
+                          role="presentation"
+                          onClick={(event) => {
+                              if (event.target === event.currentTarget) setSendConfigOpen(false);
+                          }}
+                      >
+                          <div className="sharePrompt" role="dialog" aria-modal="true" aria-label="Share configuration">
+                              <div className="sharePrompt__header">
+                                  <h2>Share your configuration</h2>
+                                  <button type="button" className="sharePrompt__close" onClick={() => setSendConfigOpen(false)} aria-label="Close">
+                                      <UiIcon name="mdi:close" className="icon" />
+                                  </button>
+                              </div>
+                              <div className="sharePrompt__body">
+                                  <p>If you’d like, you can send your configuration to help improve this tool.</p>
+                                  <p>Real-world setups help me understand how the tool is used and which remote models and layouts are most valuable to add.</p>
+                                  <p>
+                                      Your configuration is only reviewed by the developer and is not published by default. <strong>Thank you!</strong>
+                                  </p>
+                                  <hr className="sharePrompt__divider" />
+                                  <div className="sharePrompt__section">
+                                      <div className="sharePrompt__subtitle">Optional: allow use in the public gallery</div>
+                                      <p>Would you like to allow this configuration (or parts of it) to be used as an anonymized example in the public gallery?</p>
+                                      <ul>
+                                          <li>No personal names or identifiable details will be shown</li>
+                                          <li>Declining has no effect on using the tool</li>
+                                          <li>You can withdraw your consent at any time</li>
+                                      </ul>
+                                      <div className={`sharePrompt__consent${showConsentError ? " sharePrompt__consent--error" : ""}`}>
+                                          <div className="sharePrompt__consentRequired" aria-hidden="true">
+                                              Required *
+                                          </div>
+                                          <label>
+                                              <input
+                                                  type="radio"
+                                                  name="sharePromptConsent"
+                                                  value="yes"
+                                                  checked={galleryConsent === "yes"}
+                                                  onChange={() => {
+                                                      setGalleryConsent("yes");
+                                                      setShowConsentError(false);
+                                                  }}
+                                              />
+                                              Yes, you may use this configuration as an anonymized gallery example
+                                          </label>
+                                          <label>
+                                              <input
+                                                  type="radio"
+                                                  name="sharePromptConsent"
+                                                  value="no"
+                                                  checked={galleryConsent === "no"}
+                                                  onChange={() => {
+                                                      setGalleryConsent("no");
+                                                      setShowConsentError(false);
+                                                  }}
+                                              />
+                                              No, keep this configuration private
+                                          </label>
+                                          {showConsentError ? <div className="sharePrompt__error">Please select one option.</div> : null}
+                                      </div>
+                                  </div>
+                              </div>
+                              <div className="sharePrompt__actions">
+                                  <button type="button" className="btn btn--danger" onClick={() => setSendConfigOpen(false)}>
+                                      Not now
+                                  </button>
+                                  <a
+                                      className="btn"
+                                      href={buildShareMailto({
+                                          url: sendConfigUrl || shareUrl,
+                                          configCode: buildConfigCode({ allowGallery: galleryConsent === "yes" }),
+                                          galleryConsent: galleryConsent === "yes" ? "yes" : "no",
+                                          remoteName: baseTemplate.name,
+                                          remoteId: baseTemplate.id,
+                                          savedId: activeSavedId ?? "n/a",
+                                      })}
+                                      onClick={(event) => {
+                                          if (galleryConsent === null) {
+                                              event.preventDefault();
+                                              setShowConsentError(true);
+                                              return;
+                                          }
+                                          setSendConfigOpen(false);
+                                      }}
+                                  >
+                                      Open email
+                                  </a>
+                              </div>
+                          </div>
                       </div>,
                       overlayRoot,
                   )

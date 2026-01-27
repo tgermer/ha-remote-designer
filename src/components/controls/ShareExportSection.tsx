@@ -6,6 +6,7 @@ type ShareExportSectionProps = {
     shareStatus: ShareStatus;
     onCopyShareLink: () => void;
     shareUrl: string;
+    onSendConfig?: () => void;
     isAdmin: boolean;
     onExportRemoteSvg: () => void;
     onExportRemoteJson?: () => void;
@@ -22,7 +23,7 @@ type ShareExportSectionProps = {
 };
 
 export function ShareExportSection(props: ShareExportSectionProps) {
-    const { shareStatus, onCopyShareLink, shareUrl, isAdmin, onExportRemoteSvg, onExportRemoteJson, onExportAllPagesSvgZip, showSvgAllPages, onExportA4Pdf, showA4Pdf, onCopyRemoteExample, remoteExampleStatus, onExportZip, isZipping, dpi, onChangeDpi } = props;
+    const { shareStatus, onCopyShareLink, shareUrl, onSendConfig, isAdmin, onExportRemoteSvg, onExportRemoteJson, onExportAllPagesSvgZip, showSvgAllPages, onExportA4Pdf, showA4Pdf, onCopyRemoteExample, remoteExampleStatus, onExportZip, isZipping, dpi, onChangeDpi } = props;
 
     return (
         <fieldset>
@@ -46,6 +47,15 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                     <input className="share__input" type="text" readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} />
                 </div>
             )}
+
+            {onSendConfig ? (
+                <p className="share">
+                    <button type="button" className="btn" onClick={onSendConfig}>
+                        <UiIcon name="mdi:email-outline" className="icon" />
+                        Send config to developer
+                    </button>
+                </p>
+            ) : null}
 
             {onExportRemoteJson ? (
                 <div className="row row--spaced">

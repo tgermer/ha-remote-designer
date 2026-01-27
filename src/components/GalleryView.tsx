@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { DesignState } from "../app/types";
-import type { RemoteExample, RemoteTemplate } from "../app/remotes";
+import { isUserExample, type ExampleEntry, type RemoteTemplate } from "../app/remotes";
 import type { SavedDesign } from "../app/savedDesigns";
 import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "../app/stickerSheet";
 import { RemoteSvg } from "../render/RemoteSvg";
@@ -8,7 +8,7 @@ import { RemoteSvg } from "../render/RemoteSvg";
 type GalleryViewProps = {
     remotes: RemoteTemplate[];
     savedDesigns: SavedDesign[];
-    buildStateFromExample: (params: { remoteId: RemoteTemplate["id"]; example: RemoteExample }) => DesignState;
+    buildStateFromExample: (params: { remoteId: RemoteTemplate["id"]; example: ExampleEntry }) => DesignState;
     onOpenPreview: (params: { state: DesignState }) => void;
     onOpenSaved: (design: SavedDesign) => void;
     showWatermark: boolean;
@@ -28,6 +28,8 @@ type GalleryEntry = {
     template: RemoteTemplate;
     updatedAt: number;
     saved?: SavedDesign;
+    userExample?: boolean;
+    allowGallery?: boolean;
 };
 
 const GalleryCard = memo(function GalleryCard({
@@ -63,6 +65,8 @@ const GalleryCard = memo(function GalleryCard({
             className={`galleryCard${isSquareRemote ? " galleryCard--square" : ""}`}
             data-remote-id={entry.remoteId}
             data-entry-kind={entry.kind}
+            data-user-example={entry.userExample ? "true" : "false"}
+            data-allow-gallery={entry.allowGallery ? "true" : "false"}
             onClick={handleOpen}
         >
             <div className="galleryCard__media">
@@ -89,6 +93,7 @@ const GalleryCard = memo(function GalleryCard({
                 <div className="galleryCard__title">{entry.title}</div>
                 <div className="galleryCard__model">{entry.remoteName}</div>
                 {entry.kind === "saved" ? <div className="galleryCard__tag">Saved</div> : null}
+                {entry.userExample ? <div className="galleryCard__tag">User example</div> : null}
                 {entry.description ? <div className="galleryCard__desc">{entry.description}</div> : null}
             </div>
         </button>
@@ -117,6 +122,7 @@ export function GalleryView(props: GalleryViewProps) {
     const { remotes, savedDesigns, buildStateFromExample, onOpenPreview, onOpenSaved, showWatermark, watermarkText, watermarkOpacity, iconLoadStatus } = props;
     const [selectedRemoteId, setSelectedRemoteId] = useState<string>("all");
     const [sourceFilter, setSourceFilter] = useState<"all" | "preview" | "saved">("all");
+    const [exampleFilter, setExampleFilter] = useState<"all" | "official" | "user">("all");
     const [sortKey, setSortKey] = useState<"recent" | "type" | "name" | "source">("name");
     const [visibleCount, setVisibleCount] = useState(12);
     const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -165,19 +171,43 @@ export function GalleryView(props: GalleryViewProps) {
 
     const previewEntries: GalleryEntry[] = remotes.flatMap((r) => {
         const exs = r.examples ?? [];
-        return exs.map((ex) => {
-            const state = buildStateFromExample({ remoteId: r.id, example: ex });
-            return {
-                id: `${r.id}__${ex.id}`,
-                kind: "preview" as const,
-                remoteId: r.id,
-                remoteName: r.name,
-                title: ex.name,
-                description: ex.description,
-                state,
-                template: r,
-                updatedAt: 0,
-            };
+        return exs.flatMap((ex, index) => {
+            if (isUserExample(ex)) {
+                const meta = ex.meta;
+                if (!meta || !meta.allowGallery) return [];
+                const state = buildStateFromExample({ remoteId: r.id, example: ex });
+                const title = meta.savedName?.trim() || "User example";
+                const description = "Shared by a user";
+                const userId = meta.id ?? `user_${meta.exportedAt ?? index}`;
+                return [
+                    {
+                        id: `${r.id}__${userId}`,
+                        kind: "preview" as const,
+                        remoteId: r.id,
+                        remoteName: r.name,
+                        title,
+                        description,
+                        state,
+                        template: r,
+                        updatedAt: 0,
+                        userExample: true,
+                        allowGallery: meta.allowGallery,
+                    },
+                ];
+            }
+            return [
+                {
+                    id: `${r.id}__${ex.id}`,
+                    kind: "preview" as const,
+                    remoteId: r.id,
+                    remoteName: r.name,
+                    title: ex.name,
+                    description: ex.description,
+                    state: buildStateFromExample({ remoteId: r.id, example: ex }),
+                    template: r,
+                    updatedAt: 0,
+                },
+            ];
         });
     });
 
@@ -205,6 +235,8 @@ export function GalleryView(props: GalleryViewProps) {
         .filter((entry) => {
             if (sourceFilter !== "all" && entry.kind !== sourceFilter) return false;
             if (selectedRemoteId !== "all" && entry.remoteId !== selectedRemoteId) return false;
+            if (exampleFilter === "user" && !entry.userExample) return false;
+            if (exampleFilter === "official" && (entry.userExample || entry.kind !== "preview")) return false;
             return true;
         })
         .sort((a, b) => {
@@ -294,6 +326,20 @@ export function GalleryView(props: GalleryViewProps) {
                             </select>
                         </label>
                         <label className="galleryFilters__control">
+                            Examples
+                            <select
+                                value={exampleFilter}
+                                onChange={(e) => {
+                                    setExampleFilter(e.target.value as "all" | "official" | "user");
+                                    setVisibleCount(12);
+                                }}
+                            >
+                                <option value="all">All examples</option>
+                                <option value="official">Official examples</option>
+                                <option value="user">User examples</option>
+                            </select>
+                        </label>
+                        <label className="galleryFilters__control">
                             Sort
                             <select
                                 value={sortKey}
@@ -314,6 +360,7 @@ export function GalleryView(props: GalleryViewProps) {
                             onClick={() => {
                                 setSelectedRemoteId("all");
                                 setSourceFilter("all");
+                                setExampleFilter("all");
                                 setSortKey("name");
                                 setVisibleCount(12);
                             }}

@@ -1,4 +1,5 @@
-import type { TapType, DesignOptions } from "./types";
+import type { TapType, DesignOptions, DesignState } from "./types";
+import { REMOTE_EXAMPLES } from "./remoteExamples";
 
 export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100" | "HM-PB-6-WM55" | "tuya_ts0044" | "enocean_ptm_215ze" | "generic";
 
@@ -74,6 +75,31 @@ export type RemoteExample = {
     options?: Partial<DesignOptions>;
 };
 
+export type UserExampleMeta = {
+    userExample: true;
+    allowGallery: boolean;
+    id?: string;
+    savedName?: string | null;
+    savedId?: string | null;
+    exportedAt?: string;
+    consentId?: string;
+    appVersion?: string;
+    stateSig?: string;
+};
+
+export type UserExampleState = Omit<Partial<DesignState>, "options"> & { options?: Partial<DesignOptions> };
+
+export type UserExample = {
+    meta: UserExampleMeta;
+    state: UserExampleState;
+};
+
+export type ExampleEntry = RemoteExample | UserExample;
+
+export function isUserExample(example: ExampleEntry): example is UserExample {
+    return "state" in example;
+}
+
 export type RemoteTemplate = {
     id: RemoteId;
     name: string;
@@ -89,12 +115,12 @@ export type RemoteTemplate = {
     previewElements?: PreviewElement[];
     cutoutElements?: CutoutElement[];
 
-    examples?: RemoteExample[];
+    examples?: ExampleEntry[];
     defaultExampleId?: string;
 };
 
 // v2: placeholder values – measure and adjust later
-export const REMOTES: RemoteTemplate[] = [
+const BASE_REMOTES: RemoteTemplate[] = [
     {
         id: "generic",
         name: "Generic Sticker Sheet",
@@ -125,70 +151,6 @@ export const REMOTES: RemoteTemplate[] = [
             // OFF: top square, bottom rounded
             { id: "off", xMm: 1.25, yMm: 66.2, wMm: 31.5, hMm: 27, r: { tl: 0, tr: 0, br: 1.5, bl: 1.5 } },
         ],
-        examples: [
-            {
-                id: "factory",
-                name: "Factory labels",
-                description: "Default labeling matching the physical Hue dimmer switch",
-                tapsEnabled: ["single"],
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: false,
-                },
-                buttonIcons: {
-                    on: { single: "mdi:power" },
-                    up: { single: "mdi:plus" },
-                    down: { single: "mdi:minus" },
-                    off: { single: "mdi:power-off" },
-                },
-            },
-            {
-                id: "scene_brightness",
-                name: "Scenes & Brightness",
-                description: "Single tap for power and brightness, double tap for scenes",
-                tapsEnabled: ["single", "double"],
-                buttonIcons: {
-                    on: {
-                        single: "mdi:dots-vertical",
-                        double: "mdi:palette", // Scene on / next scene
-                    },
-                    up: {
-                        single: "mdi:brightness-5",
-                        double: "mdi:arrow-up-bold", // Faster / jump up
-                    },
-                    down: {
-                        single: "mdi:brightness-4",
-                        double: "mdi:arrow-down-bold",
-                    },
-                    off: {
-                        single: "mdi:power-off",
-                        double: "mdi:lightbulb-off-outline",
-                    },
-                },
-            },
-            {
-                id: "home_automation",
-                name: "Home automation",
-                description: "Turn the room on or off, apply predefined brightness and Kelvin presets, control curtains, or switch off the full room or selected lights",
-                tapsEnabled: ["single", "double", "long"],
-                buttonIcons: {
-                    on: {
-                        single: "mdi:lightbulb-group",
-                        long: "mdi:lightbulb-on-outline",
-                    },
-                    up: {
-                        single: "mdi:curtains",
-                    },
-                    down: {
-                        single: "mdi:curtains-closed",
-                    },
-                    off: {
-                        single: "mdi:lightbulb-group-off-outline",
-                        long: "mdi:lightbulb-off-outline",
-                    },
-                },
-            },
-        ],
         defaultExampleId: "factory",
     },
     {
@@ -202,24 +164,6 @@ export const REMOTES: RemoteTemplate[] = [
             { id: "up", xMm: 0, yMm: 29.25, wMm: 34, hMm: 16.25, rMm: 0 },
             { id: "down", xMm: 0, yMm: 45.5, wMm: 34, hMm: 16.25, rMm: 0 },
             { id: "hue", xMm: 0, yMm: 62.5, wMm: 34, hMm: 28.5, r: { tl: 0, tr: 0, br: 5.6, bl: 5.6 } },
-        ],
-        examples: [
-            {
-                id: "factory",
-                name: "Factory labels",
-                description: "Default labeling matching the physical Hue dimmer switch v2",
-                tapsEnabled: ["single"],
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: false,
-                },
-                buttonIcons: {
-                    on: { single: "mdi:power" },
-                    up: { single: "mdi:weather-sunset-up" },
-                    down: { single: "mdi:weather-sunset-down" },
-                    hue: { single: "hue:logo" },
-                },
-            },
         ],
         defaultExampleId: "factory",
     },
@@ -246,39 +190,6 @@ export const REMOTES: RemoteTemplate[] = [
 
             // Bottom rocker: outer corners rounded, top corners square
             { id: "bottom", xMm: 3, yMm: 35.25, wMm: 34, hMm: 32.25, r: { tl: 0, tr: 0, br: 40, bl: 40 } },
-        ],
-        examples: [
-            {
-                id: "bilresa_scene_light",
-                name: "Scenes & Light Control",
-                description: "Single tap for automatic lighting, long press for scenes and accent lighting",
-                tapsEnabled: ["single", "long"],
-                buttonIcons: {
-                    top: {
-                        single: "mdi:lightbulb-auto",
-                        long: "mdi:palette",
-                    },
-                    bottom: {
-                        single: "mdi:lightbulb-off-outline",
-                        long: "hue:ensis",
-                    },
-                },
-                buttonStrike: {
-                    bottom: {
-                        long: true,
-                    },
-                },
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: true,
-                    showRemoteOutline: true,
-                    showButtonOutlines: true,
-                    autoIconSizing: true,
-                    fixedIconMm: 8,
-                    tapMarkerFill: "outline",
-                    labelOutlineColor: "#757575",
-                },
-            },
         ],
     },
     {
@@ -310,42 +221,6 @@ export const REMOTES: RemoteTemplate[] = [
             // Bottom rocker: outer corners rounded, top corners square
             { id: "minus", xMm: 61, yMm: 54, wMm: 17, hMm: 25, r: { tl: 0, tr: 0, br: 10, bl: 0 } },
         ],
-        examples: [
-            {
-                id: "factory",
-                name: "Factory labels",
-                description: "Default labeling matching the physical Aquara W100",
-                tapsEnabled: ["single"],
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: false,
-                },
-                buttonIcons: {
-                    plus: { single: "mdi:plus" },
-                    minus: { single: "mdi:minus" },
-                },
-            },
-            {
-                id: "office",
-                name: "Office Switch",
-                description: "Desk lighting control with brightness, color scenes and full off.",
-                tapsEnabled: ["single", "long"],
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: true,
-                },
-                buttonIcons: {
-                    plus: { single: "mdi:plus", long: "mdi:palette" },
-                    center: { single: "mdi:desk", long: "mdi:desk" },
-                    minus: { single: "mdi:lightbulb-group-off-outline" },
-                },
-                buttonStrike: {
-                    minus: {
-                        long: true,
-                    },
-                },
-            },
-        ],
         defaultExampleId: "factory",
     },
     {
@@ -364,85 +239,6 @@ export const REMOTES: RemoteTemplate[] = [
 
             { id: "bottom_left", xMm: 15.5, yMm: 37, wMm: 12, hMm: 14, rMm: 0 },
             { id: "bottom_right", xMm: 27.5, yMm: 37, wMm: 12, hMm: 14, rMm: 0 },
-        ],
-        examples: [
-            {
-                id: "candy1",
-                name: "Home Automation Master Switch",
-                description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
-                tapsEnabled: ["single"],
-
-                buttonIcons: {
-                    top_left: { single: "mdi:lightbulb-group-outline" },
-                    top_right: { single: "mdi:lightbulb-group-off-outline" },
-                    center_left: { single: "mdi:window-closed-variant" },
-                    center_right: { single: "mdi:pool" },
-                    bottom_left: { single: "mdi:weather-sunny" },
-                    bottom_right: { single: "mdi:weather-night" },
-                },
-
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: true,
-                    showRemoteOutline: true,
-                    showButtonOutlines: true,
-                    showGuides: false,
-                    autoIconSizing: false,
-                    fixedIconMm: 6.5,
-                    tapMarkerFill: "outline",
-                    labelOutlineColor: "#464646",
-                    labelOutlineStrokeMm: 0.2,
-                    // showScaleBar: false, // meist nicht als Example speichern
-                },
-            },
-            {
-                id: "fdd061b2-a0d9-43da-a5cc-f5a4683b8299",
-                name: "Home Automation Master Switch in Color",
-                description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
-                tapsEnabled: ["single", "long"],
-                buttonIcons: {
-                    top_left: {
-                        single: "mdi:lightbulb-group-outline",
-                    },
-                    top_right: {
-                        single: "mdi:lightbulb-group-off-outline",
-                    },
-                    center_left: {
-                        single: "mdi:window-closed-variant",
-                    },
-                    center_right: {
-                        single: "mdi:pool",
-                    },
-                    bottom_left: {
-                        single: "mdi:weather-sunny",
-                    },
-                    bottom_right: {
-                        single: "mdi:weather-night",
-                    },
-                },
-                buttonIconColors: {
-                    center_right: {
-                        single: "#0033ff",
-                    },
-                    bottom_left: {
-                        single: "#fab700",
-                    },
-                    bottom_right: {
-                        single: "#0933dc",
-                    },
-                },
-                buttonFill: {
-                    center_left: "#e6e6e6",
-                    center_right: "#c7eeff",
-                },
-                options: {
-                    showTapMarkersAlways: false,
-                    autoIconSizing: false,
-                    fixedIconMm: 6.5,
-                    labelOutlineColor: "#000000",
-                    labelOutlineStrokeMm: 0.2,
-                },
-            },
         ],
     },
     {
@@ -471,65 +267,6 @@ export const REMOTES: RemoteTemplate[] = [
             { id: "bottom_left", xMm: 3.8, yMm: 41.8, wMm: 39.2, hMm: 37.7, r: { tl: 0, tr: 0, br: 0, bl: 4 } },
             { id: "bottom_right", xMm: 43, yMm: 41.8, wMm: 39.1, hMm: 37.7, r: { tl: 0, tr: 0, br: 4, bl: 0 } },
         ],
-        examples: [
-            {
-                id: "default",
-                name: "Groups & Scene",
-                description: "Single tap: group on/off on the left, scene on the right.",
-                tapsEnabled: ["single"],
-                buttonIcons: {
-                    top_left: { single: "mdi:lightbulb-group" },
-                    bottom_left: { single: "mdi:lightbulb-group-off-outline" },
-                    top_right: { single: "mdi:palette" },
-                    bottom_right: { single: "mdi:lightbulb-outline" },
-                },
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: true,
-                    showRemoteOutline: true,
-                    showButtonOutlines: true,
-                    showGuides: false,
-                    autoIconSizing: true,
-                    fixedIconMm: 6.5,
-                    tapMarkerFill: "outline",
-                    labelOutlineColor: "#464646",
-                    labelOutlineStrokeMm: 0.2,
-                    // showScaleBar: false, // meist nicht als Example speichern
-                },
-            },
-            {
-                id: "b2474432-4a02-4871-a4b2-978528f6f51e",
-                name: "Light, scene and cover switch.",
-                description: "Light + covers on single tap, scenes on long press.",
-                tapsEnabled: ["single", "long"],
-                buttonIcons: {
-                    top_left: {
-                        single: "mdi:lightbulb-group",
-                        long: "mdi:palette",
-                    },
-                    top_right: {
-                        single: "mdi:roller-shade",
-                    },
-                    bottom_left: {
-                        single: "mdi:lightbulb-group-off-outline",
-                    },
-                    bottom_right: {
-                        single: "mdi:roller-shade-closed",
-                    },
-                },
-                buttonIconColors: {
-                    top_left: {
-                        long: "#c933ff",
-                    },
-                },
-                options: {
-                    showTapMarkersAlways: false,
-                    fixedIconMm: 6.5,
-                    labelOutlineColor: "#464646",
-                    labelOutlineStrokeMm: 0.2,
-                },
-            },
-        ],
         defaultExampleId: "default",
     },
     {
@@ -548,33 +285,11 @@ export const REMOTES: RemoteTemplate[] = [
             { id: "top_right", xMm: 46, yMm: 8, wMm: 32, hMm: 32, rMm: 2 },
             { id: "bottom_right", xMm: 46, yMm: 46, wMm: 32, hMm: 32, rMm: 2 },
         ],
-        examples: [
-            {
-                id: "default",
-                name: "Module placeholder",
-                description: "Layout depends on the chosen rocker/cover.",
-                tapsEnabled: ["single", "double", "long"],
-                buttonIcons: {
-                    top_left: { single: "mdi:roller-shade" },
-                    bottom_left: { single: "mdi:roller-shade-closed" },
-                    top_right: { single: "mdi:arrow-up" },
-                    bottom_right: { single: "mdi:arrow-down" },
-                },
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: true,
-                    showRemoteOutline: true,
-                    showButtonOutlines: true,
-                    showGuides: false,
-                    autoIconSizing: true,
-                    fixedIconMm: 6.5,
-                    tapMarkerFill: "outline",
-                    labelOutlineColor: "#464646",
-                    labelOutlineStrokeMm: 0.2,
-                    // showScaleBar: false, // meist nicht als Example speichern
-                },
-            },
-        ],
         defaultExampleId: "default",
     },
 ];
+
+export const REMOTES: RemoteTemplate[] = BASE_REMOTES.map((remote) => {
+    const examples = REMOTE_EXAMPLES[remote.id];
+    return examples ? { ...remote, examples } : remote;
+});
