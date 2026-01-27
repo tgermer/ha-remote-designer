@@ -82,6 +82,89 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
                 hue: { single: "hue:logo" },
             },
         },
+        {
+            meta: {
+                id: "821d99e7-7436-455a-b359-895ce6e87284",
+                userExample: true,
+                allowGallery: true,
+                savedName: "Pour‑o‑Matic (Kathrin Edition)",
+                description: "Just a drink‑ordering remote for wine by the glass or bottle, plus water and snack support.",
+                savedId: "cb55ecef-6feb-4f83-a8ed-39214761210e",
+                exportedAt: "2026-01-27T13:35:25.587Z",
+                consentId: "consent_821d99e7-7436-455a-b359-895ce6e87284",
+                appVersion: "dev",
+                stateSig:
+                    '{"remoteId":"hue_dimmer_v2","tapsEnabled":["single","long","double"],"buttonConfigs":{"on":{"icons":{"single":"mdi:glass-tulip","long":"mdi:glass-wine","double":"mdi:glass-tulip"},"strike":{},"iconColors":{"long":"#990000","single":"#f9cd2f","double":"#f7a6a6"}},"up":{"icons":{"single":"mdi:bottle-wine","double":"mdi:bottle-wine","long":"mdi:bottle-wine"},"strike":{},"iconColors":{"single":"#f9cd2f","double":"#f7a6a6","long":"#990000"}},"down":{"icons":{"single":"mdi:cup-water","double":"mdi:cup"},"strike":{},"iconColors":{"single":"#ffffff","double":"#ffffff"},"buttonFill":"#99caff"},"hue":{"icons":{"single":"mdi:pretzel","long":"mdi:peanut-outline"},"strike":{},"iconColors":{}}},"options":{"showTapMarkersAlways":false,"showTapDividers":true,"showRemoteOutline":true,"showButtonOutlines":true,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":true,"fixedIconMm":6.5,"iconColor":"#545454","tapMarkerFill":"filled","tapMarkerColorMode":"icon","labelOutlineColor":"#464646","labelOutlineStrokeMm":0.2,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
+            },
+            state: {
+                remoteId: "hue_dimmer_v2",
+                tapsEnabled: ["single", "long", "double"],
+                buttonConfigs: {
+                    on: {
+                        icons: {
+                            single: "mdi:glass-tulip",
+                            long: "mdi:glass-wine",
+                            double: "mdi:glass-tulip",
+                        },
+                        strike: {},
+                        iconColors: {
+                            long: "#990000",
+                            single: "#f9cd2f",
+                            double: "#f7a6a6",
+                        },
+                    },
+                    up: {
+                        icons: {
+                            single: "mdi:bottle-wine",
+                            double: "mdi:bottle-wine",
+                            long: "mdi:bottle-wine",
+                        },
+                        strike: {},
+                        iconColors: {
+                            single: "#f9cd2f",
+                            double: "#f7a6a6",
+                            long: "#990000",
+                        },
+                    },
+                    down: {
+                        icons: {
+                            single: "mdi:cup-water",
+                            double: "mdi:cup",
+                        },
+                        strike: {},
+                        iconColors: {
+                            single: "#ffffff",
+                            double: "#ffffff",
+                        },
+                        buttonFill: "#99caff",
+                    },
+                    hue: {
+                        icons: {
+                            single: "mdi:pretzel",
+                            long: "mdi:peanut-outline",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showCutouts: true,
+                    showGuides: false,
+                    showScaleBar: true,
+                    autoIconSizing: true,
+                    fixedIconMm: 6.5,
+                    iconColor: "#545454",
+                    tapMarkerFill: "filled",
+                    tapMarkerColorMode: "icon",
+                    labelOutlineColor: "#464646",
+                    labelOutlineStrokeMm: 0.2,
+                },
+            },
+        },
     ],
     ikea_bilresa_dual_switch: [
         {
