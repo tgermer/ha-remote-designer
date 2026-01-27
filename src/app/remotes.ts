@@ -81,6 +81,7 @@ export type UserExampleMeta = {
     id?: string;
     savedName?: string | null;
     savedId?: string | null;
+    description?: string;
     exportedAt?: string;
     consentId?: string;
     appVersion?: string;

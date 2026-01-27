@@ -82,193 +82,6 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
                 hue: { single: "hue:logo" },
             },
         },
-        {
-            meta: {
-                id: "cedc88d2-5651-483a-afc8-fe47c5bf56f6",
-                userExample: true,
-                allowGallery: true,
-                savedName: "Julian",
-                exportedAt: "2026-01-27T08:54:54.921Z",
-                consentId: "consent_cedc88d2-5651-483a-afc8-fe47c5bf56f6",
-                appVersion: "dev",
-            },
-            state: {
-                remoteId: "hue_dimmer_v2",
-                tapsEnabled: ["single", "double", "long"],
-                buttonConfigs: {
-                    hue: { icons: { single: "mdi:palette" }, strike: {}, iconColors: { single: "#627dea" } },
-                    on: { icons: { single: "mdi:checkbox-blank-circle" }, strike: {}, iconColors: { single: "#ea3e3e" } },
-                    up: { icons: { single: "mdi:lightbulb-on" }, strike: {}, iconColors: {} },
-                    down: { icons: { single: "mdi:lightbulb-off" }, strike: {}, iconColors: {} },
-                },
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: true,
-                    showRemoteOutline: true,
-                    showButtonOutlines: true,
-                    showCutouts: true,
-                    showGuides: false,
-                    showScaleBar: true,
-                    autoIconSizing: true,
-                    fixedIconMm: 8,
-                    iconColor: "#404040",
-                    tapMarkerFill: "filled",
-                    tapMarkerColorMode: "icon",
-                    labelOutlineColor: "#757575",
-                    labelOutlineStrokeMm: 0.1,
-                    labelWidthMm: 40,
-                    labelHeightMm: 30,
-                    labelCornerMm: 2,
-                    labelCount: 6,
-                    sheetSize: "A4",
-                    sheetMarginXMm: 8,
-                    sheetMarginYMm: 8,
-                    sheetGapMm: 3,
-                },
-            },
-        },
-        {
-            meta: {
-                id: "0ae68437-0c08-4bb8-a5a4-dd5b7d64a7f7",
-                userExample: true,
-                allowGallery: false,
-                savedName: null,
-                exportedAt: "2026-01-27T08:59:03.307Z",
-                consentId: "consent_0ae68437-0c08-4bb8-a5a4-dd5b7d64a7f7",
-                appVersion: "dev",
-            },
-            state: {
-                remoteId: "hue_dimmer_v2",
-                tapsEnabled: ["single", "double", "long"],
-                buttonConfigs: {
-                    hue: {
-                        icons: {
-                            single: "mdi:palette",
-                            double: "mdi:palette",
-                            long: "mdi:palette-outline",
-                        },
-                        strike: {},
-                        iconColors: {
-                            single: "#627dea",
-                            double: "#26c983",
-                        },
-                    },
-                    on: {
-                        icons: {
-                            single: "mdi:checkbox-blank-circle",
-                            double: "mdi:checkbox-blank-circle",
-                            long: "mdi:checkbox-blank-circle-outline",
-                        },
-                        strike: {},
-                        iconColors: {
-                            single: "#ea3e3e",
-                            double: "#3c59ec",
-                        },
-                    },
-                    up: {
-                        icons: {
-                            single: "mdi:lightbulb-on",
-                        },
-                        strike: {},
-                        iconColors: {},
-                    },
-                    down: {
-                        icons: {
-                            single: "mdi:lightbulb-off",
-                        },
-                        strike: {},
-                        iconColors: {},
-                    },
-                },
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: true,
-                    showRemoteOutline: true,
-                    showButtonOutlines: true,
-                    showCutouts: true,
-                    showGuides: false,
-                    showScaleBar: true,
-                    autoIconSizing: true,
-                    fixedIconMm: 8,
-                    iconColor: "#404040",
-                    tapMarkerFill: "filled",
-                    tapMarkerColorMode: "icon",
-                    labelOutlineColor: "#757575",
-                    labelOutlineStrokeMm: 0.1,
-                    labelWidthMm: 40,
-                    labelHeightMm: 30,
-                    labelCornerMm: 2,
-                    labelCount: 6,
-                    sheetSize: "A4",
-                    sheetMarginXMm: 8,
-                    sheetMarginYMm: 8,
-                    sheetGapMm: 3,
-                },
-            },
-        },
-        {
-            meta: {
-                id: "9206edc4-42d2-425c-93e1-19933c12533f",
-                userExample: true,
-                allowGallery: true,
-                savedName: "Mittag",
-                savedId: "f9e182ca-5056-427b-ad75-72bc88429ab2",
-                exportedAt: "2026-01-27T11:01:37.341Z",
-                consentId: "consent_9206edc4-42d2-425c-93e1-19933c12533f",
-                appVersion: "dev",
-                stateSig: '{"remoteId":"hue_dimmer_v2","tapsEnabled":["single"],"buttonConfigs":{"on":{"icons":{"single":"mdi:power"},"strike":{},"iconColors":{}},"up":{"icons":{"single":"mdi:weather-sunset-up"},"strike":{},"iconColors":{}},"down":{"icons":{"single":"mdi:weather-sunset-down"},"strike":{},"iconColors":{}},"hue":{"icons":{"single":"hue:logo"},"strike":{},"iconColors":{}}},"options":{"showTapMarkersAlways":false,"showTapDividers":false,"showRemoteOutline":true,"showButtonOutlines":true,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":true,"fixedIconMm":8,"iconColor":"#000000","tapMarkerFill":"outline","tapMarkerColorMode":"icon","labelOutlineColor":"#ccc","labelOutlineStrokeMm":0.1,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
-            },
-            state: {
-                remoteId: "hue_dimmer_v2",
-                tapsEnabled: ["single"],
-                buttonConfigs: {
-                    on: {
-                        icons: {
-                            single: "mdi:power",
-                        },
-                        strike: {},
-                        iconColors: {},
-                    },
-                    up: {
-                        icons: {
-                            single: "mdi:weather-sunset-up",
-                        },
-                        strike: {},
-                        iconColors: {},
-                    },
-                    down: {
-                        icons: {
-                            single: "mdi:weather-sunset-down",
-                        },
-                        strike: {},
-                        iconColors: {},
-                    },
-                    hue: {
-                        icons: {
-                            single: "hue:logo",
-                        },
-                        strike: {},
-                        iconColors: {},
-                    },
-                },
-                options: {
-                    showTapMarkersAlways: false,
-                    showTapDividers: false,
-                    showRemoteOutline: true,
-                    showButtonOutlines: true,
-                    showCutouts: true,
-                    showGuides: false,
-                    showScaleBar: true,
-                    autoIconSizing: true,
-                    fixedIconMm: 8,
-                    iconColor: "#000000",
-                    tapMarkerFill: "outline",
-                    tapMarkerColorMode: "icon",
-                    labelOutlineColor: "#ccc",
-                    labelOutlineStrokeMm: 0.1,
-                },
-            },
-        },
     ],
     ikea_bilresa_dual_switch: [
         {
@@ -341,102 +154,152 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
     ],
     "HM-PB-6-WM55": [
         {
-            id: "candy1",
-            name: "Home Automation Master Switch",
-            description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
-            tapsEnabled: ["single"],
-
-            buttonIcons: {
-                top_left: { single: "mdi:lightbulb-group-outline" },
-                top_right: { single: "mdi:lightbulb-group-off-outline" },
-                center_left: { single: "mdi:window-closed-variant" },
-                center_right: { single: "mdi:pool" },
-                bottom_left: { single: "mdi:weather-sunny" },
-                bottom_right: { single: "mdi:weather-night" },
+            meta: {
+                id: "2f6b8d81-2ba3-44d0-835c-821eb81b336e",
+                userExample: true,
+                allowGallery: true,
+                savedName: "Home Automation Master Switch",
+                description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
+                savedId: null,
+                exportedAt: "2026-01-27T11:15:44.564Z",
+                consentId: "consent_2f6b8d81-2ba3-44d0-835c-821eb81b336e",
+                appVersion: "dev",
+                stateSig:
+                    '{"remoteId":"HM-PB-6-WM55","tapsEnabled":["single"],"buttonConfigs":{"top_left":{"icons":{"single":"mdi:lightbulb-group-outline"},"strike":{},"iconColors":{}},"top_right":{"icons":{"single":"mdi:lightbulb-group-off-outline"},"strike":{},"iconColors":{}},"center_left":{"icons":{"single":"mdi:window-closed-variant"},"strike":{},"iconColors":{}},"center_right":{"icons":{"single":"mdi:pool"},"strike":{},"iconColors":{}},"bottom_left":{"icons":{"single":"mdi:weather-sunny"},"strike":{},"iconColors":{}},"bottom_right":{"icons":{"single":"mdi:weather-night"},"strike":{},"iconColors":{}}},"options":{"showTapMarkersAlways":false,"showTapDividers":true,"showRemoteOutline":true,"showButtonOutlines":true,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":false,"fixedIconMm":6.5,"iconColor":"#000000","tapMarkerFill":"outline","tapMarkerColorMode":"icon","labelOutlineColor":"#464646","labelOutlineStrokeMm":0.2,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
             },
-
-            options: {
-                showTapMarkersAlways: false,
-                showTapDividers: true,
-                showRemoteOutline: true,
-                showButtonOutlines: true,
-                showGuides: false,
-                autoIconSizing: false,
-                fixedIconMm: 6.5,
-                tapMarkerFill: "outline",
-                labelOutlineColor: "#464646",
-                labelOutlineStrokeMm: 0.2,
-                // showScaleBar: false, // meist nicht als Example speichern
-            },
-        },
-        {
-            id: "fdd061b2-a0d9-43da-a5cc-f5a4683b8299",
-            name: "Home Automation Master Switch in Color",
-            description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
-            tapsEnabled: ["single", "long"],
-            buttonIcons: {
-                top_left: {
-                    single: "mdi:lightbulb-group-outline",
+            state: {
+                remoteId: "HM-PB-6-WM55",
+                tapsEnabled: ["single"],
+                buttonConfigs: {
+                    top_left: {
+                        icons: {
+                            single: "mdi:lightbulb-group-outline",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    top_right: {
+                        icons: {
+                            single: "mdi:lightbulb-group-off-outline",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    center_left: {
+                        icons: {
+                            single: "mdi:window-closed-variant",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    center_right: {
+                        icons: {
+                            single: "mdi:pool",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    bottom_left: {
+                        icons: {
+                            single: "mdi:weather-sunny",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    bottom_right: {
+                        icons: {
+                            single: "mdi:weather-night",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
                 },
-                top_right: {
-                    single: "mdi:lightbulb-group-off-outline",
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showCutouts: true,
+                    showGuides: false,
+                    showScaleBar: true,
+                    autoIconSizing: false,
+                    fixedIconMm: 6.5,
+                    iconColor: "#000000",
+                    tapMarkerFill: "outline",
+                    tapMarkerColorMode: "icon",
+                    labelOutlineColor: "#464646",
+                    labelOutlineStrokeMm: 0.2,
                 },
-                center_left: {
-                    single: "mdi:window-closed-variant",
-                },
-                center_right: {
-                    single: "mdi:pool",
-                },
-                bottom_left: {
-                    single: "mdi:weather-sunny",
-                },
-                bottom_right: {
-                    single: "mdi:weather-night",
-                },
-            },
-            buttonIconColors: {
-                center_right: {
-                    single: "#0033ff",
-                },
-                bottom_left: {
-                    single: "#fab700",
-                },
-                bottom_right: {
-                    single: "#0933dc",
-                },
-            },
-            buttonFill: {
-                center_left: "#e6e6e6",
-                center_right: "#c7eeff",
-            },
-            options: {
-                showTapMarkersAlways: false,
-                autoIconSizing: false,
-                fixedIconMm: 6.5,
-                labelOutlineColor: "#000000",
-                labelOutlineStrokeMm: 0.2,
             },
         },
         {
             meta: {
-                id: "4f35a71a-1251-40d6-b492-921516a9fc0c",
+                id: "6d3943c7-6405-4983-82de-eccf39fa1a95",
                 userExample: true,
                 allowGallery: true,
-                savedName: null,
-                exportedAt: "2026-01-27T08:37:29.131Z",
-                consentId: "consent_4f35a71a-1251-40d6-b492-921516a9fc0c",
+                savedName: "Home Automation Master Switch in Color",
+                description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
+                savedId: null,
+                exportedAt: "2026-01-27T11:20:37.071Z",
+                consentId: "consent_6d3943c7-6405-4983-82de-eccf39fa1a95",
                 appVersion: "dev",
+                stateSig:
+                    '{"remoteId":"HM-PB-6-WM55","tapsEnabled":["single","long"],"buttonConfigs":{"top_left":{"icons":{"single":"mdi:lightbulb-group-outline"},"strike":{},"iconColors":{}},"top_right":{"icons":{"single":"mdi:lightbulb-group-off-outline"},"strike":{},"iconColors":{}},"center_left":{"icons":{"single":"mdi:window-closed-variant"},"strike":{},"iconColors":{},"buttonFill":"#e6e6e6"},"center_right":{"icons":{"single":"mdi:pool"},"strike":{},"iconColors":{"single":"#0033ff"},"buttonFill":"#c7eeff"},"bottom_left":{"icons":{"single":"mdi:weather-sunny"},"strike":{},"iconColors":{"single":"#fab700"}},"bottom_right":{"icons":{"single":"mdi:weather-night"},"strike":{},"iconColors":{"single":"#0933dc"}}},"options":{"showTapMarkersAlways":false,"showTapDividers":true,"showRemoteOutline":true,"showButtonOutlines":true,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":false,"fixedIconMm":6.5,"iconColor":"#000000","tapMarkerFill":"outline","tapMarkerColorMode":"icon","labelOutlineColor":"#000000","labelOutlineStrokeMm":0.2,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
             },
             state: {
                 remoteId: "HM-PB-6-WM55",
                 tapsEnabled: ["single", "long"],
                 buttonConfigs: {
-                    top_left: { icons: { single: "mdi:lightbulb-group-outline" }, strike: {}, iconColors: {} },
-                    top_right: { icons: { single: "mdi:lightbulb-group-off-outline" }, strike: {}, iconColors: {} },
-                    center_left: { icons: { single: "mdi:window-closed-variant" }, strike: {}, iconColors: {}, buttonFill: "#e6e6e6" },
-                    center_right: { icons: { single: "mdi:pool" }, strike: {}, iconColors: { single: "#0033ff" }, buttonFill: "#c7eeff" },
-                    bottom_left: { icons: { single: "mdi:weather-sunny" }, strike: {}, iconColors: { single: "#fab700" } },
-                    bottom_right: { icons: { single: "mdi:weather-night" }, strike: {}, iconColors: { single: "#0933dc" } },
+                    top_left: {
+                        icons: {
+                            single: "mdi:lightbulb-group-outline",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    top_right: {
+                        icons: {
+                            single: "mdi:lightbulb-group-off-outline",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    center_left: {
+                        icons: {
+                            single: "mdi:window-closed-variant",
+                        },
+                        strike: {},
+                        iconColors: {},
+                        buttonFill: "#e6e6e6",
+                    },
+                    center_right: {
+                        icons: {
+                            single: "mdi:pool",
+                        },
+                        strike: {},
+                        iconColors: {
+                            single: "#0033ff",
+                        },
+                        buttonFill: "#c7eeff",
+                    },
+                    bottom_left: {
+                        icons: {
+                            single: "mdi:weather-sunny",
+                        },
+                        strike: {},
+                        iconColors: {
+                            single: "#fab700",
+                        },
+                    },
+                    bottom_right: {
+                        icons: {
+                            single: "mdi:weather-night",
+                        },
+                        strike: {},
+                        iconColors: {
+                            single: "#0933dc",
+                        },
+                    },
                 },
                 options: {
                     showTapMarkersAlways: false,
@@ -453,14 +316,6 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
                     tapMarkerColorMode: "icon",
                     labelOutlineColor: "#000000",
                     labelOutlineStrokeMm: 0.2,
-                    labelWidthMm: 40,
-                    labelHeightMm: 30,
-                    labelCornerMm: 2,
-                    labelCount: 6,
-                    sheetSize: "A4",
-                    sheetMarginXMm: 8,
-                    sheetMarginYMm: 8,
-                    sheetGapMm: 3,
                 },
             },
         },

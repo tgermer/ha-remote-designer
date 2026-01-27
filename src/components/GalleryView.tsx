@@ -177,7 +177,7 @@ export function GalleryView(props: GalleryViewProps) {
                 if (!meta || !meta.allowGallery) return [];
                 const state = buildStateFromExample({ remoteId: r.id, example: ex });
                 const title = meta.savedName?.trim() || "User example";
-                const description = "Shared by a user";
+                const description = meta.description ?? "Shared by a user";
                 const userId = meta.id ?? `user_${meta.exportedAt ?? index}`;
                 return [
                     {
