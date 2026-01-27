@@ -35,6 +35,7 @@ import { getHueIconsLoadedSnapshot, preloadHueIcons, subscribeHueIcons } from ".
 import { getFullMdiLoadedSnapshot, isMdiInHomeSet, preloadFullMdi, subscribeFullMdi } from "./app/mdi";
 
 import JSZip from "jszip";
+import { init as plausibleInit, track as plausibleTrack } from "@plausible-analytics/tracker";
 
 // Load remote images from src/assets (png/svg/jpg/webp). Filenames must match the remote id.
 const remoteImageModules = import.meta.glob("./assets/**/*.{png,svg,jpg,jpeg,webp}", {
@@ -156,6 +157,7 @@ Paste into remoteExamples.ts under REMOTE_EXAMPLES["{remoteId}"]:
 Thanks and best regards`;
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || "dev";
 const SEND_PROMPT_COUNT_KEY = "ha-remote-send-prompt-count";
+const PLAUSIBLE_DOMAIN = "ha-remote-designer.netlify.app";
 
 /* ------------------------------- helpers -------------------------------- */
 
@@ -410,6 +412,7 @@ export default function App() {
     const isGallery = view === "gallery";
     const [legalPage, setLegalPage] = useState<LegalPageState>(() => getUrlLegalPage());
     const isLegal = legalPage !== null;
+    const plausibleInitializedRef = useRef(false);
 
     useEffect(() => {
         if (legalPage === "impressum") {
@@ -422,6 +425,22 @@ export default function App() {
         }
         document.title = "Remote Label Designer for Home Automation";
     }, [legalPage]);
+
+    useEffect(() => {
+        if (!import.meta.env.PROD) return;
+        if (plausibleInitializedRef.current) return;
+        plausibleInit({
+            domain: PLAUSIBLE_DOMAIN,
+            autoCapturePageviews: false,
+        });
+        plausibleInitializedRef.current = true;
+    }, []);
+
+    useEffect(() => {
+        if (!import.meta.env.PROD) return;
+        if (!plausibleInitializedRef.current) return;
+        plausibleTrack("pageview", { url: window.location.href });
+    }, [view, legalPage]);
 
     useEffect(() => {
         const onPopState = () => {
