@@ -33,9 +33,9 @@ export function HiddenExportRenderers(props: HiddenExportRenderersProps) {
                     watermarkOpacity={watermarkOpacity}
                     renderPreviewElements={false}
                     overrides={{
-                        showRemoteOutline: false,
+                        showRemoteOutline: state.options.showRemoteOutline,
                         showGuides: false,
-                        showButtonOutlines: true,
+                        showButtonOutlines: state.options.showButtonOutlines,
                         showScaleBar,
                     }}
                     exportMode={{ squareButtons: false }}

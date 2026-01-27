@@ -61,6 +61,16 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline", color = "black" }: {
     return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} ry={h / 2} fill={fill} stroke={color} strokeWidth={stroke} />;
 }
 
+function getMarkerSizing(iconMm: number, autoIconSizing: boolean) {
+    if (autoIconSizing) {
+        return { markerMm: 3, gapMm: 1 };
+    }
+
+    const markerMm = Math.max(2.2, Math.min(4.8, iconMm * 0.45));
+    const gapMm = Math.max(0.9, Math.min(2.2, iconMm * 0.2));
+    return { markerMm, gapMm };
+}
+
 export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, showWatermark, watermarkText, watermarkOpacity, xMm, yMm }: { state: DesignState; button: ButtonDef; labelWidthMm: number; labelHeightMm: number; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; xMm?: number; yMm?: number }) {
     const buttonCfg = state.buttonConfigs[button.id] ?? {};
     const cfg = buttonCfg.icons ?? {};
@@ -82,10 +92,9 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
     const outlineColor = state.options.labelOutlineColor || "#ccc";
     const outlineStroke = typeof state.options.labelOutlineStrokeMm === "number" ? state.options.labelOutlineStrokeMm : 0.1;
 
-    const markerMm = 3;
-    const gapMm = 1;
     const markerFill = state.options.tapMarkerFill;
     const markerColorMode = state.options.tapMarkerColorMode;
+    const showButtonOutlines = state.options.showButtonOutlines;
 
     const wmEnabled = !!showWatermark && !!watermarkText;
     const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
@@ -107,13 +116,18 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
                     ? <rect x={bx} y={by} width={button.wMm} height={button.hMm} rx={radii.tl} ry={radii.tl} fill={buttonFill} stroke="none" />
                     : <path d={roundedRectPath(bx, by, button.wMm, button.hMm, radii)} fill={buttonFill} stroke="none" />
                 : null}
-            {isUniformRadii(radii) ? <rect x={bx} y={by} width={button.wMm} height={button.hMm} rx={radii.tl} ry={radii.tl} fill="none" stroke={outlineColor} strokeWidth={outlineStroke} /> : <path d={roundedRectPath(bx, by, button.wMm, button.hMm, radii)} fill="none" stroke={outlineColor} strokeWidth={outlineStroke} />}
+            {showButtonOutlines
+                ? isUniformRadii(radii)
+                    ? <rect x={bx} y={by} width={button.wMm} height={button.hMm} rx={radii.tl} ry={radii.tl} fill="none" stroke={outlineColor} strokeWidth={outlineStroke} />
+                    : <path d={roundedRectPath(bx, by, button.wMm, button.hMm, radii)} fill="none" stroke={outlineColor} strokeWidth={outlineStroke} />
+                : null}
 
             {/* Icons + markers inside the button frame */}
             {n === 1 &&
                 (() => {
                     const tap = taps[0];
                     const iconMm = state.options.autoIconSizing ? Math.max(5, Math.min(10, button.wMm - 2, button.hMm - 2)) : state.options.fixedIconMm;
+                    const { markerMm, gapMm } = getMarkerSizing(iconMm, state.options.autoIconSizing);
 
                     const buttonCx = bx + button.wMm / 2;
 
@@ -163,7 +177,8 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
             {n > 1 &&
                 (() => {
                     const colW = button.wMm / n;
-                    const iconMm = state.options.autoIconSizing ? Math.max(5, Math.min(9, colW - 2, button.hMm - markerMm - gapMm - 2)) : Math.min(state.options.fixedIconMm, colW - 2);
+                    const iconMm = state.options.autoIconSizing ? Math.max(5, Math.min(9, colW - 2, button.hMm - 3 - 1 - 2)) : Math.min(state.options.fixedIconMm, colW - 2);
+                    const { markerMm, gapMm } = getMarkerSizing(iconMm, state.options.autoIconSizing);
 
                     const groupH = iconMm + gapMm + markerMm;
                     const topY = by + (button.hMm - groupH) / 2;

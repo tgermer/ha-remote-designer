@@ -82,6 +82,16 @@ function TapMarker({ tap, sizeMm = 3, fillMode = "outline", color = "black" }: {
     return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke={color} strokeWidth={stroke} />;
 }
 
+function getMarkerSizing(iconMm: number, autoIconSizing: boolean) {
+    if (autoIconSizing) {
+        return { markerMm: 3, gapMm: 1 };
+    }
+
+    const markerMm = Math.max(2.2, Math.min(4.8, iconMm * 0.45));
+    const gapMm = Math.max(0.9, Math.min(2.2, iconMm * 0.2));
+    return { markerMm, gapMm };
+}
+
 export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity, background, onSelectButton, renderPreviewElements = true, showMissingIconPlaceholder = false }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; background?: "white" | "remote" | "transparent"; onSelectButton?: (buttonId: string) => void; renderPreviewElements?: boolean; showMissingIconPlaceholder?: boolean }) {
     const options = { ...state.options, ...overrides };
     const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showCutouts, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill, tapMarkerColorMode, iconColor } = options;
@@ -228,8 +238,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                     const shouldShowMarker = tap !== "single" || showTapMarkersAlways;
 
                     if (shouldShowMarker) {
-                        const markerMm = 3;
-                        const gapMm = 1;
+                        const { markerMm, gapMm } = getMarkerSizing(iconMm, autoIconSizing);
                         const groupH = iconMm + gapMm + markerMm;
                         const topY = b.yMm + (b.hMm - groupH) / 2;
                         const markerColor = tapMarkerColorMode === "icon" ? iconColors[tap] ?? iconColor : "black";
@@ -257,7 +266,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                                 {buttonGuides}
                                 {renderedIcon ?? fallbackIcon}
                                 <g transform={`translate(${buttonCx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
-                                    <TapMarker tap={tap} fillMode={tapMarkerFill} color={markerColor} />
+                                    <TapMarker tap={tap} sizeMm={markerMm} fillMode={tapMarkerFill} color={markerColor} />
                                 </g>
                                 {hitTarget}
                             </g>
@@ -292,9 +301,8 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                 }
 
                 const colW = b.wMm / n;
-                const markerMm = 3;
-                const gapMm = 1;
-                const iconMm = autoIconSizing ? Math.max(5, Math.min(9, colW - 2, b.hMm - markerMm - gapMm - 2)) : Math.min(fixedIconMm, colW - 2);
+                const iconMm = autoIconSizing ? Math.max(5, Math.min(9, colW - 2, b.hMm - 3 - 1 - 2)) : Math.min(fixedIconMm, colW - 2);
+                const { markerMm, gapMm } = getMarkerSizing(iconMm, autoIconSizing);
 
                 const groupH = iconMm + gapMm + markerMm;
                 const topY = b.yMm + (b.hMm - groupH) / 2;
@@ -334,7 +342,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                                 <g key={tap}>
                                     {renderedIcon ?? fallbackIcon}
                                     <g transform={`translate(${cx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
-                                        <TapMarker tap={tap} fillMode={tapMarkerFill} color={markerColor} />
+                                        <TapMarker tap={tap} sizeMm={markerMm} fillMode={tapMarkerFill} color={markerColor} />
                                     </g>
                                 </g>
                             );

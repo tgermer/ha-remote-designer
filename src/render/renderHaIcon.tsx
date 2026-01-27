@@ -107,7 +107,7 @@ export function renderHaIconAtMm({
         const sx = iconMm / vb.w;
         const sy = iconMm / vb.h;
 
-        const hueStyle = color ? { color, fill: color, stroke: color } : undefined;
+        const hueStyle = color ? { color, fill: color } : undefined;
         return (
             <>
                 <g
