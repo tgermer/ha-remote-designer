@@ -193,7 +193,24 @@ export function LegalPage({ kind, contact, backHref, onBack }: Props) {
 
                     <section className={styles.section}>
                         <h2>Cookies und Tracking</h2>
-                        <p>Es werden keine Cookies gesetzt und kein Tracking oder Analytics eingesetzt.</p>
+                        <p>Es werden keine Cookies gesetzt.</p>
+                    </section>
+
+                    <section className={styles.section}>
+                        <h2>Plausible Analytics</h2>
+                        <p>
+                            Wir nutzen Plausible Analytics zur Reichweitenmessung und statistischen Auswertung der Nutzung. Plausible arbeitet ohne
+                            Cookies und ohne geräteübergreifende Identifikatoren. Dabei werden u. a. IP-Adresse (gekürzt bzw. gehasht), User-Agent,
+                            Referrer und aufgerufene Seite verarbeitet, um aggregierte Statistiken zu erstellen.
+                        </p>
+                        <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Analyse und Verbesserung des Angebots).</p>
+                        <p>Empfänger/Auftragsverarbeiter: Plausible Analytics OÜ.</p>
+                        <p>
+                            Mit Plausible besteht ein Vertrag zur Auftragsverarbeitung (Art. 28 DSGVO). Die DPA ist hier einsehbar:{" "}
+                            <a href="https://plausible.io/dpa" target="_blank" rel="noopener noreferrer">
+                                https://plausible.io/dpa
+                            </a>
+                        </p>
                     </section>
 
                     <section className={styles.section}>
