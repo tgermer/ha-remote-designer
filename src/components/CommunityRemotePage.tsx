@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ButtonDef, CornerRadiiMm, CutoutElement, RemoteTemplate } from "../app/remotes";
 import type { DesignState } from "../app/types";
 import { PreviewPane } from "./PreviewPane";
@@ -102,28 +102,33 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
 
     useEffect(() => {
         if (selectedButtonId && draft.buttons.some((button) => button.id === selectedButtonId)) return;
-        if (selectedCutoutIndex !== null) {
-            setSelectedButtonId("");
-            return;
-        }
-        setSelectedButtonId(draft.buttons[0]?.id ?? "");
+        const nextId = selectedCutoutIndex !== null ? "" : draft.buttons[0]?.id ?? "";
+        const handle = window.requestAnimationFrame(() => {
+            setSelectedButtonId(nextId);
+        });
+        return () => {
+            window.cancelAnimationFrame(handle);
+        };
     }, [draft.buttons, selectedButtonId, selectedCutoutIndex]);
 
-    const clientToMm = (event: { clientX: number; clientY: number }) => {
-        const svg = previewRef.current?.querySelector("svg");
-        if (!svg) return null;
-        const ctm = svg.getScreenCTM();
-        if (ctm && typeof DOMPoint !== "undefined") {
-            const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
-            return { x: point.x, y: point.y };
-        }
-        const rect = svg.getBoundingClientRect();
-        if (!rect.width || !rect.height) return null;
-        return {
-            x: ((event.clientX - rect.left) / rect.width) * template.widthMm,
-            y: ((event.clientY - rect.top) / rect.height) * template.heightMm,
-        };
-    };
+    const clientToMm = useCallback(
+        (event: { clientX: number; clientY: number }) => {
+            const svg = previewRef.current?.querySelector("svg");
+            if (!svg) return null;
+            const ctm = svg.getScreenCTM();
+            if (ctm && typeof DOMPoint !== "undefined") {
+                const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
+                return { x: point.x, y: point.y };
+            }
+            const rect = svg.getBoundingClientRect();
+            if (!rect.width || !rect.height) return null;
+            return {
+                x: ((event.clientX - rect.left) / rect.width) * template.widthMm,
+                y: ((event.clientY - rect.top) / rect.height) * template.heightMm,
+            };
+        },
+        [template.widthMm, template.heightMm],
+    );
 
     const getRectHandle = (x: number, y: number, rect: { x: number; y: number; w: number; h: number }) => {
         const tol = 3.5;
@@ -221,7 +226,7 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
             window.removeEventListener("pointerup", onUp);
             window.removeEventListener("pointercancel", onUp);
         };
-    }, [draft.buttons, draft.cutouts, onUpdateButton, onUpdateCutout, template.heightMm, template.widthMm]);
+    }, [draft.buttons, draft.cutouts, onUpdateButton, onUpdateCutout, template.heightMm, template.widthMm, clientToMm]);
 
     const handlePreviewPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
         if (event.button !== 0) return;
@@ -415,28 +420,31 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
         }
     };
 
-    const nudgeSelected = (dx: number, dy: number) => {
-        if (selectedButtonIndex >= 0 && selectedCutoutIndex === null) {
-            const button = draft.buttons[selectedButtonIndex];
-            const nextX = Math.max(0, Math.min(template.widthMm - button.wMm, button.xMm + dx));
-            const nextY = Math.max(0, Math.min(template.heightMm - button.hMm, button.yMm + dy));
-            onUpdateButton(selectedButtonIndex, { xMm: Number(nextX.toFixed(2)), yMm: Number(nextY.toFixed(2)) });
-            return;
-        }
-        if (selectedCutoutIndex !== null && selectedCutoutIndex >= 0) {
-            const cutout = draft.cutouts[selectedCutoutIndex];
-            if (!cutout) return;
-            if (cutout.kind === "circle") {
-                const nextCx = Math.max(0, Math.min(template.widthMm, cutout.cxMm + dx));
-                const nextCy = Math.max(0, Math.min(template.heightMm, cutout.cyMm + dy));
-                onUpdateCutout(selectedCutoutIndex, { ...cutout, cxMm: Number(nextCx.toFixed(2)), cyMm: Number(nextCy.toFixed(2)) });
+    const nudgeSelected = useCallback(
+        (dx: number, dy: number) => {
+            if (selectedButtonIndex >= 0 && selectedCutoutIndex === null) {
+                const button = draft.buttons[selectedButtonIndex];
+                const nextX = Math.max(0, Math.min(template.widthMm - button.wMm, button.xMm + dx));
+                const nextY = Math.max(0, Math.min(template.heightMm - button.hMm, button.yMm + dy));
+                onUpdateButton(selectedButtonIndex, { xMm: Number(nextX.toFixed(2)), yMm: Number(nextY.toFixed(2)) });
                 return;
             }
-            const nextX = Math.max(0, Math.min(template.widthMm - cutout.wMm, cutout.xMm + dx));
-            const nextY = Math.max(0, Math.min(template.heightMm - cutout.hMm, cutout.yMm + dy));
-            onUpdateCutout(selectedCutoutIndex, { ...cutout, xMm: Number(nextX.toFixed(2)), yMm: Number(nextY.toFixed(2)) });
-        }
-    };
+            if (selectedCutoutIndex !== null && selectedCutoutIndex >= 0) {
+                const cutout = draft.cutouts[selectedCutoutIndex];
+                if (!cutout) return;
+                if (cutout.kind === "circle") {
+                    const nextCx = Math.max(0, Math.min(template.widthMm, cutout.cxMm + dx));
+                    const nextCy = Math.max(0, Math.min(template.heightMm, cutout.cyMm + dy));
+                    onUpdateCutout(selectedCutoutIndex, { ...cutout, cxMm: Number(nextCx.toFixed(2)), cyMm: Number(nextCy.toFixed(2)) });
+                    return;
+                }
+                const nextX = Math.max(0, Math.min(template.widthMm - cutout.wMm, cutout.xMm + dx));
+                const nextY = Math.max(0, Math.min(template.heightMm - cutout.hMm, cutout.yMm + dy));
+                onUpdateCutout(selectedCutoutIndex, { ...cutout, xMm: Number(nextX.toFixed(2)), yMm: Number(nextY.toFixed(2)) });
+            }
+        },
+        [selectedButtonIndex, selectedCutoutIndex, draft.buttons, draft.cutouts, template.widthMm, template.heightMm, onUpdateButton, onUpdateCutout],
+    );
 
     useEffect(() => {
         const onKeyDown = (event: KeyboardEvent) => {

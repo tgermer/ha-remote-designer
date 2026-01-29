@@ -520,10 +520,17 @@ export default function App() {
     const isCommunity = view === "community";
     const [legalPage, setLegalPage] = useState<LegalPageState>(() => getUrlLegalPage());
     const isLegal = legalPage !== null;
-    const [communityDraft, setCommunityDraft] = useState<CommunityDraft>(() => createCommunityDraft());
-    const [communityPreviewRemote, setCommunityPreviewRemote] = useState<RemoteTemplate | null>(null);
-    const [communityDrafts, setCommunityDrafts] = useState<CommunityDraftEntry[]>([]);
-    const [communitySelectedId, setCommunitySelectedId] = useState<string>("");
+    const initialCommunityState = useMemo(() => {
+        const drafts = readCommunityDrafts().sort((a, b) => b.updatedAt - a.updatedAt);
+        const nextId = drafts[0]?.id ?? "";
+        const nextDraft = drafts[0]
+            ? createCommunityDraft({ ...drafts[0].draft, id: drafts[0].id })
+            : createCommunityDraft();
+        return { drafts, selectedId: nextId, draft: nextDraft };
+    }, []);
+    const [communityDraft, setCommunityDraft] = useState<CommunityDraft>(initialCommunityState.draft);
+    const [communityDrafts, setCommunityDrafts] = useState<CommunityDraftEntry[]>(initialCommunityState.drafts);
+    const [communitySelectedId, setCommunitySelectedId] = useState<string>(initialCommunityState.selectedId);
     const [communityCopyStatus, setCommunityCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
     const plausibleInitializedRef = useRef(false);
     const trackEvent = (name: string, props?: Record<string, string | number | boolean | null | undefined>) => {
@@ -598,15 +605,6 @@ export default function App() {
         return () => window.removeEventListener("popstate", onPopState);
     }, []);
 
-    useEffect(() => {
-        const drafts = readCommunityDrafts().sort((a, b) => b.updatedAt - a.updatedAt);
-        setCommunityDrafts(drafts);
-        if (drafts.length) {
-            setCommunitySelectedId(drafts[0].id);
-            setCommunityDraft(createCommunityDraft({ ...drafts[0].draft, id: drafts[0].id }));
-        }
-    }, []);
-
     const communityRemotes = useMemo(() => {
         return communityDrafts.map((entry) => {
             const draft = entry.draft;
@@ -629,13 +627,14 @@ export default function App() {
 
     const remotes = useMemo(() => {
         const list = [...REMOTES, ...communityRemotes];
-        if (communityPreviewRemote) {
-            const existingIndex = list.findIndex((remote) => remote.id === communityPreviewRemote.id);
+        const previewRemote = communityTemplate;
+        if (previewRemote) {
+            const existingIndex = list.findIndex((remote) => remote.id === previewRemote.id);
             if (existingIndex >= 0) list.splice(existingIndex, 1);
-            list.push(communityPreviewRemote);
+            list.push(previewRemote);
         }
         return list;
-    }, [communityPreviewRemote, communityRemotes]);
+    }, [communityRemotes, communityTemplate]);
     const normalize = useCallback((input: NormalizableState) => normalizeState(input, remotes), [remotes]);
 
     useEffect(() => {
@@ -1066,10 +1065,6 @@ export default function App() {
     }, [communityDrafts, communitySelectedId]);
     const communityHasUnsavedChanges = communityDraftSig !== communitySavedSig;
 
-    useEffect(() => {
-        if (!communityPreviewRemote) return;
-        setCommunityPreviewRemote(communityTemplate);
-    }, [communityTemplate, communityPreviewRemote]);
     const communityJson = useMemo(() => JSON.stringify(communityPayload, null, 2), [communityPayload]);
     const communityPreviewState = useMemo(
         () =>
@@ -1463,9 +1458,8 @@ export default function App() {
         setCommunityDraft((prev) => ({ ...prev, cutouts: prev.cutouts.filter((_, i) => i !== index) }));
     };
 
-    const useCommunityInConfigurator = () => {
+    const launchCommunityConfigurator = () => {
         const nextTemplate = communityTemplate;
-        setCommunityPreviewRemote(nextTemplate);
         setState(normalizeState({ ...initial, remoteId: COMMUNITY_PREVIEW_ID }, [...REMOTES, ...communityRemotes, nextTemplate]));
         setSaveName("");
         setSaveNameError("");
@@ -1837,17 +1831,6 @@ export default function App() {
 
     const legalKind = legalPage ?? "impressum";
 
-    const homeRemote = useMemo(() => REMOTES.find((remote) => remote.id === "hue_dimmer_v1") ?? null, []);
-    const homeFactoryState = useMemo(() => {
-        if (!homeRemote) return null;
-        const example = homeRemote.examples?.find((ex) => !isUserExample(ex) && ex.id === "factory");
-        return example ? buildStateFromExample({ remoteId: homeRemote.id, example }) : null;
-    }, [homeRemote]);
-    const homeAutomationState = useMemo(() => {
-        if (!homeRemote) return null;
-        const example = homeRemote.examples?.find((ex) => !isUserExample(ex) && ex.id === "home_automation");
-        return example ? buildStateFromExample({ remoteId: homeRemote.id, example }) : null;
-    }, [homeRemote]);
     const problemRemote = useMemo(() => REMOTES.find((remote) => remote.id === "tuya_ts0044") ?? null, []);
     const problemFactoryState = useMemo(() => {
         if (!problemRemote) return null;
@@ -1892,7 +1875,7 @@ export default function App() {
                             onGoConfigure={(event) => {
                                 event.preventDefault();
                                 if (view === "community") {
-                                    useCommunityInConfigurator();
+                                    launchCommunityConfigurator();
                                     return;
                                 }
                                 goTo("configure");
@@ -1916,7 +1899,6 @@ export default function App() {
                                 <HomePage
                                     configureHref={getViewHref("configure")}
                                     galleryHref={getViewHref("gallery")}
-                                    helpHref={getViewHref("help")}
                                     onGoConfigure={(event) => {
                                         event.preventDefault();
                                         goTo("configure");
@@ -1925,13 +1907,6 @@ export default function App() {
                                         event.preventDefault();
                                         goTo("gallery");
                                     }}
-                                    onGoHelp={(event) => {
-                                        event.preventDefault();
-                                        goTo("help");
-                                    }}
-                                    heroRemote={homeRemote}
-                                    factoryState={homeFactoryState}
-                                    automationState={homeAutomationState}
                                     problemRemote={problemRemote}
                                     problemFactoryState={problemFactoryState}
                                     problemLayoutState={problemLayoutState}
@@ -1973,7 +1948,7 @@ export default function App() {
                                     onAddCutoutRect={addCommunityCutoutRect}
                                     onAddCutoutCircle={addCommunityCutoutCircle}
                                     onRemoveCutout={removeCommunityCutout}
-                                    onUseInConfigurator={useCommunityInConfigurator}
+                                    onUseInConfigurator={launchCommunityConfigurator}
                                     onCopyJson={copyCommunityJson}
                                     onDownloadJson={downloadCommunityJson}
                                     onSendToDeveloper={sendCommunityToDeveloper}

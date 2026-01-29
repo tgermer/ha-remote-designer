@@ -33,8 +33,10 @@ export function TopNav(props: TopNavProps) {
     const [activeMetrics, setActiveMetrics] = useState({ left: 0, width: 0, ready: false });
 
     useEffect(() => {
-        setMenuOpen(false);
-    }, [view]);
+        if (!menuOpen) return;
+        const handle = window.requestAnimationFrame(() => setMenuOpen(false));
+        return () => window.cancelAnimationFrame(handle);
+    }, [view, menuOpen]);
 
     useLayoutEffect(() => {
         const nav = navRef.current;

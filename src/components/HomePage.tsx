@@ -7,16 +7,11 @@ import { UiIcon } from "./UiIcon";
 type HomePageProps = {
     configureHref: string;
     galleryHref: string;
-    helpHref: string;
     onGoConfigure: (event: React.MouseEvent<HTMLAnchorElement>) => void;
     onGoGallery: (event: React.MouseEvent<HTMLAnchorElement>) => void;
-    onGoHelp: (event: React.MouseEvent<HTMLAnchorElement>) => void;
     problemRemote?: RemoteTemplate | null;
     problemFactoryState?: DesignState | null;
     problemLayoutState?: DesignState | null;
-    heroRemote?: RemoteTemplate | null;
-    factoryState?: DesignState | null;
-    automationState?: DesignState | null;
 };
 
 const HOME_STORY_SECTIONS = [
@@ -52,7 +47,7 @@ type HeroSection = {
     note?: string;
 };
 
-export function HomePage({ configureHref, galleryHref, helpHref, onGoConfigure, onGoGallery, onGoHelp, problemRemote, problemFactoryState, problemLayoutState, heroRemote, factoryState, automationState }: HomePageProps) {
+export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGallery, problemRemote, problemFactoryState, problemLayoutState }: HomePageProps) {
     const heroSections: HeroSection[] = [
         {
             id: "problem",
