@@ -21,12 +21,13 @@ export function RemoteSection(props: RemoteSectionProps) {
                     <span className="modelRow__labelTitle">
                         Model
                         {activeRemote?.isDraft ? <span className="badge badge--draft">Draft</span> : null}
+                        {activeRemote?.isCommunity ? <span className="badge badge--community">Community</span> : null}
                     </span>
                     <select value={remoteId} onChange={(e) => onChangeRemote(e.target.value as RemoteTemplate["id"])}>
                         {remotes.map((r) => (
                             <option key={r.id} value={r.id}>
-                                {r.name}
-                                {r.isDraft ? " (Draft)" : ""}
+                                {r.id === "community_preview" ? `${r.name} (Editing)` : r.name}
+                                {r.isDraft && r.id !== "community_preview" ? " (Draft)" : ""}
                             </option>
                         ))}
                     </select>

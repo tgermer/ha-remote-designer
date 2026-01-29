@@ -92,7 +92,37 @@ function getMarkerSizing(iconMm: number, autoIconSizing: boolean) {
     return { markerMm, gapMm };
 }
 
-export function RemoteSvg({ template, state, overrides, exportMode, showWatermark, watermarkText, watermarkOpacity, background, onSelectButton, renderPreviewElements = true, showMissingIconPlaceholder = false }: { template: RemoteTemplate; state: DesignState; overrides?: Partial<DesignState["options"]>; exportMode?: { squareButtons?: boolean }; showWatermark?: boolean; watermarkText?: string; watermarkOpacity?: number; background?: "white" | "remote" | "transparent"; onSelectButton?: (buttonId: string) => void; renderPreviewElements?: boolean; showMissingIconPlaceholder?: boolean }) {
+export function RemoteSvg({
+    template,
+    state,
+    overrides,
+    exportMode,
+    showWatermark,
+    watermarkText,
+    watermarkOpacity,
+    background,
+    onSelectButton,
+    highlightedButtonId,
+    highlightedCutoutIndex,
+    showResizeHandles,
+    renderPreviewElements = true,
+    showMissingIconPlaceholder = false,
+}: {
+    template: RemoteTemplate;
+    state: DesignState;
+    overrides?: Partial<DesignState["options"]>;
+    exportMode?: { squareButtons?: boolean };
+    showWatermark?: boolean;
+    watermarkText?: string;
+    watermarkOpacity?: number;
+    background?: "white" | "remote" | "transparent";
+    onSelectButton?: (buttonId: string) => void;
+    highlightedButtonId?: string;
+    highlightedCutoutIndex?: number;
+    showResizeHandles?: boolean;
+    renderPreviewElements?: boolean;
+    showMissingIconPlaceholder?: boolean;
+}) {
     const options = { ...state.options, ...overrides };
     const { showTapMarkersAlways, showTapDividers, showRemoteOutline, showButtonOutlines, showCutouts, showGuides, autoIconSizing, fixedIconMm, tapMarkerFill, tapMarkerColorMode, iconColor } = options;
 
@@ -200,6 +230,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                             fill="transparent"
                             stroke="none"
                             pointerEvents="all"
+                            data-button-id={b.id}
                             onClick={() => onSelectButton(b.id)}
                         />
                     ) : (
@@ -209,10 +240,26 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                             fill="transparent"
                             stroke="none"
                             pointerEvents="all"
+                            data-button-id={b.id}
                             onClick={() => onSelectButton(b.id)}
                         />
                     )
                 ) : null;
+                const highlight = highlightedButtonId === b.id ? (
+                    isUniformRadii(radii) ? (
+                        <rect x={b.xMm} y={b.yMm} width={b.wMm} height={b.hMm} rx={radii.tl} fill="none" stroke="#6d5cc6" strokeWidth="0.6" pointerEvents="none" />
+                    ) : (
+                        <path d={roundedRectPath(b.xMm, b.yMm, b.wMm, b.hMm, radii)} fill="none" stroke="#6d5cc6" strokeWidth="0.6" pointerEvents="none" />
+                    )
+                ) : null;
+                const handles =
+                    highlightedButtonId === b.id && showResizeHandles ? (
+                        <g className="preview__resizeHandles">
+                            <circle className="preview__resizeHandle preview__resizeHandle--e" cx={b.xMm + b.wMm} cy={b.yMm + b.hMm / 2} r={1.2} data-button-id={b.id} data-resize="e" />
+                            <circle className="preview__resizeHandle preview__resizeHandle--s" cx={b.xMm + b.wMm / 2} cy={b.yMm + b.hMm} r={1.2} data-button-id={b.id} data-resize="s" />
+                            <circle className="preview__resizeHandle preview__resizeHandle--se" cx={b.xMm + b.wMm} cy={b.yMm + b.hMm} r={1.4} data-button-id={b.id} data-resize="se" />
+                        </g>
+                    ) : null;
                 const buttonGuides = showGuides ? (
                     <g opacity={0.25}>
                         <line x1={buttonCx} y1={b.yMm} x2={buttonCx} y2={b.yMm + b.hMm} stroke="black" strokeWidth="0.2" />
@@ -225,8 +272,10 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                         <g key={b.id}>
                             {fill}
                             {outline}
+                            {highlight}
                             {buttonGuides}
                             {hitTarget}
+                            {handles}
                         </g>
                     );
                 }
@@ -263,12 +312,14 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                             <g key={b.id}>
                                 {fill}
                                 {outline}
+                                {highlight}
                                 {buttonGuides}
                                 {renderedIcon ?? fallbackIcon}
                                 <g transform={`translate(${buttonCx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
                                     <TapMarker tap={tap} sizeMm={markerMm} fillMode={tapMarkerFill} color={markerColor} />
                                 </g>
                                 {hitTarget}
+                                {handles}
                             </g>
                         );
                     }
@@ -293,9 +344,11 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                         <g key={b.id}>
                             {fill}
                             {outline}
+                            {highlight}
                             {buttonGuides}
                             {renderedIcon ?? fallbackIcon}
                             {hitTarget}
+                            {handles}
                         </g>
                     );
                 }
@@ -311,6 +364,7 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                     <g key={b.id}>
                         {fill}
                         {outline}
+                        {highlight}
                         {buttonGuides}
 
                         {showTapDividers &&
@@ -348,64 +402,66 @@ export function RemoteSvg({ template, state, overrides, exportMode, showWatermar
                             );
                         })}
                         {hitTarget}
+                        {handles}
                     </g>
                 );
             })}
 
             {showCutouts &&
                 template.cutoutElements?.map((element, index) => {
-                const fill = element.fill ?? "white";
-                const stroke = element.stroke ?? "#6f6f6f";
-                const strokeWidthMm = typeof element.strokeWidthMm === "number" ? element.strokeWidthMm : 0.3;
-                const opacity = typeof element.opacity === "number" ? element.opacity : 1;
+                    const fill = element.fill ?? "white";
+                    const stroke = element.stroke ?? "#6f6f6f";
+                    const strokeWidthMm = typeof element.strokeWidthMm === "number" ? element.strokeWidthMm : 0.3;
+                    const opacity = typeof element.opacity === "number" ? element.opacity : 1;
+                    const highlightStroke = "#1f9a8a";
+                    const highlightWidth = 0.6;
+                    const isHighlighted = highlightedCutoutIndex === index;
+                    const showHandles = isHighlighted && showResizeHandles;
 
-                if (element.kind === "circle") {
+                    if (element.kind === "circle") {
+                        return (
+                            <g key={`cutout-${index}`}>
+                                <circle cx={element.cxMm} cy={element.cyMm} r={element.rMm} fill={fill} stroke={stroke} strokeWidth={strokeWidthMm} opacity={opacity} pointerEvents="none" />
+                                {isHighlighted ? <circle cx={element.cxMm} cy={element.cyMm} r={element.rMm} fill="none" stroke={highlightStroke} strokeWidth={highlightWidth} pointerEvents="none" /> : null}
+                                {showHandles ? <circle className="preview__resizeHandle preview__resizeHandle--e" cx={element.cxMm + element.rMm} cy={element.cyMm} r={1.2} data-cutout-index={index} data-cutout-kind="circle" data-resize="r" /> : null}
+                                <circle className="preview__cutoutHit" cx={element.cxMm} cy={element.cyMm} r={element.rMm} fill="transparent" stroke="none" pointerEvents="all" data-cutout-index={index} data-cutout-kind="circle" />
+                            </g>
+                        );
+                    }
+
+                    const radii = getCutoutRadiiMm(element);
+                    if (isUniformRadii(radii)) {
+                        return (
+                            <g key={`cutout-${index}`}>
+                                <rect x={element.xMm} y={element.yMm} width={element.wMm} height={element.hMm} rx={radii.tl} fill={fill} stroke={stroke} strokeWidth={strokeWidthMm} opacity={opacity} pointerEvents="none" />
+                                {isHighlighted ? <rect x={element.xMm} y={element.yMm} width={element.wMm} height={element.hMm} rx={radii.tl} fill="none" stroke={highlightStroke} strokeWidth={highlightWidth} pointerEvents="none" /> : null}
+                                {showHandles ? (
+                                    <g className="preview__resizeHandles">
+                                        <circle className="preview__resizeHandle preview__resizeHandle--e" cx={element.xMm + element.wMm} cy={element.yMm + element.hMm / 2} r={1.2} data-cutout-index={index} data-cutout-kind="rect" data-resize="e" />
+                                        <circle className="preview__resizeHandle preview__resizeHandle--s" cx={element.xMm + element.wMm / 2} cy={element.yMm + element.hMm} r={1.2} data-cutout-index={index} data-cutout-kind="rect" data-resize="s" />
+                                        <circle className="preview__resizeHandle preview__resizeHandle--se" cx={element.xMm + element.wMm} cy={element.yMm + element.hMm} r={1.4} data-cutout-index={index} data-cutout-kind="rect" data-resize="se" />
+                                    </g>
+                                ) : null}
+                                <rect className="preview__cutoutHit" x={element.xMm} y={element.yMm} width={element.wMm} height={element.hMm} rx={radii.tl} fill="transparent" stroke="none" pointerEvents="all" data-cutout-index={index} data-cutout-kind="rect" />
+                            </g>
+                        );
+                    }
+
                     return (
-                        <circle
-                            key={`cutout-${index}`}
-                            cx={element.cxMm}
-                            cy={element.cyMm}
-                            r={element.rMm}
-                            fill={fill}
-                            stroke={stroke}
-                            strokeWidth={strokeWidthMm}
-                            opacity={opacity}
-                            pointerEvents="none"
-                        />
+                        <g key={`cutout-${index}`}>
+                            <path d={roundedRectPath(element.xMm, element.yMm, element.wMm, element.hMm, radii)} fill={fill} stroke={stroke} strokeWidth={strokeWidthMm} opacity={opacity} pointerEvents="none" />
+                            {isHighlighted ? <path d={roundedRectPath(element.xMm, element.yMm, element.wMm, element.hMm, radii)} fill="none" stroke={highlightStroke} strokeWidth={highlightWidth} pointerEvents="none" /> : null}
+                            {showHandles ? (
+                                <g className="preview__resizeHandles">
+                                    <circle className="preview__resizeHandle preview__resizeHandle--e" cx={element.xMm + element.wMm} cy={element.yMm + element.hMm / 2} r={1.2} data-cutout-index={index} data-cutout-kind="rect" data-resize="e" />
+                                    <circle className="preview__resizeHandle preview__resizeHandle--s" cx={element.xMm + element.wMm / 2} cy={element.yMm + element.hMm} r={1.2} data-cutout-index={index} data-cutout-kind="rect" data-resize="s" />
+                                    <circle className="preview__resizeHandle preview__resizeHandle--se" cx={element.xMm + element.wMm} cy={element.yMm + element.hMm} r={1.4} data-cutout-index={index} data-cutout-kind="rect" data-resize="se" />
+                                </g>
+                            ) : null}
+                            <path className="preview__cutoutHit" d={roundedRectPath(element.xMm, element.yMm, element.wMm, element.hMm, radii)} fill="transparent" stroke="none" pointerEvents="all" data-cutout-index={index} data-cutout-kind="rect" />
+                        </g>
                     );
-                }
-
-                const radii = getCutoutRadiiMm(element);
-                if (isUniformRadii(radii)) {
-                    return (
-                        <rect
-                            key={`cutout-${index}`}
-                            x={element.xMm}
-                            y={element.yMm}
-                            width={element.wMm}
-                            height={element.hMm}
-                            rx={radii.tl}
-                            fill={fill}
-                            stroke={stroke}
-                            strokeWidth={strokeWidthMm}
-                            opacity={opacity}
-                            pointerEvents="none"
-                        />
-                    );
-                }
-
-                return (
-                    <path
-                        key={`cutout-${index}`}
-                        d={roundedRectPath(element.xMm, element.yMm, element.wMm, element.hMm, radii)}
-                        fill={fill}
-                        stroke={stroke}
-                        strokeWidth={strokeWidthMm}
-                        opacity={opacity}
-                        pointerEvents="none"
-                    />
-                );
-            })}
+                })}
 
             {wmEnabled ? (
                 <g opacity={wmOpacity} pointerEvents="none">

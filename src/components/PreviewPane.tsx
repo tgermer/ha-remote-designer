@@ -14,12 +14,15 @@ type PreviewPaneProps = {
     pages?: number;
     onChangePage?: (next: number) => void;
     onSelectButton?: (buttonId: string) => void;
+    highlightedButtonId?: string | null;
+    highlightedCutoutIndex?: number | null;
+    showResizeHandles?: boolean;
     className?: string;
     showMissingIconPlaceholder?: boolean;
 };
 
 export function PreviewPane(props: PreviewPaneProps) {
-    const { template, state, showWatermark, watermarkText, watermarkOpacity, isStickerSheet, pageIndex = 0, pages = 0, onChangePage, onSelectButton, className, showMissingIconPlaceholder } = props;
+    const { template, state, showWatermark, watermarkText, watermarkOpacity, isStickerSheet, pageIndex = 0, pages = 0, onChangePage, onSelectButton, highlightedButtonId, highlightedCutoutIndex, showResizeHandles, className, showMissingIconPlaceholder } = props;
     const showPager = isStickerSheet && pages > 1 && !!onChangePage;
     const currentPage = Math.min(Math.max(0, pageIndex), Math.max(0, pages - 1));
 
@@ -48,7 +51,7 @@ export function PreviewPane(props: PreviewPaneProps) {
                     </button>
                 </div>
             )}
-            <RemoteSvg template={template} state={state} background="white" showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} onSelectButton={onSelectButton} showMissingIconPlaceholder={showMissingIconPlaceholder} />
+            <RemoteSvg template={template} state={state} background="white" showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} overrides={{ showScaleBar: false }} onSelectButton={onSelectButton} highlightedButtonId={highlightedButtonId ?? undefined} highlightedCutoutIndex={highlightedCutoutIndex ?? undefined} showResizeHandles={showResizeHandles} showMissingIconPlaceholder={showMissingIconPlaceholder} />
         </aside>
     );
 }

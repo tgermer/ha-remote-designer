@@ -1,7 +1,7 @@
 import type { TapType, DesignOptions, DesignState } from "./types";
 import { REMOTE_EXAMPLES } from "./remoteExamples";
 
-export type RemoteId = "hue_dimmer_v1" | "hue_dimmer_v2" | "ikea_bilresa_dual_switch" | "aqara_w100" | "HM-PB-6-WM55" | "tuya_ts0044" | "enocean_ptm_215ze" | "generic";
+export type RemoteId = string;
 
 export type CornerRadiiMm = {
     tl?: number;
@@ -106,6 +106,7 @@ export type RemoteTemplate = {
     name: string;
     description?: string;
     isDraft?: boolean;
+    isCommunity?: boolean;
     isStickerSheet?: boolean;
     productIds?: string[];
     links?: { label: string; url: string }[];
