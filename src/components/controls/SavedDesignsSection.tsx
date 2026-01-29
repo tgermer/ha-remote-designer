@@ -105,9 +105,8 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                     <UiIcon name="mdi:folder-open-outline" className="icon" />
                     Load
                 </button>
-                <button type="button" className="btn btn--danger" onClick={onDeleteSelected} disabled={!selectedSavedId}>
+                <button type="button" className="btn btn--danger" onClick={onDeleteSelected} disabled={!selectedSavedId} aria-label="Delete saved remote" title="Delete saved remote">
                     <UiIcon name="mdi:delete-outline" className="icon" />
-                    Delete
                 </button>
             </div>
 

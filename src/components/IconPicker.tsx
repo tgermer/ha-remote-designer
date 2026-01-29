@@ -285,9 +285,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                         setIsEditing(false);
                     }}
                     disabled={!value && !currentText.trim()}
+                    aria-label="Delete icon"
+                    title="Delete icon"
                 >
                     <UiIcon name="mdi:delete-outline" className="icon" />
-                    Delete
                 </button>
             </div>
 
