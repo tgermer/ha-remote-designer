@@ -1,13 +1,16 @@
-import { useMemo, useState, useEffect, useRef, useSyncExternalStore } from "react";
+import { useMemo, useState, useEffect, useRef, useSyncExternalStore, useCallback } from "react";
 import { createPortal } from "react-dom";
 import "./App.css";
 
 import { type DesignOptions, type DesignState, type TapType } from "./app/types";
-import { REMOTES, isUserExample, type ExampleEntry, type RemoteExample, type RemoteTemplate } from "./app/remotes";
+import { REMOTES, isUserExample, type ButtonDef, type CornerRadiiMm, type CutoutElement, type ExampleEntry, type RemoteExample, type RemoteTemplate } from "./app/remotes";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
 import { TopNav } from "./components/TopNav";
 import { GalleryView } from "./components/GalleryView";
+import { HomePage } from "./components/HomePage";
+import { HelpPage } from "./components/HelpPage";
+import { CommunityRemotePage } from "./components/CommunityRemotePage";
 import { EditorLayout } from "./components/layout/EditorLayout";
 import { GalleryLayout } from "./components/layout/GalleryLayout";
 import { ControlsLayout } from "./components/layout/ControlsLayout";
@@ -21,6 +24,7 @@ import { PreviewPane } from "./components/PreviewPane";
 import { HelpSection } from "./components/HelpSection";
 import { HiddenExportRenderers } from "./components/HiddenExportRenderers";
 import { LegalPage } from "./components/LegalPage";
+import { ConfiguratorIntro } from "./components/ConfiguratorIntro";
 import { UiIcon } from "./components/UiIcon";
 
 import { loadFromHash, saveToHash } from "./app/urlState";
@@ -167,17 +171,59 @@ Paste into remoteExamples.ts under REMOTE_EXAMPLES["{remoteId}"]:
 {config}
 
 Thanks and best regards`;
+const COMMUNITY_REMOTE_SUBJECT = "Community remote model submission";
+const COMMUNITY_REMOTE_BODY_TEMPLATE = `Hi Tristan,
+
+I created a community remote model using the builder.
+
+Remote name: {remoteName}
+Size (mm): {width} x {height}
+Corner radius (mm): {corner}
+Manufacturer URL: {manufacturer}
+Image URL: {image}
+
+Notes:
+{notes}
+
+JSON payload:
+{json}
+
+Thanks and best regards`;
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || "dev";
-const SEND_PROMPT_COUNT_KEY = "ha-remote-send-prompt-count";
+const SEND_PROMPT_COUNT_KEY = "ha-remote-designer:send-prompt-count:v1";
 const PLAUSIBLE_DOMAIN = "ha-remote-designer.netlify.app";
+const COMMUNITY_PREVIEW_ID = "community_preview";
+const COMMUNITY_DRAFTS_KEY = "ha-remote-designer:saved-community-drafts:v1";
 
 /* ------------------------------- helpers -------------------------------- */
 
 type NormalizableState = Omit<Partial<DesignState>, "options"> & { options?: Partial<DesignOptions> };
+type CommunityButtonDraft = ButtonDef & { r?: CornerRadiiMm };
 
-function normalizeState(input: NormalizableState): DesignState {
-    const fallbackRemoteId: DesignState["remoteId"] = REMOTES[0]?.id ?? initial.remoteId;
-    const nextRemoteId: DesignState["remoteId"] = input.remoteId && REMOTES.some((r) => r.id === input.remoteId) ? input.remoteId : fallbackRemoteId;
+type CommunityDraft = {
+    id?: string;
+    name: string;
+    widthMm: number;
+    heightMm: number;
+    cornerMm: number;
+    manufacturerUrl: string;
+    imageUrl: string;
+    notes: string;
+    tags: string[];
+    buttons: CommunityButtonDraft[];
+    cutouts: CutoutElement[];
+};
+
+type CommunityDraftEntry = {
+    id: string;
+    name: string;
+    draft: CommunityDraft;
+    updatedAt: number;
+};
+
+function normalizeState(input: NormalizableState, remotes: RemoteTemplate[] = REMOTES): DesignState {
+    const fallbackRemoteId: DesignState["remoteId"] = remotes[0]?.id ?? initial.remoteId;
+    const nextRemoteId: DesignState["remoteId"] = input.remoteId && remotes.some((r) => r.id === input.remoteId) ? input.remoteId : fallbackRemoteId;
     const mergedOptions = {
         ...initial.options,
         ...(input.options ?? {}),
@@ -226,9 +272,16 @@ function nextFrame() {
     return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-function getUrlView(): "editor" | "gallery" {
+type ViewKind = "home" | "configure" | "gallery" | "help" | "community";
+
+function getUrlView(): ViewKind {
     const sp = new URLSearchParams(window.location.search);
-    return sp.get("view") === "gallery" ? "gallery" : "editor";
+    const viewParam = sp.get("view");
+    if (viewParam === "configure" || viewParam === "gallery" || viewParam === "help" || viewParam === "community") return viewParam;
+    if (viewParam === "editor") return "configure";
+    if (viewParam === "home") return "home";
+    if (window.location.hash && window.location.hash.length > 1) return "configure";
+    return "home";
 }
 
 type LegalPageKind = "impressum" | "datenschutz";
@@ -241,19 +294,19 @@ function getUrlLegalPage(): LegalPageState {
     return null;
 }
 
-function setUrlView(view: "editor" | "gallery") {
+function setUrlView(view: ViewKind) {
     const url = new URL(window.location.href);
-    if (view === "gallery") url.searchParams.set("view", "gallery");
-    else url.searchParams.delete("view");
+    if (view === "home") url.searchParams.delete("view");
+    else url.searchParams.set("view", view);
 
     // Use pushState so browser back/forward works.
     window.history.pushState(null, "", url.toString());
 }
 
-function getViewHref(view: "editor" | "gallery") {
+function getViewHref(view: ViewKind) {
     const url = new URL(window.location.href);
-    if (view === "gallery") url.searchParams.set("view", "gallery");
-    else url.searchParams.delete("view");
+    if (view === "home") url.searchParams.delete("view");
+    else url.searchParams.set("view", view);
     return url.toString();
 }
 
@@ -274,6 +327,45 @@ function getAppHref() {
     const url = new URL(window.location.href);
     url.searchParams.delete("page");
     return url.toString();
+}
+
+function readCommunityDrafts(): CommunityDraftEntry[] {
+    try {
+        const raw = window.localStorage.getItem(COMMUNITY_DRAFTS_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw) as CommunityDraftEntry[];
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter((entry) => entry && typeof entry.id === "string");
+    } catch {
+        return [];
+    }
+}
+
+function writeCommunityDrafts(drafts: CommunityDraftEntry[]) {
+    try {
+        window.localStorage.setItem(COMMUNITY_DRAFTS_KEY, JSON.stringify(drafts));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+function createCommunityDraft(overrides?: Partial<CommunityDraft>): CommunityDraft {
+    return {
+        name: "",
+        widthMm: 40,
+        heightMm: 120,
+        cornerMm: 4,
+        manufacturerUrl: "",
+        imageUrl: "",
+        notes: "",
+        tags: ["community"],
+        buttons: [
+            { id: "button_1", xMm: 4, yMm: 8, wMm: 32, hMm: 18, rMm: 2 },
+            { id: "button_2", xMm: 4, yMm: 30, wMm: 32, hMm: 18, rMm: 2 },
+        ],
+        cutouts: [],
+        ...overrides,
+    };
 }
 
 function buildStateFromExample(params: { remoteId: RemoteTemplate["id"]; example: ExampleEntry }): DesignState {
@@ -370,8 +462,8 @@ function stateUsesHueIcons(state: NormalizableState) {
     return false;
 }
 
-function remotesUseHueIcons() {
-    for (const remote of REMOTES) {
+function remotesUseHueIcons(remotes: RemoteTemplate[]) {
+    for (const remote of remotes) {
         const examples = remote.examples ?? [];
         for (const ex of examples) {
             if (isUserExample(ex)) {
@@ -399,8 +491,8 @@ function stateUsesFullMdi(state: NormalizableState) {
     return false;
 }
 
-function remotesUseFullMdi() {
-    for (const remote of REMOTES) {
+function remotesUseFullMdi(remotes: RemoteTemplate[]) {
+    for (const remote of remotes) {
         const examples = remote.examples ?? [];
         for (const ex of examples) {
             if (isUserExample(ex)) {
@@ -420,10 +512,19 @@ function remotesUseFullMdi() {
 /* --------------------------------- App ---------------------------------- */
 
 export default function App() {
-    const [view, setView] = useState<"editor" | "gallery">(() => getUrlView());
+    const [view, setView] = useState<ViewKind>(() => getUrlView());
     const isGallery = view === "gallery";
+    const isHome = view === "home";
+    const isHelp = view === "help";
+    const isConfigure = view === "configure";
+    const isCommunity = view === "community";
     const [legalPage, setLegalPage] = useState<LegalPageState>(() => getUrlLegalPage());
     const isLegal = legalPage !== null;
+    const [communityDraft, setCommunityDraft] = useState<CommunityDraft>(() => createCommunityDraft());
+    const [communityPreviewRemote, setCommunityPreviewRemote] = useState<RemoteTemplate | null>(null);
+    const [communityDrafts, setCommunityDrafts] = useState<CommunityDraftEntry[]>([]);
+    const [communitySelectedId, setCommunitySelectedId] = useState<string>("");
+    const [communityCopyStatus, setCommunityCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
     const plausibleInitializedRef = useRef(false);
     const trackEvent = (name: string, props?: Record<string, string | number | boolean | null | undefined>) => {
         if (!import.meta.env.PROD) return;
@@ -449,8 +550,28 @@ export default function App() {
             document.title = "Datenschutzerklärung – Remote Designer";
             return;
         }
+        if (view === "home") {
+            document.title = "Home – Remote Designer";
+            return;
+        }
+        if (view === "configure") {
+            document.title = "Configurator – Remote Designer";
+            return;
+        }
+        if (view === "gallery") {
+            document.title = "Gallery – Remote Designer";
+            return;
+        }
+        if (view === "help") {
+            document.title = "Help – Remote Designer";
+            return;
+        }
+        if (view === "community") {
+            document.title = "Community Remote – Remote Designer";
+            return;
+        }
         document.title = "Remote Label Designer for Home Automation";
-    }, [legalPage]);
+    }, [legalPage, view]);
 
     useEffect(() => {
         if (!import.meta.env.PROD) return;
@@ -477,10 +598,59 @@ export default function App() {
         return () => window.removeEventListener("popstate", onPopState);
     }, []);
 
+    useEffect(() => {
+        const drafts = readCommunityDrafts().sort((a, b) => b.updatedAt - a.updatedAt);
+        setCommunityDrafts(drafts);
+        if (drafts.length) {
+            setCommunitySelectedId(drafts[0].id);
+            setCommunityDraft(createCommunityDraft({ ...drafts[0].draft, id: drafts[0].id }));
+        }
+    }, []);
+
+    const communityRemotes = useMemo(() => {
+        return communityDrafts.map((entry) => {
+            const draft = entry.draft;
+            return {
+                id: entry.id,
+                name: draft.name.trim() || "Community Draft",
+                description: "Community submission (draft)",
+                isDraft: true,
+                isCommunity: true,
+                widthMm: draft.widthMm,
+                heightMm: draft.heightMm,
+                cornerMm: draft.cornerMm,
+                buttons: draft.buttons,
+                previewElements: [],
+                cutoutElements: draft.cutouts,
+                links: [
+                    ...(draft.manufacturerUrl ? [{ label: "Manufacturer", url: draft.manufacturerUrl }] : []),
+                    ...(draft.imageUrl ? [{ label: "Image", url: draft.imageUrl }] : []),
+                ],
+            } satisfies RemoteTemplate;
+        });
+    }, [communityDrafts]);
+
+    const remotes = useMemo(() => {
+        const list = [...REMOTES, ...communityRemotes];
+        if (communityPreviewRemote) {
+            const existingIndex = list.findIndex((remote) => remote.id === communityPreviewRemote.id);
+            if (existingIndex >= 0) list.splice(existingIndex, 1);
+            list.push(communityPreviewRemote);
+        }
+        return list;
+    }, [communityPreviewRemote, communityRemotes]);
+    const normalize = useCallback((input: NormalizableState) => normalizeState(input, remotes), [remotes]);
+
+    useEffect(() => {
+        if (communityCopyStatus === "idle") return;
+        const t = window.setTimeout(() => setCommunityCopyStatus("idle"), 4000);
+        return () => window.clearTimeout(t);
+    }, [communityCopyStatus]);
+
     const [state, setState] = useState<DesignState>(() => {
         // In gallery view we do not try to parse the hash as state.
-        if (getUrlView() === "gallery") return initial;
-        return normalizeState(loadFromHash<DesignState>() ?? initial);
+        if (getUrlView() !== "configure") return initial;
+        return normalizeState(loadFromHash<DesignState>() ?? initial, remotes);
     });
     const [stickerPageIndex, setStickerPageIndex] = useState(0);
 
@@ -541,7 +711,7 @@ export default function App() {
         }, 10000);
     };
 
-    const goTo = (next: "editor" | "gallery") => {
+    const goTo = (next: ViewKind) => {
         if (next === "gallery") {
             refreshSavedDesigns();
         }
@@ -561,19 +731,19 @@ export default function App() {
         const found = items.find((d) => d.id === selectedSavedId);
         if (!found) return;
 
-        setState(normalizeState(found.state));
+        setState(normalize(found.state));
 
         setActiveSavedId(found.id);
-        setLoadedSnapshot(normalizeState(found.state));
+        setLoadedSnapshot(normalize(found.state));
         setLoadedName(found.name);
         setSaveName(found.name);
         setSaveNameError("");
     };
 
     const openSavedDesign = (design: SavedDesign) => {
-        setState(normalizeState(design.state));
+        setState(normalize(design.state));
         setActiveSavedId(design.id);
-        setLoadedSnapshot(normalizeState(design.state));
+        setLoadedSnapshot(normalize(design.state));
         setLoadedName(design.name);
         setSaveName(design.name);
         setSaveNameError("");
@@ -745,14 +915,14 @@ export default function App() {
 
     /* persist state in URL */
     useEffect(() => {
-        // Do not persist editor state into the hash while the gallery is shown.
-        if (isGallery) return;
+        // Do not persist editor state into the hash unless the configurator is shown.
+        if (!isConfigure) return;
         const t = window.setTimeout(() => saveToHash(state), 150);
         return () => window.clearTimeout(t);
-    }, [state, isGallery]);
+    }, [state, isConfigure]);
 
     const o = state.options;
-    const baseTemplate = useMemo(() => REMOTES.find((r) => r.id === state.remoteId) ?? REMOTES[0], [state.remoteId]);
+    const baseTemplate = useMemo(() => remotes.find((r) => r.id === state.remoteId) ?? remotes[0], [state.remoteId, remotes]);
     const isStickerSheet = baseTemplate.isStickerSheet === true;
     const sheetSizeMm = o.sheetSize === "Letter" ? LETTER_SIZE_MM : A4_SIZE_MM;
 
@@ -771,8 +941,8 @@ export default function App() {
     }, [isStickerSheet, o.labelWidthMm, o.labelHeightMm, o.labelCount, o.sheetMarginXMm, o.sheetMarginYMm, o.sheetGapMm, sheetSizeMm.width, sheetSizeMm.height]);
 
     const remoteNameById = useMemo(() => {
-        return new Map(REMOTES.map((r) => [r.id, r.name] as const));
-    }, []);
+        return new Map(remotes.map((r) => [r.id, r.name] as const));
+    }, [remotes]);
 
     const previewState: DesignState = state;
 
@@ -793,13 +963,155 @@ export default function App() {
         return `mailto:${LEGAL_CONTACT.email}?subject=${encodeURIComponent(SHARE_MAIL_SUBJECT)}&body=${encodeURIComponent(body)}`;
     };
 
+    const clampNumber = (value: unknown, fallback: number, min?: number, max?: number) => {
+        const n = typeof value === "number" ? value : Number(value);
+        if (!Number.isFinite(n)) return fallback;
+        if (typeof min === "number" && n < min) return min;
+        if (typeof max === "number" && n > max) return max;
+        return n;
+    };
+
+    const communityTemplate = useMemo<RemoteTemplate>(() => {
+        const widthMm = clampNumber(communityDraft.widthMm, 40, 1, 500);
+        const heightMm = clampNumber(communityDraft.heightMm, 120, 1, 500);
+        const cornerMm = clampNumber(communityDraft.cornerMm, 0, 0, 100);
+        const buttons = communityDraft.buttons.map((button, index) => {
+            const id = button.id.trim() || `button_${index + 1}`;
+            const corners = button.r ?? {};
+            const hasCorner =
+                [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
+            return {
+                id,
+                xMm: clampNumber(button.xMm, 0, 0, widthMm),
+                yMm: clampNumber(button.yMm, 0, 0, heightMm),
+                wMm: clampNumber(button.wMm, 10, 1, widthMm),
+                hMm: clampNumber(button.hMm, 10, 1, heightMm),
+                rMm: hasCorner ? undefined : clampNumber(button.rMm ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                r: hasCorner
+                    ? {
+                          tl: clampNumber(corners.tl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          tr: clampNumber(corners.tr ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          br: clampNumber(corners.br ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          bl: clampNumber(corners.bl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                      }
+                    : undefined,
+            };
+        });
+
+        const cutouts = communityDraft.cutouts.map((cutout) => {
+            if (cutout.kind === "circle") {
+                return {
+                    kind: "circle",
+                    cxMm: clampNumber(cutout.cxMm, 0, 0, widthMm),
+                    cyMm: clampNumber(cutout.cyMm, 0, 0, heightMm),
+                    rMm: clampNumber(cutout.rMm, 1, 0, Math.min(widthMm, heightMm)),
+                    fill: cutout.fill,
+                    stroke: cutout.stroke,
+                    strokeWidthMm: clampNumber(cutout.strokeWidthMm ?? 0.2, 0.2, 0, 5),
+                    opacity: cutout.opacity,
+                } satisfies CutoutElement;
+            }
+            const corners = cutout.r ?? {};
+            const hasCorner =
+                [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
+            return {
+                kind: "rect",
+                xMm: clampNumber(cutout.xMm, 0, 0, widthMm),
+                yMm: clampNumber(cutout.yMm, 0, 0, heightMm),
+                wMm: clampNumber(cutout.wMm, 1, 0, widthMm),
+                hMm: clampNumber(cutout.hMm, 1, 0, heightMm),
+                rMm: hasCorner ? undefined : clampNumber(cutout.rMm ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                r: hasCorner
+                    ? {
+                          tl: clampNumber(corners.tl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          tr: clampNumber(corners.tr ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          br: clampNumber(corners.br ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          bl: clampNumber(corners.bl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                      }
+                    : undefined,
+                fill: cutout.fill,
+                stroke: cutout.stroke,
+                strokeWidthMm: clampNumber(cutout.strokeWidthMm ?? 0.2, 0.2, 0, 5),
+                opacity: cutout.opacity,
+            } satisfies CutoutElement;
+        });
+
+        return {
+            id: COMMUNITY_PREVIEW_ID,
+            name: communityDraft.name.trim() || "Community Remote",
+            description: "Community submission (draft)",
+            isDraft: true,
+            isCommunity: true,
+            widthMm,
+            heightMm,
+            cornerMm,
+            buttons,
+            cutoutElements: cutouts,
+            links: [
+                ...(communityDraft.manufacturerUrl ? [{ label: "Manufacturer", url: communityDraft.manufacturerUrl }] : []),
+                ...(communityDraft.imageUrl ? [{ label: "Image", url: communityDraft.imageUrl }] : []),
+            ],
+        };
+    }, [communityDraft]);
+
+    const communityPayload = useMemo(
+        () => ({
+            template: communityTemplate,
+            notes: communityDraft.notes.trim() || null,
+            tags: communityDraft.tags,
+            manufacturerUrl: communityDraft.manufacturerUrl || null,
+            imageUrl: communityDraft.imageUrl || null,
+            appVersion: APP_VERSION,
+        }),
+        [communityTemplate, communityDraft.notes, communityDraft.tags, communityDraft.manufacturerUrl, communityDraft.imageUrl],
+    );
+    const communityDraftSig = useMemo(() => JSON.stringify(communityDraft), [communityDraft]);
+    const communitySavedSig = useMemo(() => {
+        if (!communitySelectedId) return "";
+        const entry = communityDrafts.find((draftEntry) => draftEntry.id === communitySelectedId);
+        if (!entry) return "";
+        return JSON.stringify(entry.draft);
+    }, [communityDrafts, communitySelectedId]);
+    const communityHasUnsavedChanges = communityDraftSig !== communitySavedSig;
+
+    useEffect(() => {
+        if (!communityPreviewRemote) return;
+        setCommunityPreviewRemote(communityTemplate);
+    }, [communityTemplate, communityPreviewRemote]);
+    const communityJson = useMemo(() => JSON.stringify(communityPayload, null, 2), [communityPayload]);
+    const communityPreviewState = useMemo(
+        () =>
+            normalizeState(
+                {
+                    ...initial,
+                    remoteId: COMMUNITY_PREVIEW_ID,
+                },
+                [communityTemplate],
+            ),
+        [communityTemplate],
+    );
+    const buildCommunityMailto = () => {
+        const body = COMMUNITY_REMOTE_BODY_TEMPLATE.replace("{remoteName}", communityTemplate.name)
+            .replace("{width}", String(communityTemplate.widthMm))
+            .replace("{height}", String(communityTemplate.heightMm))
+            .replace("{corner}", String(communityTemplate.cornerMm))
+            .replace("{manufacturer}", communityDraft.manufacturerUrl || "-")
+            .replace("{image}", communityDraft.imageUrl || "-")
+            .replace("{notes}", communityDraft.notes.trim() || "-")
+            .replace("{json}", communityJson);
+        return `mailto:${LEGAL_CONTACT.email}?subject=${encodeURIComponent(COMMUNITY_REMOTE_SUBJECT)}&body=${encodeURIComponent(body)}`;
+    };
+
     const showWatermark = FEATURES.WATERMARK;
     const watermarkText = "PREVIEW PREVIEW PREVIEW";
     const watermarkOpacity = 0.2;
 
     const hueIconsLoaded = useSyncExternalStore(subscribeHueIcons, getHueIconsLoadedSnapshot);
-    const galleryUsesHueIcons = useMemo(() => remotesUseHueIcons() || savedDesigns.some((d) => stateUsesHueIcons(d.state)), [savedDesigns]);
-    const shouldPreloadHueIcons = useMemo(() => (isGallery ? galleryUsesHueIcons : stateUsesHueIcons(state)), [isGallery, galleryUsesHueIcons, state]);
+    const galleryUsesHueIcons = useMemo(() => remotesUseHueIcons(remotes) || savedDesigns.some((d) => stateUsesHueIcons(d.state)), [savedDesigns, remotes]);
+    const shouldPreloadHueIcons = useMemo(() => {
+        if (!isGallery && !isConfigure) return false;
+        return isGallery ? galleryUsesHueIcons : stateUsesHueIcons(state);
+    }, [isGallery, isConfigure, galleryUsesHueIcons, state]);
 
     useEffect(() => {
         if (!shouldPreloadHueIcons || hueIconsLoaded) return;
@@ -821,8 +1133,11 @@ export default function App() {
     }, [shouldPreloadHueIcons, hueIconsLoaded, isGallery]);
 
     const fullMdiLoaded = useSyncExternalStore(subscribeFullMdi, getFullMdiLoadedSnapshot);
-    const galleryUsesFullMdi = useMemo(() => remotesUseFullMdi() || savedDesigns.some((d) => stateUsesFullMdi(d.state)), [savedDesigns]);
-    const shouldPreloadFullMdi = useMemo(() => (isGallery ? galleryUsesFullMdi : stateUsesFullMdi(state)), [isGallery, galleryUsesFullMdi, state]);
+    const galleryUsesFullMdi = useMemo(() => remotesUseFullMdi(remotes) || savedDesigns.some((d) => stateUsesFullMdi(d.state)), [savedDesigns, remotes]);
+    const shouldPreloadFullMdi = useMemo(() => {
+        if (!isGallery && !isConfigure) return false;
+        return isGallery ? galleryUsesFullMdi : stateUsesFullMdi(state);
+    }, [isGallery, isConfigure, galleryUsesFullMdi, state]);
     const overlayRoot = typeof document !== "undefined" ? document.getElementById("overlay-root") : null;
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewHeightVh, setPreviewHeightVh] = useState(32);
@@ -1104,6 +1419,142 @@ export default function App() {
         setGalleryConsent(null);
         setShowConsentError(false);
         setSendConfigOpen(true);
+    };
+
+    const updateCommunityDraft = (patch: Partial<CommunityDraft>) => {
+        setCommunityDraft((prev) => ({ ...prev, ...patch }));
+    };
+
+    const updateCommunityButton = (index: number, patch: Partial<CommunityButtonDraft>) => {
+        setCommunityDraft((prev) => {
+            const buttons = prev.buttons.map((button, i) => (i === index ? { ...button, ...patch } : button));
+            return { ...prev, buttons };
+        });
+    };
+
+    const addCommunityButton = () => {
+        setCommunityDraft((prev) => {
+            const nextIndex = prev.buttons.length + 1;
+            return {
+                ...prev,
+                buttons: [...prev.buttons, { id: `button_${nextIndex}`, xMm: 0, yMm: 0, wMm: 12, hMm: 12, rMm: 0 }],
+            };
+        });
+    };
+
+    const removeCommunityButton = (index: number) => {
+        setCommunityDraft((prev) => ({ ...prev, buttons: prev.buttons.filter((_, i) => i !== index) }));
+    };
+
+    const updateCommunityCutout = (index: number, next: CutoutElement) => {
+        setCommunityDraft((prev) => {
+            const cutouts = prev.cutouts.map((cutout, i) => (i === index ? next : cutout));
+            return { ...prev, cutouts };
+        });
+    };
+
+    const addCommunityCutoutRect = () => {
+        setCommunityDraft((prev) => ({
+            ...prev,
+            cutouts: [
+                ...prev.cutouts,
+                { kind: "rect", xMm: 4, yMm: 4, wMm: 10, hMm: 10, rMm: 0, stroke: "#6f6f6f", strokeWidthMm: 0.2 },
+            ],
+        }));
+    };
+
+    const addCommunityCutoutCircle = () => {
+        setCommunityDraft((prev) => ({
+            ...prev,
+            cutouts: [
+                ...prev.cutouts,
+                { kind: "circle", cxMm: 10, cyMm: 10, rMm: 3, stroke: "#6f6f6f", strokeWidthMm: 0.2 },
+            ],
+        }));
+    };
+
+    const removeCommunityCutout = (index: number) => {
+        setCommunityDraft((prev) => ({ ...prev, cutouts: prev.cutouts.filter((_, i) => i !== index) }));
+    };
+
+    const useCommunityInConfigurator = () => {
+        const nextTemplate = communityTemplate;
+        setCommunityPreviewRemote(nextTemplate);
+        setState(normalizeState({ ...initial, remoteId: COMMUNITY_PREVIEW_ID }, [...REMOTES, ...communityRemotes, nextTemplate]));
+        setSaveName("");
+        setSaveNameError("");
+        setActiveSavedId(null);
+        setLoadedSnapshot(null);
+        setLoadedName("");
+        setSelectedSavedId("");
+        goTo("configure");
+        requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+    };
+
+    const copyCommunityJson = async () => {
+        try {
+            await navigator.clipboard.writeText(communityJson);
+            setCommunityCopyStatus("copied");
+        } catch (error) {
+            console.warn("Copy community JSON failed", error);
+            setCommunityCopyStatus("failed");
+        }
+    };
+
+    const downloadCommunityJson = () => {
+        const nameBase = sanitizeFilenameBase(communityTemplate.name);
+        downloadTextFile(`community-remote-${nameBase}.json`, communityJson, "application/json");
+    };
+
+    const sendCommunityToDeveloper = () => {
+        window.location.href = buildCommunityMailto();
+    };
+
+    const saveCommunityDraft = () => {
+        setCommunityDrafts((prev) => {
+            const now = Date.now();
+            const name = communityDraft.name.trim() || "Community Draft";
+            let nextDrafts = [...prev];
+            if (communitySelectedId) {
+                nextDrafts = nextDrafts.map((entry) =>
+                    entry.id === communitySelectedId
+                        ? { ...entry, name, draft: createCommunityDraft({ ...communityDraft, id: communitySelectedId }), updatedAt: now }
+                        : entry,
+                );
+            } else {
+                const id = `community_${getRandomId()}`;
+                nextDrafts = [{ id, name, draft: createCommunityDraft({ ...communityDraft, id }), updatedAt: now }, ...nextDrafts];
+                setCommunitySelectedId(id);
+            }
+            writeCommunityDrafts(nextDrafts);
+            return nextDrafts;
+        });
+    };
+
+    const loadCommunityDraft = (id: string) => {
+        if (!id) {
+            setCommunitySelectedId("");
+            return;
+        }
+        const entry = communityDrafts.find((draft) => draft.id === id);
+        if (!entry) return;
+        setCommunityDraft(createCommunityDraft({ ...entry.draft, id: entry.id }));
+        setCommunitySelectedId(entry.id);
+    };
+
+    const deleteCommunityDraft = () => {
+        if (!communitySelectedId) return;
+        setCommunityDrafts((prev) => {
+            const nextDrafts = prev.filter((entry) => entry.id !== communitySelectedId);
+            writeCommunityDrafts(nextDrafts);
+            return nextDrafts;
+        });
+        setCommunitySelectedId("");
+    };
+
+    const newCommunityDraft = () => {
+        setCommunityDraft(createCommunityDraft());
+        setCommunitySelectedId("");
     };
 
     const maybePromptSendConfig = (savedId: string | null) => {
@@ -1404,6 +1855,18 @@ export default function App() {
 
     const legalKind = legalPage ?? "impressum";
 
+    const homeRemote = useMemo(() => REMOTES.find((remote) => remote.id === "hue_dimmer_v1") ?? null, []);
+    const homeFactoryState = useMemo(() => {
+        if (!homeRemote) return null;
+        const example = homeRemote.examples?.find((ex) => !isUserExample(ex) && ex.id === "factory");
+        return example ? buildStateFromExample({ remoteId: homeRemote.id, example }) : null;
+    }, [homeRemote]);
+    const homeAutomationState = useMemo(() => {
+        if (!homeRemote) return null;
+        const example = homeRemote.examples?.find((ex) => !isUserExample(ex) && ex.id === "home_automation");
+        return example ? buildStateFromExample({ remoteId: homeRemote.id, example }) : null;
+    }, [homeRemote]);
+
     return (
         <>
             <main className="app">
@@ -1424,22 +1887,116 @@ export default function App() {
                     <>
                         <TopNav
                             view={view}
-                            editorHref={getViewHref("editor")}
+                            homeHref={getViewHref("home")}
+                            configureHref={getViewHref("configure")}
                             galleryHref={getViewHref("gallery")}
-                            onGoEditor={(event) => {
+                            helpHref={getViewHref("help")}
+                            communityHref={getViewHref("community")}
+                            onGoHome={(event) => {
                                 event.preventDefault();
-                                goTo("editor");
+                                goTo("home");
+                            }}
+                            onGoConfigure={(event) => {
+                                event.preventDefault();
+                                if (view === "community") {
+                                    useCommunityInConfigurator();
+                                    return;
+                                }
+                                goTo("configure");
                             }}
                             onGoGallery={(event) => {
                                 event.preventDefault();
                                 goTo("gallery");
                             }}
+                            onGoHelp={(event) => {
+                                event.preventDefault();
+                                goTo("help");
+                            }}
+                            onGoCommunity={(event) => {
+                                event.preventDefault();
+                                goTo("community");
+                            }}
                         />
+
+                        {isHome ? (
+                            <div className="pageWrap">
+                                <HomePage
+                                    configureHref={getViewHref("configure")}
+                                    galleryHref={getViewHref("gallery")}
+                                    helpHref={getViewHref("help")}
+                                    onGoConfigure={(event) => {
+                                        event.preventDefault();
+                                        goTo("configure");
+                                    }}
+                                    onGoGallery={(event) => {
+                                        event.preventDefault();
+                                        goTo("gallery");
+                                    }}
+                                    onGoHelp={(event) => {
+                                        event.preventDefault();
+                                        goTo("help");
+                                    }}
+                                    heroRemote={homeRemote}
+                                    factoryState={homeFactoryState}
+                                    automationState={homeAutomationState}
+                                />
+                            </div>
+                        ) : null}
+
+                        {isHelp ? (
+                            <div className="pageWrap">
+                                <HelpPage
+                                    configureHref={getViewHref("configure")}
+                                    galleryHref={getViewHref("gallery")}
+                                    onGoConfigure={(event) => {
+                                        event.preventDefault();
+                                        goTo("configure");
+                                    }}
+                                    onGoGallery={(event) => {
+                                        event.preventDefault();
+                                        goTo("gallery");
+                                    }}
+                                />
+                            </div>
+                        ) : null}
+
+                        {isCommunity ? (
+                            <div className="pageWrap">
+                                <CommunityRemotePage
+                                    draft={communityDraft}
+                                    template={communityTemplate}
+                                    previewState={communityPreviewState}
+                                    showWatermark={showWatermark}
+                                    watermarkText={watermarkText}
+                                    watermarkOpacity={watermarkOpacity}
+                                    onChangeDraft={updateCommunityDraft}
+                                    onUpdateButton={updateCommunityButton}
+                                    onAddButton={addCommunityButton}
+                                    onRemoveButton={removeCommunityButton}
+                                    onUpdateCutout={updateCommunityCutout}
+                                    onAddCutoutRect={addCommunityCutoutRect}
+                                    onAddCutoutCircle={addCommunityCutoutCircle}
+                                    onRemoveCutout={removeCommunityCutout}
+                                    onUseInConfigurator={useCommunityInConfigurator}
+                                    onCopyJson={copyCommunityJson}
+                                    onDownloadJson={downloadCommunityJson}
+                                    onSendToDeveloper={sendCommunityToDeveloper}
+                                    copyStatus={communityCopyStatus}
+                                    drafts={communityDrafts.map((entry) => ({ id: entry.id, name: entry.name, updatedAt: entry.updatedAt }))}
+                                    selectedDraftId={communitySelectedId}
+                                    hasUnsavedChanges={communityHasUnsavedChanges}
+                                    onSelectDraft={loadCommunityDraft}
+                                    onSaveDraft={saveCommunityDraft}
+                                    onDeleteDraft={deleteCommunityDraft}
+                                    onNewDraft={newCommunityDraft}
+                                />
+                            </div>
+                        ) : null}
 
                         {isGallery ? (
                             <GalleryLayout>
                                 <GalleryView
-                                    remotes={REMOTES}
+                                    remotes={remotes}
                                     savedDesigns={savedDesigns}
                                     buildStateFromExample={buildStateFromExample}
                                     showWatermark={showWatermark}
@@ -1447,28 +2004,42 @@ export default function App() {
                                     watermarkOpacity={watermarkOpacity}
                                     iconLoadStatus={isGallery ? iconLoadStatus : null}
                                     onOpenPreview={({ state: nextState }) => {
-                                        setState(normalizeState(nextState));
-                                        goTo("editor");
+                                        setState(normalize(nextState));
+                                        goTo("configure");
                                         requestAnimationFrame(() => {
                                             window.scrollTo({ top: 0, behavior: "smooth" });
                                         });
                                     }}
                                     onOpenSaved={(design) => {
                                         openSavedDesign(design);
-                                        goTo("editor");
+                                        goTo("configure");
                                         requestAnimationFrame(() => {
                                             window.scrollTo({ top: 0, behavior: "smooth" });
                                         });
                                     }}
                                 />
                             </GalleryLayout>
-                        ) : (
+                        ) : null}
+
+                        {isConfigure ? (
                             <EditorLayout
+                                title="Configurator"
+                                subtitle="Set up your remote, test the layout, and export the final stickers."
+                                intro={
+                                    <ConfiguratorIntro
+                                        helpHref={getViewHref("help")}
+                                        onGoHelp={(event) => {
+                                            event.preventDefault();
+                                            goTo("help");
+                                        }}
+                                        onSendConfig={openSendConfigPrompt}
+                                    />
+                                }
                                 controls={
                                     <ControlsLayout
                                         left={
                                             <>
-                                                <RemoteSection remotes={REMOTES} remoteId={state.remoteId} remoteImageUrl={remoteImageUrl} onChangeRemote={handleRemoteChange} onResetRemote={resetCurrentRemote} />
+                                                <RemoteSection remotes={remotes} remoteId={state.remoteId} remoteImageUrl={remoteImageUrl} onChangeRemote={handleRemoteChange} onResetRemote={resetCurrentRemote} />
 
                                                 <SavedDesignsSection
                                                     saveName={saveName}
@@ -1523,9 +2094,11 @@ export default function App() {
                                 }
                                 help={<HelpSection />}
                             />
-                        )}
+                        ) : null}
 
-                        <HiddenExportRenderers exportRemoteHostRef={exportRemoteHostRef} exportButtonHostRef={exportButtonHostRef} template={template} state={state} exportButton={exportButton} labelWidthMm={labelWidthMm} labelHeightMm={labelHeightMm} showScaleBar={isStickerSheet ? false : o.showScaleBar} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
+                        {isConfigure ? (
+                            <HiddenExportRenderers exportRemoteHostRef={exportRemoteHostRef} exportButtonHostRef={exportButtonHostRef} template={template} state={state} exportButton={exportButton} labelWidthMm={labelWidthMm} labelHeightMm={labelHeightMm} showScaleBar={isStickerSheet ? false : o.showScaleBar} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
+                        ) : null}
                     </>
                 )}
 
@@ -1538,7 +2111,7 @@ export default function App() {
                     }}
                 />
             </main>
-            {!isGallery && !isLegal && overlayRoot
+            {isConfigure && !isLegal && overlayRoot
                 ? createPortal(
                       <div className={`previewOverlay ${previewOpen ? "previewOverlay--open" : "previewOverlay--closed"}`} style={{ ["--preview-height" as string]: `${previewHeightVh}vh` }}>
                           {previewOpen ? (
@@ -1565,7 +2138,7 @@ export default function App() {
                       overlayRoot,
                   )
                 : null}
-            {!isGallery && !isLegal && overlayRoot && sendConfigOpen
+            {isConfigure && !isLegal && overlayRoot && sendConfigOpen
                 ? createPortal(
                       <div
                           className="sharePromptOverlay"
