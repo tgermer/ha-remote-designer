@@ -622,10 +622,7 @@ export default function App() {
                 buttons: draft.buttons,
                 previewElements: [],
                 cutoutElements: draft.cutouts,
-                links: [
-                    ...(draft.manufacturerUrl ? [{ label: "Manufacturer", url: draft.manufacturerUrl }] : []),
-                    ...(draft.imageUrl ? [{ label: "Image", url: draft.imageUrl }] : []),
-                ],
+                links: [...(draft.manufacturerUrl ? [{ label: "Manufacturer", url: draft.manufacturerUrl }] : []), ...(draft.imageUrl ? [{ label: "Image", url: draft.imageUrl }] : [])],
             } satisfies RemoteTemplate;
         });
     }, [communityDrafts]);
@@ -978,8 +975,7 @@ export default function App() {
         const buttons = communityDraft.buttons.map((button, index) => {
             const id = button.id.trim() || `button_${index + 1}`;
             const corners = button.r ?? {};
-            const hasCorner =
-                [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
+            const hasCorner = [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
             return {
                 id,
                 xMm: clampNumber(button.xMm, 0, 0, widthMm),
@@ -1012,8 +1008,7 @@ export default function App() {
                 } satisfies CutoutElement;
             }
             const corners = cutout.r ?? {};
-            const hasCorner =
-                [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
+            const hasCorner = [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
             return {
                 kind: "rect",
                 xMm: clampNumber(cutout.xMm, 0, 0, widthMm),
@@ -1047,10 +1042,7 @@ export default function App() {
             cornerMm,
             buttons,
             cutoutElements: cutouts,
-            links: [
-                ...(communityDraft.manufacturerUrl ? [{ label: "Manufacturer", url: communityDraft.manufacturerUrl }] : []),
-                ...(communityDraft.imageUrl ? [{ label: "Image", url: communityDraft.imageUrl }] : []),
-            ],
+            links: [...(communityDraft.manufacturerUrl ? [{ label: "Manufacturer", url: communityDraft.manufacturerUrl }] : []), ...(communityDraft.imageUrl ? [{ label: "Image", url: communityDraft.imageUrl }] : [])],
         };
     }, [communityDraft]);
 
@@ -1456,20 +1448,14 @@ export default function App() {
     const addCommunityCutoutRect = () => {
         setCommunityDraft((prev) => ({
             ...prev,
-            cutouts: [
-                ...prev.cutouts,
-                { kind: "rect", xMm: 4, yMm: 4, wMm: 10, hMm: 10, rMm: 0, stroke: "#6f6f6f", strokeWidthMm: 0.2 },
-            ],
+            cutouts: [...prev.cutouts, { kind: "rect", xMm: 4, yMm: 4, wMm: 10, hMm: 10, rMm: 0, stroke: "#6f6f6f", strokeWidthMm: 0.2 }],
         }));
     };
 
     const addCommunityCutoutCircle = () => {
         setCommunityDraft((prev) => ({
             ...prev,
-            cutouts: [
-                ...prev.cutouts,
-                { kind: "circle", cxMm: 10, cyMm: 10, rMm: 3, stroke: "#6f6f6f", strokeWidthMm: 0.2 },
-            ],
+            cutouts: [...prev.cutouts, { kind: "circle", cxMm: 10, cyMm: 10, rMm: 3, stroke: "#6f6f6f", strokeWidthMm: 0.2 }],
         }));
     };
 
@@ -1516,11 +1502,7 @@ export default function App() {
             const name = communityDraft.name.trim() || "Community Draft";
             let nextDrafts = [...prev];
             if (communitySelectedId) {
-                nextDrafts = nextDrafts.map((entry) =>
-                    entry.id === communitySelectedId
-                        ? { ...entry, name, draft: createCommunityDraft({ ...communityDraft, id: communitySelectedId }), updatedAt: now }
-                        : entry,
-                );
+                nextDrafts = nextDrafts.map((entry) => (entry.id === communitySelectedId ? { ...entry, name, draft: createCommunityDraft({ ...communityDraft, id: communitySelectedId }), updatedAt: now } : entry));
             } else {
                 const id = `community_${getRandomId()}`;
                 nextDrafts = [{ id, name, draft: createCommunityDraft({ ...communityDraft, id }), updatedAt: now }, ...nextDrafts];
@@ -1866,6 +1848,17 @@ export default function App() {
         const example = homeRemote.examples?.find((ex) => !isUserExample(ex) && ex.id === "home_automation");
         return example ? buildStateFromExample({ remoteId: homeRemote.id, example }) : null;
     }, [homeRemote]);
+    const problemRemote = useMemo(() => REMOTES.find((remote) => remote.id === "tuya_ts0044") ?? null, []);
+    const problemFactoryState = useMemo(() => {
+        if (!problemRemote) return null;
+        const example = problemRemote.examples?.find((ex) => !isUserExample(ex) && ex.id === "factory");
+        return example ? buildStateFromExample({ remoteId: problemRemote.id, example }) : null;
+    }, [problemRemote]);
+    const problemLayoutState = useMemo(() => {
+        if (!problemRemote) return null;
+        const example = problemRemote.examples?.find((ex) => !isUserExample(ex) && ex.id === "default");
+        return example ? buildStateFromExample({ remoteId: problemRemote.id, example }) : null;
+    }, [problemRemote]);
 
     return (
         <>
@@ -1939,6 +1932,9 @@ export default function App() {
                                     heroRemote={homeRemote}
                                     factoryState={homeFactoryState}
                                     automationState={homeAutomationState}
+                                    problemRemote={problemRemote}
+                                    problemFactoryState={problemFactoryState}
+                                    problemLayoutState={problemLayoutState}
                                 />
                             </div>
                         ) : null}
@@ -2096,9 +2092,7 @@ export default function App() {
                             />
                         ) : null}
 
-                        {isConfigure ? (
-                            <HiddenExportRenderers exportRemoteHostRef={exportRemoteHostRef} exportButtonHostRef={exportButtonHostRef} template={template} state={state} exportButton={exportButton} labelWidthMm={labelWidthMm} labelHeightMm={labelHeightMm} showScaleBar={isStickerSheet ? false : o.showScaleBar} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} />
-                        ) : null}
+                        {isConfigure ? <HiddenExportRenderers exportRemoteHostRef={exportRemoteHostRef} exportButtonHostRef={exportButtonHostRef} template={template} state={state} exportButton={exportButton} labelWidthMm={labelWidthMm} labelHeightMm={labelHeightMm} showScaleBar={isStickerSheet ? false : o.showScaleBar} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} /> : null}
                     </>
                 )}
 

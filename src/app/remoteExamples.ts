@@ -405,6 +405,26 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
     ],
     tuya_ts0044: [
         {
+            id: "factory",
+            name: "Groups & Scene",
+            description: "Single tap: group on/off on the left, scene on the right.",
+            tapsEnabled: ["single"],
+            buttonIcons: {},
+            options: {
+                showTapMarkersAlways: false,
+                showTapDividers: true,
+                showRemoteOutline: true,
+                showButtonOutlines: true,
+                showGuides: false,
+                autoIconSizing: true,
+                fixedIconMm: 6.5,
+                tapMarkerFill: "outline",
+                labelOutlineColor: "#464646",
+                labelOutlineStrokeMm: 0.2,
+                // showScaleBar: false, // meist nicht als Example speichern
+            },
+        },
+        {
             id: "default",
             name: "Groups & Scene",
             description: "Single tap: group on/off on the left, scene on the right.",
