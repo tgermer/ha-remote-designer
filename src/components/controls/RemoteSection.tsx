@@ -1,6 +1,8 @@
 import type { RemoteTemplate } from "../../app/remotes";
 import { UiIcon } from "../UiIcon";
 
+const COMMUNITY_PREVIEW_ID = "community_preview";
+
 type RemoteSectionProps = {
     remotes: RemoteTemplate[];
     remoteId: RemoteTemplate["id"];
@@ -8,6 +10,19 @@ type RemoteSectionProps = {
     onChangeRemote: (nextRemoteId: RemoteTemplate["id"]) => void;
     onResetRemote: () => void;
 };
+
+function formatRemoteOption(remote: RemoteTemplate) {
+    if (remote.id === COMMUNITY_PREVIEW_ID) {
+        return `${remote.name} (Editing)`;
+    }
+    if (remote.isCommunity) {
+        return `${remote.name} (Community Draft)`;
+    }
+    if (remote.isDraft) {
+        return `${remote.name} (Draft)`;
+    }
+    return remote.name;
+}
 
 export function RemoteSection(props: RemoteSectionProps) {
     const { remotes, remoteId, remoteImageUrl, onChangeRemote, onResetRemote } = props;
@@ -26,8 +41,7 @@ export function RemoteSection(props: RemoteSectionProps) {
                     <select value={remoteId} onChange={(e) => onChangeRemote(e.target.value as RemoteTemplate["id"])}>
                         {remotes.map((r) => (
                             <option key={r.id} value={r.id}>
-                                {r.id === "community_preview" ? `${r.name} (Editing)` : r.name}
-                                {r.isDraft && r.id !== "community_preview" ? " (Draft)" : ""}
+                                {formatRemoteOption(r)}
                             </option>
                         ))}
                     </select>
@@ -38,6 +52,11 @@ export function RemoteSection(props: RemoteSectionProps) {
             </div>
             {activeRemote?.productIds?.length ? <p className="modelRow__meta">Product IDs: {activeRemote.productIds.join(", ")}</p> : null}
             {activeRemote?.description ? <p className="modelRow__meta">{activeRemote.description}</p> : null}
+            {activeRemote?.notes ? (
+                <p className="modelRow__meta">
+                    <strong>Notes:</strong> {activeRemote.notes}
+                </p>
+            ) : null}
             {activeRemote?.links?.length ? (
                 <p className="modelRow__meta">
                     Links:{" "}

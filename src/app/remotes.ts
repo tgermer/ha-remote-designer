@@ -119,10 +119,34 @@ export type RemoteTemplate = {
 
     examples?: ExampleEntry[];
     defaultExampleId?: string;
+    notes?: string | null;
+    tags?: string[];
+    manufacturerUrl?: string | null;
+    imageUrl?: string | null;
+    appVersion?: string;
+};
+
+export type CommunityRemotePayload = {
+    template: RemoteTemplate;
+    notes?: string | null;
+    tags?: string[];
+    manufacturerUrl?: string | null;
+    imageUrl?: string | null;
+    appVersion?: string;
+};
+
+export type RemoteDefinition = RemoteTemplate | CommunityRemotePayload;
+
+export type RemoteMetadata = {
+    notes?: string | null;
+    tags?: string[];
+    manufacturerUrl?: string | null;
+    imageUrl?: string | null;
+    appVersion?: string;
 };
 
 // v2: placeholder values – measure and adjust later
-const BASE_REMOTES: RemoteTemplate[] = [
+const BASE_REMOTES: RemoteDefinition[] = [
     {
         id: "generic",
         name: "Generic Sticker Sheet",
@@ -289,9 +313,96 @@ const BASE_REMOTES: RemoteTemplate[] = [
         ],
         defaultExampleId: "default",
     },
+    {
+        template: {
+            id: "community_preview234",
+            name: "Test jetzt",
+            description: "Community submission (draft)",
+            isDraft: true,
+            isCommunity: true,
+            widthMm: 80,
+            heightMm: 60,
+            cornerMm: 4,
+            buttons: [
+                {
+                    id: "button_1",
+                    xMm: 4,
+                    yMm: 8,
+                    wMm: 32,
+                    hMm: 18,
+                    rMm: 2,
+                },
+                {
+                    id: "button_2",
+                    xMm: 4,
+                    yMm: 30,
+                    wMm: 32,
+                    hMm: 18,
+                    rMm: 2,
+                },
+            ],
+            cutoutElements: [],
+            previewElements: [],
+            links: [
+                {
+                    label: "Manufacturer",
+                    url: "https://bmw.de",
+                },
+                {
+                    label: "Image",
+                    url: "https://led-stores.de/images/product/2327-Tuya-Langaton-painike-2-osainen-valkoinen-1736888089-Tuya-P2OS-W.png",
+                },
+            ],
+        },
+        notes: "asfdv af asdg",
+        tags: ["community"],
+        manufacturerUrl: "https://bmw.de",
+        imageUrl: "https://led-stores.de/images/product/2327-Tuya-Langaton-painike-2-osainen-valkoinen-1736888089-Tuya-P2OS-W.png",
+        appVersion: "dev",
+    },
 ];
 
-export const REMOTES: RemoteTemplate[] = BASE_REMOTES.map((remote) => {
+const metadataMap = new Map<RemoteId, RemoteMetadata>();
+
+const normalizeRemote = (definition: RemoteDefinition): RemoteTemplate => {
+    if ("template" in definition) {
+        const { template, notes, tags, manufacturerUrl, imageUrl, appVersion } = definition;
+        const entries: RemoteMetadata = {};
+        const remote: RemoteTemplate = { ...template };
+
+        if (notes !== undefined) {
+            remote.notes = notes;
+            entries.notes = notes;
+        }
+        if (tags !== undefined) {
+            remote.tags = tags;
+            entries.tags = tags;
+        }
+        if (manufacturerUrl !== undefined) {
+            remote.manufacturerUrl = manufacturerUrl;
+            entries.manufacturerUrl = manufacturerUrl;
+        }
+        if (imageUrl !== undefined) {
+            remote.imageUrl = imageUrl;
+            entries.imageUrl = imageUrl;
+        }
+        if (appVersion !== undefined) {
+            remote.appVersion = appVersion;
+            entries.appVersion = appVersion;
+        }
+
+        if (Object.keys(entries).length) {
+            metadataMap.set(remote.id, entries);
+        }
+        return remote;
+    }
+    return definition;
+};
+
+export const REMOTES: RemoteTemplate[] = BASE_REMOTES.map((definition) => {
+    const remote = normalizeRemote(definition);
     const examples = REMOTE_EXAMPLES[remote.id];
     return examples ? { ...remote, examples } : remote;
 });
+
+export const REMOTE_METADATA_BY_ID = metadataMap;

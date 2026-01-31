@@ -2,8 +2,8 @@ import { useMemo, useState, useEffect, useRef, useSyncExternalStore, useCallback
 import { createPortal } from "react-dom";
 import "./App.css";
 
-import { type DesignOptions, type DesignState, type TapType } from "./app/types";
-import { REMOTES, isUserExample, type ButtonDef, type CornerRadiiMm, type CutoutElement, type ExampleEntry, type RemoteExample, type RemoteTemplate } from "./app/remotes";
+import { type DesignState, type TapType } from "./app/types";
+import { REMOTES, isUserExample, type CutoutElement, type RemoteTemplate } from "./app/remotes";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
 import { TopNav } from "./components/TopNav";
@@ -36,7 +36,24 @@ import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "./app/sticker
 
 import { FEATURES } from "./app/featureFlags";
 import { getHueIconsLoadedSnapshot, preloadHueIcons, subscribeHueIcons } from "./hue/hueIcons";
-import { getFullMdiLoadedSnapshot, isMdiInHomeSet, preloadFullMdi, subscribeFullMdi } from "./app/mdi";
+import { getFullMdiLoadedSnapshot, preloadFullMdi, subscribeFullMdi } from "./app/mdi";
+import {
+    initial,
+    normalizeState,
+    buildStateFromExample,
+    tapLabel,
+    stateUsesHueIcons,
+    remotesUseHueIcons,
+    stateUsesFullMdi,
+    remotesUseFullMdi,
+    type NormalizableState,
+} from "./app/stateUtils";
+import {
+    createCommunityDraft,
+    buildCommunityTemplate,
+    buildCommunityPayload,
+} from "./app/communityUtils";
+import type { CommunityButtonDraft, CommunityDraft, CommunityDraftEntry } from "./app/communityUtils";
 
 import JSZip from "jszip";
 import { init as plausibleInit, track as plausibleTrack } from "@plausible-analytics/tracker";
@@ -103,6 +120,13 @@ function getRandomId() {
     return `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+function createCommunityRemoteId() {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+        return `community_${crypto.randomUUID()}`;
+    }
+    return `community_${getRandomId()}`;
+}
+
 function getIconSetName(icon: string) {
     const idx = icon.indexOf(":");
     if (idx > 0) return icon.slice(0, idx);
@@ -114,38 +138,6 @@ function getIconName(icon: string) {
     if (idx > 0) return icon.slice(idx + 1);
     return icon;
 }
-
-/* ----------------------------- initial state ----------------------------- */
-
-const initial: DesignState = {
-    remoteId: "hue_dimmer_v1",
-    tapsEnabled: ["single"],
-    buttonConfigs: {},
-    options: {
-        showTapMarkersAlways: true,
-        showTapDividers: true,
-        showRemoteOutline: true,
-        showButtonOutlines: true,
-        showCutouts: true,
-        showGuides: false,
-        showScaleBar: true,
-        autoIconSizing: true,
-        fixedIconMm: 8,
-        iconColor: "#000000",
-        tapMarkerFill: "outline",
-        tapMarkerColorMode: "icon",
-        labelOutlineColor: "#ccc",
-        labelOutlineStrokeMm: 0.1,
-        labelWidthMm: 40,
-        labelHeightMm: 30,
-        labelCornerMm: 2,
-        labelCount: 6,
-        sheetSize: "A4",
-        sheetMarginXMm: 8,
-        sheetMarginYMm: 8,
-        sheetGapMm: 3,
-    },
-};
 
 const LEGAL_CONTACT = {
     projectName: "Remote Label Designer for Home Automation",
@@ -196,77 +188,6 @@ const COMMUNITY_PREVIEW_ID = "community_preview";
 const COMMUNITY_DRAFTS_KEY = "ha-remote-designer:saved-community-drafts:v1";
 
 /* ------------------------------- helpers -------------------------------- */
-
-type NormalizableState = Omit<Partial<DesignState>, "options"> & { options?: Partial<DesignOptions> };
-type CommunityButtonDraft = ButtonDef & { r?: CornerRadiiMm };
-
-type CommunityDraft = {
-    id?: string;
-    name: string;
-    widthMm: number;
-    heightMm: number;
-    cornerMm: number;
-    manufacturerUrl: string;
-    imageUrl: string;
-    notes: string;
-    tags: string[];
-    buttons: CommunityButtonDraft[];
-    cutouts: CutoutElement[];
-};
-
-type CommunityDraftEntry = {
-    id: string;
-    name: string;
-    draft: CommunityDraft;
-    updatedAt: number;
-};
-
-function normalizeState(input: NormalizableState, remotes: RemoteTemplate[] = REMOTES): DesignState {
-    const fallbackRemoteId: DesignState["remoteId"] = remotes[0]?.id ?? initial.remoteId;
-    const nextRemoteId: DesignState["remoteId"] = input.remoteId && remotes.some((r) => r.id === input.remoteId) ? input.remoteId : fallbackRemoteId;
-    const mergedOptions = {
-        ...initial.options,
-        ...(input.options ?? {}),
-    };
-
-    const clampNumber = (value: unknown, fallback: number, min?: number, max?: number) => {
-        const n = typeof value === "number" ? value : Number(value);
-        if (!Number.isFinite(n)) return fallback;
-        if (typeof min === "number" && n < min) return min;
-        if (typeof max === "number" && n > max) return max;
-        return n;
-    };
-
-    return {
-        ...initial,
-        ...input,
-        remoteId: nextRemoteId,
-        tapsEnabled: Array.isArray(input.tapsEnabled) && input.tapsEnabled.length ? input.tapsEnabled : initial.tapsEnabled,
-        buttonConfigs: input.buttonConfigs ?? {},
-        options: {
-            ...mergedOptions,
-            fixedIconMm: clampNumber(mergedOptions.fixedIconMm, initial.options.fixedIconMm, 1),
-            labelOutlineStrokeMm: clampNumber(mergedOptions.labelOutlineStrokeMm, initial.options.labelOutlineStrokeMm, 0),
-            labelWidthMm: clampNumber(mergedOptions.labelWidthMm, initial.options.labelWidthMm, 1),
-            labelHeightMm: clampNumber(mergedOptions.labelHeightMm, initial.options.labelHeightMm, 1),
-            labelCornerMm: clampNumber(mergedOptions.labelCornerMm, initial.options.labelCornerMm, 0),
-            labelCount: Math.max(1, Math.floor(clampNumber(mergedOptions.labelCount, initial.options.labelCount, 1))),
-            sheetSize: mergedOptions.sheetSize === "Letter" ? "Letter" : "A4",
-            sheetMarginXMm: clampNumber(mergedOptions.sheetMarginXMm, initial.options.sheetMarginXMm, 0),
-            sheetMarginYMm: clampNumber(mergedOptions.sheetMarginYMm, initial.options.sheetMarginYMm, 0),
-            sheetGapMm: clampNumber(mergedOptions.sheetGapMm, initial.options.sheetGapMm, 0),
-            tapMarkerFill: mergedOptions.tapMarkerFill === "filled" ? "filled" : "outline",
-            tapMarkerColorMode: mergedOptions.tapMarkerColorMode === "icon" ? "icon" : "black",
-            iconColor: typeof mergedOptions.iconColor === "string" ? mergedOptions.iconColor : initial.options.iconColor,
-        },
-    };
-}
-
-function tapLabel(t: TapType) {
-    if (t === "single") return "Tap";
-    if (t === "double") return "Double Tap";
-    return "Long Press";
-}
 
 function nextFrame() {
     return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
@@ -347,166 +268,6 @@ function writeCommunityDrafts(drafts: CommunityDraftEntry[]) {
     } catch {
         // ignore storage errors
     }
-}
-
-function createCommunityDraft(overrides?: Partial<CommunityDraft>): CommunityDraft {
-    return {
-        name: "",
-        widthMm: 40,
-        heightMm: 120,
-        cornerMm: 4,
-        manufacturerUrl: "",
-        imageUrl: "",
-        notes: "",
-        tags: ["community"],
-        buttons: [
-            { id: "button_1", xMm: 4, yMm: 8, wMm: 32, hMm: 18, rMm: 2 },
-            { id: "button_2", xMm: 4, yMm: 30, wMm: 32, hMm: 18, rMm: 2 },
-        ],
-        cutouts: [],
-        ...overrides,
-    };
-}
-
-function buildStateFromExample(params: { remoteId: RemoteTemplate["id"]; example: ExampleEntry }): DesignState {
-    const { remoteId, example } = params;
-
-    if (isUserExample(example)) {
-        return normalizeState({ ...example.state, remoteId });
-    }
-
-    // Start from app defaults for consistent behaviour
-    const base: DesignState = {
-        ...initial,
-        remoteId,
-        tapsEnabled: Array.isArray(example?.tapsEnabled) && example.tapsEnabled.length ? example.tapsEnabled : ["single"],
-        buttonConfigs: {},
-        options: { ...initial.options },
-    };
-
-    // Apply example icons (+ strike/colors/fill)
-    if (example?.buttonIcons) {
-        for (const [buttonId, iconsByTap] of Object.entries(example.buttonIcons) as [string, RemoteExample["buttonIcons"][string]][]) {
-            const id = String(buttonId);
-            const iconColors = example?.buttonIconColors?.[id] ?? {};
-            const buttonFill = example?.buttonFill?.[id];
-            base.buttonConfigs[id] = {
-                icons: { ...iconsByTap },
-                strike: { ...(example?.buttonStrike?.[id] ?? {}) },
-                iconColors: { ...iconColors },
-                buttonFill,
-            };
-        }
-    }
-
-    // Apply strikes even for buttons that have no icons in the example
-    if (example?.buttonStrike) {
-        for (const [buttonId, strikeByTap] of Object.entries(example.buttonStrike) as [string, NonNullable<RemoteExample["buttonStrike"]>[string]][]) {
-            const id = String(buttonId);
-            const prev = base.buttonConfigs[id] ?? { icons: {} };
-            base.buttonConfigs[id] = {
-                ...prev,
-                strike: { ...(prev.strike ?? {}), ...strikeByTap },
-            };
-        }
-    }
-
-    // Apply icon colors even for buttons that have no icons in the example
-    if (example?.buttonIconColors) {
-        for (const [buttonId, colorsByTap] of Object.entries(example.buttonIconColors) as [string, NonNullable<RemoteExample["buttonIconColors"]>[string]][]) {
-            const id = String(buttonId);
-            const prev = base.buttonConfigs[id] ?? { icons: {} };
-            base.buttonConfigs[id] = {
-                ...prev,
-                iconColors: { ...(prev.iconColors ?? {}), ...colorsByTap },
-            };
-        }
-    }
-
-    if (example?.buttonFill) {
-        for (const [buttonId, fill] of Object.entries(example.buttonFill) as [string, NonNullable<RemoteExample["buttonFill"]>[string]][]) {
-            const id = String(buttonId);
-            if (typeof fill !== "string" || !fill) continue;
-            const prev = base.buttonConfigs[id] ?? { icons: {} };
-            base.buttonConfigs[id] = {
-                ...prev,
-                buttonFill: fill,
-            };
-        }
-    }
-
-    // Apply example-specific options (if any)
-    if (example?.options) {
-        base.options = { ...base.options, ...example.options };
-    }
-
-    // Sensible defaults ONLY if the example did not specify them
-    if (example?.options?.showTapMarkersAlways === undefined) {
-        base.options.showTapMarkersAlways = true;
-    }
-    if (example?.options?.showTapDividers === undefined) {
-        base.options.showTapDividers = (base.tapsEnabled?.length ?? 0) > 1;
-    }
-
-    return base;
-}
-
-function stateUsesHueIcons(state: NormalizableState) {
-    const buttonConfigs = state.buttonConfigs ?? {};
-    for (const cfg of Object.values(buttonConfigs)) {
-        const icons = cfg?.icons ?? {};
-        for (const icon of Object.values(icons)) {
-            if (typeof icon === "string" && icon.startsWith("hue:")) return true;
-        }
-    }
-    return false;
-}
-
-function remotesUseHueIcons(remotes: RemoteTemplate[]) {
-    for (const remote of remotes) {
-        const examples = remote.examples ?? [];
-        for (const ex of examples) {
-            if (isUserExample(ex)) {
-                if (stateUsesHueIcons(ex.state)) return true;
-                continue;
-            }
-            for (const iconsByTap of Object.values(ex.buttonIcons)) {
-                for (const icon of Object.values(iconsByTap)) {
-                    if (typeof icon === "string" && icon.startsWith("hue:")) return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
-function stateUsesFullMdi(state: NormalizableState) {
-    const buttonConfigs = state.buttonConfigs ?? {};
-    for (const cfg of Object.values(buttonConfigs)) {
-        const icons = cfg?.icons ?? {};
-        for (const icon of Object.values(icons)) {
-            if (typeof icon === "string" && icon.startsWith("mdi:") && !isMdiInHomeSet(icon)) return true;
-        }
-    }
-    return false;
-}
-
-function remotesUseFullMdi(remotes: RemoteTemplate[]) {
-    for (const remote of remotes) {
-        const examples = remote.examples ?? [];
-        for (const ex of examples) {
-            if (isUserExample(ex)) {
-                if (stateUsesFullMdi(ex.state)) return true;
-                continue;
-            }
-            for (const iconsByTap of Object.values(ex.buttonIcons)) {
-                for (const icon of Object.values(iconsByTap)) {
-                    if (typeof icon === "string" && icon.startsWith("mdi:") && !isMdiInHomeSet(icon)) return true;
-                }
-            }
-        }
-    }
-    return false;
 }
 
 /* --------------------------------- App ---------------------------------- */
@@ -625,91 +386,16 @@ export default function App() {
         });
     }, [communityDrafts]);
 
-    const clampNumber = (value: unknown, fallback: number, min?: number, max?: number) => {
-        const n = typeof value === "number" ? value : Number(value);
-        if (!Number.isFinite(n)) return fallback;
-        if (typeof min === "number" && n < min) return min;
-        if (typeof max === "number" && n > max) return max;
-        return n;
-    };
-
     const communityTemplate = useMemo<RemoteTemplate>(() => {
-        const widthMm = clampNumber(communityDraft.widthMm, 40, 1, 500);
-        const heightMm = clampNumber(communityDraft.heightMm, 120, 1, 500);
-        const cornerMm = clampNumber(communityDraft.cornerMm, 0, 0, 100);
-        const buttons = communityDraft.buttons.map((button, index) => {
-            const id = button.id.trim() || `button_${index + 1}`;
-            const corners = button.r ?? {};
-            const hasCorner = [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
-            return {
-                id,
-                xMm: clampNumber(button.xMm, 0, 0, widthMm),
-                yMm: clampNumber(button.yMm, 0, 0, heightMm),
-                wMm: clampNumber(button.wMm, 10, 1, widthMm),
-                hMm: clampNumber(button.hMm, 10, 1, heightMm),
-                rMm: hasCorner ? undefined : clampNumber(button.rMm ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                r: hasCorner
-                    ? {
-                          tl: clampNumber(corners.tl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          tr: clampNumber(corners.tr ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          br: clampNumber(corners.br ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          bl: clampNumber(corners.bl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                      }
-                    : undefined,
-            };
-        });
-
-        const cutouts = communityDraft.cutouts.map((cutout) => {
-            if (cutout.kind === "circle") {
-                return {
-                    kind: "circle",
-                    cxMm: clampNumber(cutout.cxMm, 0, 0, widthMm),
-                    cyMm: clampNumber(cutout.cyMm, 0, 0, heightMm),
-                    rMm: clampNumber(cutout.rMm, 1, 0, Math.min(widthMm, heightMm)),
-                    fill: cutout.fill,
-                    stroke: cutout.stroke,
-                    strokeWidthMm: clampNumber(cutout.strokeWidthMm ?? 0.2, 0.2, 0, 5),
-                    opacity: cutout.opacity,
-                } satisfies CutoutElement;
-            }
-            const corners = cutout.r ?? {};
-            const hasCorner = [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
-            return {
-                kind: "rect",
-                xMm: clampNumber(cutout.xMm, 0, 0, widthMm),
-                yMm: clampNumber(cutout.yMm, 0, 0, heightMm),
-                wMm: clampNumber(cutout.wMm, 1, 0, widthMm),
-                hMm: clampNumber(cutout.hMm, 1, 0, heightMm),
-                rMm: hasCorner ? undefined : clampNumber(cutout.rMm ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                r: hasCorner
-                    ? {
-                          tl: clampNumber(corners.tl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          tr: clampNumber(corners.tr ?? 0, 0, Math.min(widthMm, heightMm)),
-                          br: clampNumber(corners.br ?? 0, 0, Math.min(widthMm, heightMm)),
-                          bl: clampNumber(corners.bl ?? 0, 0, Math.min(widthMm, heightMm)),
-                      }
-                    : undefined,
-                fill: cutout.fill,
-                stroke: cutout.stroke,
-                strokeWidthMm: clampNumber(cutout.strokeWidthMm ?? 0.2, 0.2, 0, 5),
-                opacity: cutout.opacity,
-            } satisfies CutoutElement;
-        });
-
-        return {
-            id: COMMUNITY_PREVIEW_ID,
-            name: communityDraft.name.trim() || "Community Remote",
-            description: "Community submission (draft)",
-            isDraft: true,
-            isCommunity: true,
-            widthMm,
-            heightMm,
-            cornerMm,
-            buttons,
-            cutoutElements: cutouts,
-            links: [...(communityDraft.manufacturerUrl ? [{ label: "Manufacturer", url: communityDraft.manufacturerUrl }] : []), ...(communityDraft.imageUrl ? [{ label: "Image", url: communityDraft.imageUrl }] : [])],
-        } as RemoteTemplate;
+        const template = buildCommunityTemplate(communityDraft);
+        template.notes = communityDraft.notes.trim() || null;
+        template.tags = communityDraft.tags;
+        template.manufacturerUrl = communityDraft.manufacturerUrl || null;
+        template.imageUrl = communityDraft.imageUrl || null;
+        template.appVersion = APP_VERSION;
+        return template;
     }, [communityDraft]);
+
 
     const remotes = useMemo(() => {
         const list = [...REMOTES, ...communityRemotes];
@@ -1045,17 +731,7 @@ export default function App() {
         return `mailto:${LEGAL_CONTACT.email}?subject=${encodeURIComponent(SHARE_MAIL_SUBJECT)}&body=${encodeURIComponent(body)}`;
     };
 
-    const communityPayload = useMemo(
-        () => ({
-            template: communityTemplate,
-            notes: communityDraft.notes.trim() || null,
-            tags: communityDraft.tags,
-            manufacturerUrl: communityDraft.manufacturerUrl || null,
-            imageUrl: communityDraft.imageUrl || null,
-            appVersion: APP_VERSION,
-        }),
-        [communityTemplate, communityDraft.notes, communityDraft.tags, communityDraft.manufacturerUrl, communityDraft.imageUrl],
-    );
+    const communityPayload = useMemo(() => buildCommunityPayload(communityDraft, communityTemplate, APP_VERSION), [communityDraft, communityTemplate]);
     const communityDraftSig = useMemo(() => JSON.stringify(communityDraft), [communityDraft]);
     const communitySavedSig = useMemo(() => {
         if (!communitySelectedId) return "";
@@ -1498,7 +1174,7 @@ export default function App() {
             if (communitySelectedId) {
                 nextDrafts = nextDrafts.map((entry) => (entry.id === communitySelectedId ? { ...entry, name, draft: createCommunityDraft({ ...communityDraft, id: communitySelectedId }), updatedAt: now } : entry));
             } else {
-                const id = `community_${getRandomId()}`;
+                const id = createCommunityRemoteId();
                 nextDrafts = [{ id, name, draft: createCommunityDraft({ ...communityDraft, id }), updatedAt: now }, ...nextDrafts];
                 setCommunitySelectedId(id);
             }
