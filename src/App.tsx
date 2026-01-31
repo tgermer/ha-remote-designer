@@ -621,9 +621,95 @@ export default function App() {
                 previewElements: [],
                 cutoutElements: draft.cutouts,
                 links: [...(draft.manufacturerUrl ? [{ label: "Manufacturer", url: draft.manufacturerUrl }] : []), ...(draft.imageUrl ? [{ label: "Image", url: draft.imageUrl }] : [])],
-            } satisfies RemoteTemplate;
+            } as RemoteTemplate;
         });
     }, [communityDrafts]);
+
+    const clampNumber = (value: unknown, fallback: number, min?: number, max?: number) => {
+        const n = typeof value === "number" ? value : Number(value);
+        if (!Number.isFinite(n)) return fallback;
+        if (typeof min === "number" && n < min) return min;
+        if (typeof max === "number" && n > max) return max;
+        return n;
+    };
+
+    const communityTemplate = useMemo<RemoteTemplate>(() => {
+        const widthMm = clampNumber(communityDraft.widthMm, 40, 1, 500);
+        const heightMm = clampNumber(communityDraft.heightMm, 120, 1, 500);
+        const cornerMm = clampNumber(communityDraft.cornerMm, 0, 0, 100);
+        const buttons = communityDraft.buttons.map((button, index) => {
+            const id = button.id.trim() || `button_${index + 1}`;
+            const corners = button.r ?? {};
+            const hasCorner = [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
+            return {
+                id,
+                xMm: clampNumber(button.xMm, 0, 0, widthMm),
+                yMm: clampNumber(button.yMm, 0, 0, heightMm),
+                wMm: clampNumber(button.wMm, 10, 1, widthMm),
+                hMm: clampNumber(button.hMm, 10, 1, heightMm),
+                rMm: hasCorner ? undefined : clampNumber(button.rMm ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                r: hasCorner
+                    ? {
+                          tl: clampNumber(corners.tl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          tr: clampNumber(corners.tr ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          br: clampNumber(corners.br ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          bl: clampNumber(corners.bl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                      }
+                    : undefined,
+            };
+        });
+
+        const cutouts = communityDraft.cutouts.map((cutout) => {
+            if (cutout.kind === "circle") {
+                return {
+                    kind: "circle",
+                    cxMm: clampNumber(cutout.cxMm, 0, 0, widthMm),
+                    cyMm: clampNumber(cutout.cyMm, 0, 0, heightMm),
+                    rMm: clampNumber(cutout.rMm, 1, 0, Math.min(widthMm, heightMm)),
+                    fill: cutout.fill,
+                    stroke: cutout.stroke,
+                    strokeWidthMm: clampNumber(cutout.strokeWidthMm ?? 0.2, 0.2, 0, 5),
+                    opacity: cutout.opacity,
+                } satisfies CutoutElement;
+            }
+            const corners = cutout.r ?? {};
+            const hasCorner = [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
+            return {
+                kind: "rect",
+                xMm: clampNumber(cutout.xMm, 0, 0, widthMm),
+                yMm: clampNumber(cutout.yMm, 0, 0, heightMm),
+                wMm: clampNumber(cutout.wMm, 1, 0, widthMm),
+                hMm: clampNumber(cutout.hMm, 1, 0, heightMm),
+                rMm: hasCorner ? undefined : clampNumber(cutout.rMm ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                r: hasCorner
+                    ? {
+                          tl: clampNumber(corners.tl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
+                          tr: clampNumber(corners.tr ?? 0, 0, Math.min(widthMm, heightMm)),
+                          br: clampNumber(corners.br ?? 0, 0, Math.min(widthMm, heightMm)),
+                          bl: clampNumber(corners.bl ?? 0, 0, Math.min(widthMm, heightMm)),
+                      }
+                    : undefined,
+                fill: cutout.fill,
+                stroke: cutout.stroke,
+                strokeWidthMm: clampNumber(cutout.strokeWidthMm ?? 0.2, 0.2, 0, 5),
+                opacity: cutout.opacity,
+            } satisfies CutoutElement;
+        });
+
+        return {
+            id: COMMUNITY_PREVIEW_ID,
+            name: communityDraft.name.trim() || "Community Remote",
+            description: "Community submission (draft)",
+            isDraft: true,
+            isCommunity: true,
+            widthMm,
+            heightMm,
+            cornerMm,
+            buttons,
+            cutoutElements: cutouts,
+            links: [...(communityDraft.manufacturerUrl ? [{ label: "Manufacturer", url: communityDraft.manufacturerUrl }] : []), ...(communityDraft.imageUrl ? [{ label: "Image", url: communityDraft.imageUrl }] : [])],
+        } as RemoteTemplate;
+    }, [communityDraft]);
 
     const remotes = useMemo(() => {
         const list = [...REMOTES, ...communityRemotes];
@@ -958,92 +1044,6 @@ export default function App() {
         const body = SHARE_MAIL_BODY_TEMPLATE.replace("{url}", params.url).replace("{config}", params.configCode).replace("{galleryConsent}", params.galleryConsent).replace("{remoteName}", params.remoteName).replace("{remoteId}", params.remoteId).replace("{savedId}", params.savedId);
         return `mailto:${LEGAL_CONTACT.email}?subject=${encodeURIComponent(SHARE_MAIL_SUBJECT)}&body=${encodeURIComponent(body)}`;
     };
-
-    const clampNumber = (value: unknown, fallback: number, min?: number, max?: number) => {
-        const n = typeof value === "number" ? value : Number(value);
-        if (!Number.isFinite(n)) return fallback;
-        if (typeof min === "number" && n < min) return min;
-        if (typeof max === "number" && n > max) return max;
-        return n;
-    };
-
-    const communityTemplate = useMemo<RemoteTemplate>(() => {
-        const widthMm = clampNumber(communityDraft.widthMm, 40, 1, 500);
-        const heightMm = clampNumber(communityDraft.heightMm, 120, 1, 500);
-        const cornerMm = clampNumber(communityDraft.cornerMm, 0, 0, 100);
-        const buttons = communityDraft.buttons.map((button, index) => {
-            const id = button.id.trim() || `button_${index + 1}`;
-            const corners = button.r ?? {};
-            const hasCorner = [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
-            return {
-                id,
-                xMm: clampNumber(button.xMm, 0, 0, widthMm),
-                yMm: clampNumber(button.yMm, 0, 0, heightMm),
-                wMm: clampNumber(button.wMm, 10, 1, widthMm),
-                hMm: clampNumber(button.hMm, 10, 1, heightMm),
-                rMm: hasCorner ? undefined : clampNumber(button.rMm ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                r: hasCorner
-                    ? {
-                          tl: clampNumber(corners.tl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          tr: clampNumber(corners.tr ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          br: clampNumber(corners.br ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          bl: clampNumber(corners.bl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                      }
-                    : undefined,
-            };
-        });
-
-        const cutouts = communityDraft.cutouts.map((cutout) => {
-            if (cutout.kind === "circle") {
-                return {
-                    kind: "circle",
-                    cxMm: clampNumber(cutout.cxMm, 0, 0, widthMm),
-                    cyMm: clampNumber(cutout.cyMm, 0, 0, heightMm),
-                    rMm: clampNumber(cutout.rMm, 1, 0, Math.min(widthMm, heightMm)),
-                    fill: cutout.fill,
-                    stroke: cutout.stroke,
-                    strokeWidthMm: clampNumber(cutout.strokeWidthMm ?? 0.2, 0.2, 0, 5),
-                    opacity: cutout.opacity,
-                } satisfies CutoutElement;
-            }
-            const corners = cutout.r ?? {};
-            const hasCorner = [corners.tl, corners.tr, corners.br, corners.bl].some((value) => typeof value === "number" && value > 0);
-            return {
-                kind: "rect",
-                xMm: clampNumber(cutout.xMm, 0, 0, widthMm),
-                yMm: clampNumber(cutout.yMm, 0, 0, heightMm),
-                wMm: clampNumber(cutout.wMm, 1, 0, widthMm),
-                hMm: clampNumber(cutout.hMm, 1, 0, heightMm),
-                rMm: hasCorner ? undefined : clampNumber(cutout.rMm ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                r: hasCorner
-                    ? {
-                          tl: clampNumber(corners.tl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          tr: clampNumber(corners.tr ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          br: clampNumber(corners.br ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                          bl: clampNumber(corners.bl ?? 0, 0, 0, Math.min(widthMm, heightMm)),
-                      }
-                    : undefined,
-                fill: cutout.fill,
-                stroke: cutout.stroke,
-                strokeWidthMm: clampNumber(cutout.strokeWidthMm ?? 0.2, 0.2, 0, 5),
-                opacity: cutout.opacity,
-            } satisfies CutoutElement;
-        });
-
-        return {
-            id: COMMUNITY_PREVIEW_ID,
-            name: communityDraft.name.trim() || "Community Remote",
-            description: "Community submission (draft)",
-            isDraft: true,
-            isCommunity: true,
-            widthMm,
-            heightMm,
-            cornerMm,
-            buttons,
-            cutoutElements: cutouts,
-            links: [...(communityDraft.manufacturerUrl ? [{ label: "Manufacturer", url: communityDraft.manufacturerUrl }] : []), ...(communityDraft.imageUrl ? [{ label: "Image", url: communityDraft.imageUrl }] : [])],
-        };
-    }, [communityDraft]);
 
     const communityPayload = useMemo(
         () => ({

@@ -153,63 +153,65 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
 
     useEffect(() => {
         const onMove = (event: PointerEvent) => {
-            if (!dragRef.current) return;
+            const dragState = dragRef.current;
+            if (!dragState) return;
             const coords = clientToMm(event);
             if (!coords) return;
             const { x, y } = coords;
-            if (dragRef.current.kind === "move-button") {
-                const idx = draft.buttons.findIndex((button) => button.id === dragRef.current?.buttonId);
+            if (dragState.kind === "move-button") {
+                const buttonId = dragState.buttonId;
+                const idx = draft.buttons.findIndex((button) => button.id === buttonId);
                 if (idx < 0) return;
                 const button = draft.buttons[idx];
-                const nextX = Math.max(0, Math.min(template.widthMm - button.wMm, x - dragRef.current.offsetX));
-                const nextY = Math.max(0, Math.min(template.heightMm - button.hMm, y - dragRef.current.offsetY));
+                const nextX = Math.max(0, Math.min(template.widthMm - button.wMm, x - dragState.offsetX));
+                const nextY = Math.max(0, Math.min(template.heightMm - button.hMm, y - dragState.offsetY));
                 onUpdateButton(idx, { xMm: Number(nextX.toFixed(2)), yMm: Number(nextY.toFixed(2)) });
                 return;
             }
-            if (dragRef.current.kind === "resize-button") {
-                const idx = draft.buttons.findIndex((button) => button.id === dragRef.current?.buttonId);
+            if (dragState.kind === "resize-button") {
+                const buttonId = dragState.buttonId;
+                const idx = draft.buttons.findIndex((button) => button.id === buttonId);
                 if (idx < 0) return;
-                const button = draft.buttons[idx];
-                const maxW = template.widthMm - dragRef.current.startX;
-                const maxH = template.heightMm - dragRef.current.startY;
-                const nextW = dragRef.current.handle === "e" || dragRef.current.handle === "se" ? Math.max(2, Math.min(maxW, x - dragRef.current.startX)) : dragRef.current.startW;
-                const nextH = dragRef.current.handle === "s" || dragRef.current.handle === "se" ? Math.max(2, Math.min(maxH, y - dragRef.current.startY)) : dragRef.current.startH;
+                const maxW = template.widthMm - dragState.startX;
+                const maxH = template.heightMm - dragState.startY;
+                const nextW = dragState.handle === "e" || dragState.handle === "se" ? Math.max(2, Math.min(maxW, x - dragState.startX)) : dragState.startW;
+                const nextH = dragState.handle === "s" || dragState.handle === "se" ? Math.max(2, Math.min(maxH, y - dragState.startY)) : dragState.startH;
                 onUpdateButton(idx, { wMm: Number(nextW.toFixed(2)), hMm: Number(nextH.toFixed(2)) });
                 return;
             }
-            if (dragRef.current.kind === "move-cutout") {
-                const cutout = draft.cutouts[dragRef.current.index];
+            if (dragState.kind === "move-cutout") {
+                const cutout = draft.cutouts[dragState.index];
                 if (!cutout) return;
                 if (cutout.kind === "circle") {
-                    const nextCx = Math.max(0, Math.min(template.widthMm, x - dragRef.current.offsetX));
-                    const nextCy = Math.max(0, Math.min(template.heightMm, y - dragRef.current.offsetY));
-                    onUpdateCutout(dragRef.current.index, { ...cutout, cxMm: Number(nextCx.toFixed(2)), cyMm: Number(nextCy.toFixed(2)) });
+                    const nextCx = Math.max(0, Math.min(template.widthMm, x - dragState.offsetX));
+                    const nextCy = Math.max(0, Math.min(template.heightMm, y - dragState.offsetY));
+                    onUpdateCutout(dragState.index, { ...cutout, cxMm: Number(nextCx.toFixed(2)), cyMm: Number(nextCy.toFixed(2)) });
                     return;
                 }
-                const nextX = Math.max(0, Math.min(template.widthMm - cutout.wMm, x - dragRef.current.offsetX));
-                const nextY = Math.max(0, Math.min(template.heightMm - cutout.hMm, y - dragRef.current.offsetY));
-                onUpdateCutout(dragRef.current.index, { ...cutout, xMm: Number(nextX.toFixed(2)), yMm: Number(nextY.toFixed(2)) });
+                const nextX = Math.max(0, Math.min(template.widthMm - cutout.wMm, x - dragState.offsetX));
+                const nextY = Math.max(0, Math.min(template.heightMm - cutout.hMm, y - dragState.offsetY));
+                onUpdateCutout(dragState.index, { ...cutout, xMm: Number(nextX.toFixed(2)), yMm: Number(nextY.toFixed(2)) });
                 return;
             }
-            if (dragRef.current.kind === "resize-cutout-rect") {
-                const cutout = draft.cutouts[dragRef.current.index];
+            if (dragState.kind === "resize-cutout-rect") {
+                const cutout = draft.cutouts[dragState.index];
                 if (!cutout || cutout.kind !== "rect") return;
-                const maxW = template.widthMm - dragRef.current.startX;
-                const maxH = template.heightMm - dragRef.current.startY;
-                const nextW = dragRef.current.handle === "e" || dragRef.current.handle === "se" ? Math.max(1, Math.min(maxW, x - dragRef.current.startX)) : dragRef.current.startW;
-                const nextH = dragRef.current.handle === "s" || dragRef.current.handle === "se" ? Math.max(1, Math.min(maxH, y - dragRef.current.startY)) : dragRef.current.startH;
-                onUpdateCutout(dragRef.current.index, { ...cutout, wMm: Number(nextW.toFixed(2)), hMm: Number(nextH.toFixed(2)) });
+                const maxW = template.widthMm - dragState.startX;
+                const maxH = template.heightMm - dragState.startY;
+                const nextW = dragState.handle === "e" || dragState.handle === "se" ? Math.max(1, Math.min(maxW, x - dragState.startX)) : dragState.startW;
+                const nextH = dragState.handle === "s" || dragState.handle === "se" ? Math.max(1, Math.min(maxH, y - dragState.startY)) : dragState.startH;
+                onUpdateCutout(dragState.index, { ...cutout, wMm: Number(nextW.toFixed(2)), hMm: Number(nextH.toFixed(2)) });
                 return;
             }
-            if (dragRef.current.kind === "resize-cutout-circle") {
-                const cutout = draft.cutouts[dragRef.current.index];
+            if (dragState.kind === "resize-cutout-circle") {
+                const cutout = draft.cutouts[dragState.index];
                 if (!cutout || cutout.kind !== "circle") return;
-                const dx = x - dragRef.current.startCx;
-                const dy = y - dragRef.current.startCy;
+                const dx = x - dragState.startCx;
+                const dy = y - dragState.startCy;
                 const rawR = Math.hypot(dx, dy);
-                const maxR = Math.min(dragRef.current.startCx, dragRef.current.startCy, template.widthMm - dragRef.current.startCx, template.heightMm - dragRef.current.startCy);
+                const maxR = Math.min(dragState.startCx, dragState.startCy, template.widthMm - dragState.startCx, template.heightMm - dragState.startCy);
                 const nextR = Math.max(1, Math.min(maxR, rawR));
-                onUpdateCutout(dragRef.current.index, { ...cutout, rMm: Number(nextR.toFixed(2)) });
+                onUpdateCutout(dragState.index, { ...cutout, rMm: Number(nextR.toFixed(2)) });
             }
         };
         const onUp = (event: PointerEvent) => {

@@ -406,7 +406,7 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
     tuya_ts0044: [
         {
             id: "factory",
-            name: "Groups & Scene",
+            name: "Factory Remote",
             description: "Single tap: group on/off on the left, scene on the right.",
             tapsEnabled: ["single"],
             buttonIcons: {},
@@ -428,13 +428,21 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
             id: "default",
             name: "Groups & Scene",
             description: "Single tap: group on/off on the left, scene on the right.",
-            tapsEnabled: ["single"],
+            /* tapsEnabled: ["single"],
             buttonIcons: {
                 top_left: { single: "mdi:lightbulb-group" },
                 bottom_left: { single: "mdi:lightbulb-group-off-outline" },
                 top_right: { single: "mdi:palette" },
                 bottom_right: { single: "mdi:lightbulb-outline" },
+            }, */
+            tapsEnabled: ["single", "long"],
+            buttonIcons: {
+                top_left: { single: "mdi:lightbulb-auto", long: "mdi:lightbulb-on10" },
+                bottom_left: { single: "mdi:lightbulb-off" },
+                top_right: { single: "mdi:palette" },
+                bottom_right: { single: "mdi:roller-shade", long: "mdi:roller-shade-closed" },
             },
+
             options: {
                 showTapMarkersAlways: false,
                 showTapDividers: true,
