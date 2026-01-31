@@ -259,6 +259,11 @@ main {
   .topnav::before {
     display: none;
   }
+
+  .topnav__link:hover {
+  background: var(--accent);
+  color: white
+}
 }
 
 /* Pages */

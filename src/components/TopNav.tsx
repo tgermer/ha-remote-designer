@@ -30,10 +30,17 @@ export function TopNav(props: TopNavProps) {
     const [menuOpen, setMenuOpen] = useState(false);
     const navRef = useRef<HTMLElement | null>(null);
     const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+    const previousView = useRef(view);
     const [activeMetrics, setActiveMetrics] = useState({ left: 0, width: 0, ready: false });
 
     useEffect(() => {
-        if (!menuOpen) return;
+        if (previousView.current === view) {
+            return;
+        }
+        previousView.current = view;
+        if (!menuOpen) {
+            return;
+        }
         const handle = window.requestAnimationFrame(() => setMenuOpen(false));
         return () => window.cancelAnimationFrame(handle);
     }, [view, menuOpen]);
