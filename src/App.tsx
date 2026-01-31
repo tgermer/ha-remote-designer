@@ -231,6 +231,12 @@ function getViewHref(view: ViewKind) {
     return url.toString();
 }
 
+function getPlausiblePageLabel(view: ViewKind, legalPage: LegalPageState) {
+    if (legalPage === "impressum") return "legal:impressum";
+    if (legalPage === "datenschutz") return "legal:datenschutz";
+    return view;
+}
+
 function setUrlLegalPage(page: LegalPageState) {
     const url = new URL(window.location.href);
     if (page) url.searchParams.set("page", page);
@@ -354,7 +360,12 @@ export default function App() {
     useEffect(() => {
         if (!import.meta.env.PROD) return;
         if (!plausibleInitializedRef.current) return;
-        plausibleTrack("pageview", { url: window.location.href });
+        plausibleTrack("pageview", {
+            url: window.location.href,
+            props: {
+                page: getPlausiblePageLabel(view, legalPage),
+            },
+        });
     }, [view, legalPage]);
 
     useEffect(() => {
