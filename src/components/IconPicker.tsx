@@ -3,6 +3,7 @@ import { getMdiPath, getFullMdiLoadedSnapshot, isMdiInHomeSet, listFullMdiIcons,
 import { UiIcon } from "./UiIcon";
 import { FEATURES } from "../app/featureFlags";
 import { getHueIconsLoadedSnapshot, hasHueIcon, listHueIcons, preloadHueIcons, subscribeHueIcons } from "../hue/hueIcons";
+import { getPhuIconsLoadedSnapshot, hasPhuIcon, listPhuIcons, preloadPhuIcons, subscribePhuIcons } from "../phu/phuIcons";
 import { isSupportedHaIcon, renderHaIconAtMm } from "../render/renderHaIcon";
 
 function IconPreview({ icon }: { icon: string }) {
@@ -28,6 +29,15 @@ function IconPreview({ icon }: { icon: string }) {
         );
     }
 
+    if (t.startsWith("phu:")) {
+        if (!FEATURES.PHU_ICONS || !hasPhuIcon(t)) return <div className="iconpicker__previewFallback">?</div>;
+        return (
+            <svg width={22} height={22} viewBox="0 0 24 24" aria-label={t}>
+                {renderHaIconAtMm({ icon: t, cx: 12, cy: 12, iconMm: 24 })}
+            </svg>
+        );
+    }
+
     return <div className="iconpicker__previewFallback">?</div>;
 }
 
@@ -37,11 +47,12 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     const draftRef = useRef(draft);
 
     // Which browser panel is open: 'mdi' | 'hue' | null
-    const [browser, setBrowser] = useState<"mdi" | "hue" | null>(null);
+    const [browser, setBrowser] = useState<"mdi" | "hue" | "phu" | null>(null);
 
-    // MDI / Hue search queries
+    // MDI / Hue / Custom Brand search queries
     const [mdiQuery, setMdiQuery] = useState("");
     const [hueQuery, setHueQuery] = useState("");
+    const [phuQuery, setPhuQuery] = useState("");
 
     // Keep all browsers closed on initial page load. Only auto-open after user interaction.
     const [hasInteracted, setHasInteracted] = useState(false);
@@ -49,7 +60,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
     // Unique instance id for focus tracking and global focus event handler
     const [instanceId] = useState(() => `ip_${Math.random().toString(36).slice(2)}`);
 
-    const openBrowserExclusive = (next: "mdi" | "hue") => {
+    const openBrowserExclusive = (next: "mdi" | "hue" | "phu") => {
         window.dispatchEvent(new CustomEvent("iconpicker:focus", { detail: instanceId }));
         setBrowser(next);
     };
@@ -66,7 +77,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         return () => window.removeEventListener("iconpicker:focus", handler as EventListener);
     }, [instanceId]);
 
-    const effectivePlaceholder = placeholder ?? (FEATURES.HUE_ICONS ? "mdi:... or hue:..." : "mdi:...");
+    const placeholderParts = ["mdi:..."];
+    if (FEATURES.HUE_ICONS) placeholderParts.push("hue:...");
+    if (FEATURES.PHU_ICONS) placeholderParts.push("phu:...");
+    const effectivePlaceholder = placeholder ?? placeholderParts.join(" or ");
 
     const fullMdiLoaded = useSyncExternalStore(subscribeFullMdi, getFullMdiLoadedSnapshot);
     const [mdiRequested, setMdiRequested] = useState(false);
@@ -92,6 +106,14 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         }
 
         // Open when user starts typing the family name (before the colon)
+        if (FEATURES.PHU_ICONS && (t.startsWith("phu") || t.startsWith("phu:"))) {
+            if (!phuIconsLoaded) {
+                setPhuRequested(true);
+                void preloadPhuIcons();
+            }
+            openBrowserExclusive("phu");
+            return;
+        }
         if ((t.startsWith("hue") || t.startsWith("hue:")) && FEATURES.HUE_ICONS) {
             if (!hueIconsLoaded) {
                 setHueRequested(true);
@@ -133,40 +155,53 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
     const hueIconsLoaded = useSyncExternalStore(subscribeHueIcons, getHueIconsLoadedSnapshot);
     const [hueRequested, setHueRequested] = useState(false);
-    const allHueIcons = useMemo(() => {
-        if (!FEATURES.HUE_ICONS) return [];
-        if (!hueIconsLoaded) return [];
-        return listHueIcons();
-    }, [hueIconsLoaded]);
+    const allHueIcons = FEATURES.HUE_ICONS && hueIconsLoaded ? listHueIcons() : [];
 
-    const hueFiltered = useMemo(() => {
+    const phuIconsLoaded = useSyncExternalStore(subscribePhuIcons, getPhuIconsLoadedSnapshot);
+    const [phuRequested, setPhuRequested] = useState(false);
+    const allPhuIcons = FEATURES.PHU_ICONS && phuIconsLoaded ? listPhuIcons() : [];
+
+    const hueFiltered = (() => {
         if (!FEATURES.HUE_ICONS) return [];
         const q = hueQuery.trim().toLowerCase();
         if (!q) return allHueIcons;
         return allHueIcons.filter((x) => x.toLowerCase().includes(q));
-    }, [hueQuery, allHueIcons]);
+    })();
 
-    const valid = useMemo(() => {
-        const t = (isEditing ? draft : value ?? "").trim();
+    const phuFiltered = (() => {
+        if (!FEATURES.PHU_ICONS) return [];
+        const q = phuQuery.trim().toLowerCase();
+        if (!q) return allPhuIcons;
+        return allPhuIcons.filter((x) => x.toLowerCase().includes(q));
+    })();
+
+    const valid = (() => {
+        const t = (isEditing ? draft : (value ?? "")).trim();
         if (!t) return true;
         if (t.startsWith("mdi:") && !fullMdiLoaded && !isMdiInHomeSet(t)) return true;
         if (t.startsWith("hue:") && FEATURES.HUE_ICONS && !hueIconsLoaded) return true;
+        if (t.startsWith("phu:") && FEATURES.PHU_ICONS && !phuIconsLoaded) return true;
         return isSupportedHaIcon(t);
-    }, [draft, isEditing, value, fullMdiLoaded, hueIconsLoaded]);
+    })();
 
-    const currentText = isEditing ? draft : value ?? "";
+    const currentText = isEditing ? draft : (value ?? "");
 
-    const mdiRequestedByValue = useMemo(() => {
+    const mdiRequestedByValue = (() => {
         const t = (value ?? "").trim();
         return t.startsWith("mdi:") && !fullMdiLoaded && !isMdiInHomeSet(t);
-    }, [value, fullMdiLoaded]);
-    const hueRequestedByValue = useMemo(() => {
+    })();
+    const hueRequestedByValue = (() => {
         const t = (value ?? "").trim();
         return t.startsWith("hue:") && FEATURES.HUE_ICONS && !hueIconsLoaded;
-    }, [value, hueIconsLoaded]);
+    })();
+    const phuRequestedByValue = (() => {
+        const t = (value ?? "").trim();
+        return t.startsWith("phu:") && FEATURES.PHU_ICONS && !phuIconsLoaded;
+    })();
 
     const mdiLoading = (mdiRequested || mdiRequestedByValue) && !fullMdiLoaded;
     const hueLoading = (hueRequested || hueRequestedByValue) && !hueIconsLoaded;
+    const phuLoading = (phuRequested || phuRequestedByValue) && !phuIconsLoaded;
 
     useEffect(() => {
         draftRef.current = draft;
@@ -186,7 +221,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         if (t.startsWith("hue:") && FEATURES.HUE_ICONS && !hueIconsLoaded) {
             void preloadHueIcons();
         }
-    }, [value, fullMdiLoaded, hueIconsLoaded]);
+        if (t.startsWith("phu:") && FEATURES.PHU_ICONS && !phuIconsLoaded) {
+            void preloadPhuIcons();
+        }
+    }, [value, fullMdiLoaded, hueIconsLoaded, phuIconsLoaded]);
 
     return (
         <div className="iconpicker">
@@ -204,6 +242,10 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                             setMdiRequested(true);
                             void preloadFullMdi();
                         }
+                        if (next.trim().startsWith("phu:") && FEATURES.PHU_ICONS && !phuIconsLoaded) {
+                            setPhuRequested(true);
+                            void preloadPhuIcons();
+                        }
                     }}
                     onFocus={() => {
                         setHasInteracted(true);
@@ -213,14 +255,19 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
 
                         const t = (value ?? "").trim().toLowerCase();
                         // If user has already started with a hint, open the matching browser.
-                        if ((t === "h" || t.startsWith("hue")) && FEATURES.HUE_ICONS) {
+                        if (FEATURES.PHU_ICONS && t.startsWith("phu")) {
+                            if (!phuIconsLoaded) {
+                                setPhuRequested(true);
+                                void preloadPhuIcons();
+                            }
+                            openBrowserExclusive("phu");
+                        } else if ((t === "h" || t.startsWith("hue")) && FEATURES.HUE_ICONS) {
                             if (!hueIconsLoaded) {
                                 setHueRequested(true);
                                 void preloadHueIcons();
                             }
                             openBrowserExclusive("hue");
-                        }
-                        else if (t === "m" || t.startsWith("mdi")) openBrowserExclusive("mdi");
+                        } else if (t === "m" || t.startsWith("mdi")) openBrowserExclusive("mdi");
                     }}
                     onBlur={() => {
                         setIsEditing(false);
@@ -248,6 +295,28 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                 >
                     MDI
                 </button>
+
+                {FEATURES.PHU_ICONS && (
+                    <button
+                        type="button"
+                        className={`iconpicker__btn ${browser === "phu" ? "iconpicker__btn--active" : ""}`}
+                        onClick={() => {
+                            setHasInteracted(true);
+                            if (!phuIconsLoaded) {
+                                setPhuRequested(true);
+                                void preloadPhuIcons();
+                            }
+                            setBrowser((b) => {
+                                if (b === "phu") return null;
+                                window.dispatchEvent(new CustomEvent("iconpicker:focus", { detail: instanceId }));
+                                return "phu";
+                            });
+                        }}
+                        title="Browse Custom Brand icons"
+                    >
+                        PHU
+                    </button>
+                )}
 
                 {FEATURES.HUE_ICONS && (
                     <button
@@ -315,6 +384,12 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                             <>
                                 {" "}
                                 or <code>hue:</code>
+                            </>
+                        ) : null}
+                        {FEATURES.PHU_ICONS ? (
+                            <>
+                                {" "}
+                                or <code>phu:</code>
                             </>
                         ) : null}
                     </div>
@@ -406,13 +481,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                         </button>
                     </header>
 
-                    <input
-                        className="iconpicker__search"
-                        value={hueQuery}
-                        onChange={(e) => setHueQuery(e.target.value)}
-                        placeholder='Search e.g. "bulb", "spot", "ceiling"...'
-                        disabled={hueLoading}
-                    />
+                    <input className="iconpicker__search" value={hueQuery} onChange={(e) => setHueQuery(e.target.value)} placeholder='Search e.g. "bulb", "spot", "ceiling"...' disabled={hueLoading} />
 
                     <div className="iconpicker__grid" role="list" aria-busy={hueLoading}>
                         {hueLoading ? (
@@ -452,6 +521,66 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                         <div className="iconpicker__loadingOverlay" role="status" aria-live="polite">
                             <div className="iconpicker__spinner" aria-hidden="true" />
                             <div className="iconpicker__loadingText">Loading Hue icons…</div>
+                        </div>
+                    )}
+                </section>
+            ) : null}
+
+            {/* Custom Brand browser */}
+            {FEATURES.PHU_ICONS && browser === "phu" ? (
+                <section className="iconpicker__panel" aria-label="Custom Brand icon browser">
+                    <header className="iconpicker__panelHeader">
+                        <div className="iconpicker__panelTitle">
+                            <strong>Custom Brand Icons</strong>
+                            {phuLoading && <span className="iconpicker__panelLoading">Loading…</span>}
+                            <span className="iconpicker__panelCount">({allPhuIcons.length})</span>
+                        </div>
+                        <button type="button" className="iconpicker__btn" onClick={() => setBrowser(null)} aria-label="Close Custom Brand browser">
+                            <UiIcon name="mdi:close-circle-outline" className="icon" />
+                            Close
+                        </button>
+                    </header>
+
+                    <input className="iconpicker__search" value={phuQuery} onChange={(e) => setPhuQuery(e.target.value)} placeholder='Search e.g. "tv", "play", "wall"...' disabled={phuLoading} />
+
+                    <div className="iconpicker__grid" role="list" aria-busy={phuLoading}>
+                        {phuLoading ? (
+                            <div className="iconpicker__hint">Loading Custom Brand icons…</div>
+                        ) : (
+                            phuFiltered.slice(0, 300).map((icon) => (
+                                <button
+                                    key={icon}
+                                    type="button"
+                                    className="iconpicker__tile"
+                                    onClick={() => {
+                                        setDraft(icon);
+                                        setIsEditing(false);
+                                        onChange(icon);
+                                    }}
+                                    title={icon}
+                                    role="listitem"
+                                >
+                                    <span className="iconpicker__tileIcon">
+                                        <IconPreview icon={icon} />
+                                    </span>
+                                    <span className="iconpicker__tileText">{icon}</span>
+                                </button>
+                            ))
+                        )}
+                    </div>
+
+                    {phuFiltered.length > 300 && !phuLoading && <div className="iconpicker__hint">More than 300 results — refine your search.</div>}
+
+                    {phuFiltered.length === 0 && !phuLoading && (
+                        <div className="iconpicker__hint">
+                            No results. (Is <code>src/phu/phu-icons.json</code> populated?)
+                        </div>
+                    )}
+
+                    {phuLoading && (
+                        <div className="iconpicker__loadingOverlay" role="status" aria-live="polite">
+                            <div className="iconpicker__spinner" aria-hidden="true" />
+                            <div className="iconpicker__loadingText">Loading Custom Brand icons…</div>
                         </div>
                     )}
                 </section>
