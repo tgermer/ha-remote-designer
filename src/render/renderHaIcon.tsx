@@ -1,6 +1,7 @@
 import { getMdiPath } from "../app/mdi";
 import { MdiPath } from "../components/Icon";
 import { getHueSvg, hasHueIcon, isHueEnabled, isHueIcon } from "../hue/hueIcons";
+import { getPhuIcon, hasPhuIcon, isPhuEnabled, isPhuIcon } from "../phu/phuIcons";
 
 type ViewBox = { minX: number; minY: number; w: number; h: number };
 
@@ -8,6 +9,12 @@ function parseViewBox(svg: string): ViewBox {
     const m = svg.match(/viewBox\s*=\s*"([^"]+)"/i);
     if (!m) return { minX: 0, minY: 0, w: 24, h: 24 };
     const parts = m[1].trim().split(/\s+/).map(Number);
+    if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return { minX: 0, minY: 0, w: 24, h: 24 };
+    return { minX: parts[0], minY: parts[1], w: parts[2], h: parts[3] };
+}
+
+function parseViewBoxValue(value: string): ViewBox {
+    const parts = value.trim().split(/\s+/).map(Number);
     if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return { minX: 0, minY: 0, w: 24, h: 24 };
     return { minX: parts[0], minY: parts[1], w: parts[2], h: parts[3] };
 }
@@ -22,6 +29,7 @@ function stripOuterSvg(svg: string): string {
 export function isSupportedHaIcon(icon: string): boolean {
     if (icon.startsWith("mdi:")) return !!getMdiPath(icon);
     if (isHueEnabled() && isHueIcon(icon)) return hasHueIcon(icon);
+    if (isPhuEnabled() && isPhuIcon(icon)) return hasPhuIcon(icon);
     return false;
 }
 
@@ -120,6 +128,32 @@ export function renderHaIconAtMm({
                     style={hueStyle}
                     dangerouslySetInnerHTML={{ __html: inner }}
                 />
+
+                {strikeOverlay}
+            </>
+        );
+    }
+
+    if (isPhuEnabled() && isPhuIcon(icon)) {
+        const phu = getPhuIcon(icon);
+        if (!phu) return null;
+        const vb = parseViewBoxValue(phu.viewBox);
+        const sx = iconMm / vb.w;
+        const sy = iconMm / vb.h;
+        const fill = color || "black";
+        return (
+            <>
+                <g
+                    transform={`
+        translate(${cx}, ${cy})
+        translate(${-iconMm / 2}, ${-iconMm / 2})
+        scale(${sx} ${sy})
+        translate(${-vb.minX} ${-vb.minY})
+      `}
+                    fill={fill}
+                >
+                    <path d={phu.path} />
+                </g>
 
                 {strikeOverlay}
             </>

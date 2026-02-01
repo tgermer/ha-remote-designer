@@ -6,6 +6,8 @@ import {
     buildStateFromExample,
     stateUsesHueIcons,
     remotesUseHueIcons,
+    stateUsesPhuIcons,
+    remotesUsePhuIcons,
     stateUsesFullMdi,
     remotesUseFullMdi,
 } from "../app/stateUtils";
@@ -105,6 +107,38 @@ describe("stateUtils", () => {
             },
         ];
         expect(remotesUseHueIcons(remotes)).toBe(true);
+    });
+
+    it("detects Custom Brand icons inside a state", () => {
+        const state = {
+            buttonConfigs: {
+                on: {
+                    icons: {
+                        single: "phu:02tv",
+                    },
+                },
+            },
+        };
+        expect(stateUsesPhuIcons(state)).toBe(true);
+    });
+
+    it("detects Custom Brand icons inside remote examples", () => {
+        const remotes: RemoteTemplate[] = [
+            {
+                ...minimalRemote,
+                examples: [
+                    {
+                        id: "phu",
+                        name: "Custom Brand",
+                        tapsEnabled: ["single"],
+                        buttonIcons: {
+                            on: { single: "phu:02tv" },
+                        },
+                    },
+                ],
+            },
+        ];
+        expect(remotesUsePhuIcons(remotes)).toBe(true);
     });
 
     it("detects non-home mdi icons inside a state", () => {

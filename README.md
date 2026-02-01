@@ -58,7 +58,9 @@ No installation required. No account needed.
 - Design simple, consistent labels for physical smart-home remotes
 - Focus on **buttons**, not full remote skins
 - Built-in **preset gallery** to start from real examples
-- Icon picker with **Material Design Icons (MDI)** plus optional Hue icons
+- Icon picker with **Material Design Icons (MDI)**
+- Icon picker with **hass-hue-icons (HUE)**, (arallsopp, CC BY-NC-SA 4.0)
+- Icon picker with **Custom Brand icons (PHU)**, (elax46, CC BY-NC-SA 4.0)
 - Save multiple remotes locally in your browser (localStorage)
 - Load, rename, or delete saved remotes
 - Export/import saved remotes as **JSON** backups
