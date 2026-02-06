@@ -102,6 +102,7 @@ main {
   box-shadow: var(--shadow-soft);
   border: 1px solid rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(28px) saturate(140%);
+  min-height: calc(100vh - 20px + var(--app-preview-state, 0px) + var(--app-preview-safe, 0px));
 }
 
 .app {
@@ -110,6 +111,8 @@ main {
   grid-template-rows: auto auto 1fr auto;
   gap: 3rem;
   padding: 1rem;
+  padding-bottom: calc(1rem + var(--app-preview-safe, 0px) + var(--app-preview-state, 0px));
+  min-height: calc(100vh - 20px + var(--app-preview-state, 0px) + var(--app-preview-safe, 0px));
   font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   box-sizing: border-box;
@@ -2208,11 +2211,11 @@ button:disabled {
   }
 
   .app {
-    padding-bottom: calc(1rem + 30vh);
+    padding-bottom: calc(1rem + var(--app-preview-safe, 0px) + var(--app-preview-state, 0px));
   }
 
   .controls {
-    padding-bottom: 30vh;
+    padding-bottom: calc(var(--app-preview-safe, 0px) + var(--controls-preview-state, 0px));
   }
 
   .controlsLayout {

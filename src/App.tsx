@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef, useSyncExternalStore, useCallback } from "react";
+import { type CSSProperties, useMemo, useState, useEffect, useRef, useSyncExternalStore, useCallback } from "react";
 import { createPortal } from "react-dom";
 import "./App.css";
 
@@ -1530,9 +1530,17 @@ export default function App() {
         return example ? buildStateFromExample({ remoteId: problemRemote.id, example }) : null;
     }, [problemRemote]);
 
+    const previewSpacingStyle = isConfigure
+        ? ({
+              "--app-preview-safe": "env(safe-area-inset-bottom)",
+              "--app-preview-state": previewOpen ? `${previewHeightVh}vh` : "4rem",
+              "--controls-preview-state": previewOpen ? `${previewHeightVh}vh` : "4rem",
+          } as CSSProperties)
+        : undefined;
+
     return (
         <>
-            <main className="app">
+            <main className="app" style={previewSpacingStyle}>
                 <SiteHeader isAdmin={isAdmin} />
 
                 {isLegal ? (
