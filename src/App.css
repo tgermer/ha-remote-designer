@@ -619,6 +619,85 @@ main {
   margin: 0 0 0.45rem;
 }
 
+.page__section {
+  margin-top: 1rem;
+}
+
+.page__section h4 {
+  margin: 2.5rem 0 0.5rem;
+}
+
+.page__note {
+  margin-top: 0.85rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.page__highlight {
+  border-color: rgba(139, 123, 212, 0.4);
+  background: linear-gradient(180deg, rgba(139, 123, 212, 0.08), rgba(255, 255, 255, 0));
+}
+
+.page__badge-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.page__badge-group span {
+  padding: 0.2rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 123, 212, 0.4);
+  font-size: 0.8rem;
+  color: var(--ink);
+  background: rgba(139, 123, 212, 0.08);
+}
+
+.page__printer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.page__printer-card {
+  position: relative;
+  padding: 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--stroke-muted);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.page__printer-card h5 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.page__printer-card-icon {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.7rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.page__printer-card-icon .icon {
+  font-size: 1.1rem;
+}
+
+.page__printer-card-icon--inkjet {
+  border: 1px solid rgba(0, 128, 255, 0.35);
+}
+
+.page__printer-card-icon--laser {
+  border: 1px solid rgba(255, 128, 0, 0.35);
+}
+
 .page__steps {
   display: grid;
   gap: 0.85rem;

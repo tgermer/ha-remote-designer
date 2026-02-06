@@ -60,6 +60,81 @@ export function HelpPage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                     <HelpSection />
                 </div>
             </div>
+
+            <article className="page__card page__highlight">
+                <h3>Printing & Sticker Recommendations</h3>
+                <p>Use vinyl or polyester labels instead of paper – film-based stickers stay cleaner, resist smudges, and handle normal wear without peeling.</p>
+
+                <div className="page__badge-group">
+                    <span>Durable surface</span>
+                    <span>Smudge resistant</span>
+                    <span>Cleaner edges</span>
+                </div>
+
+                <section className="page__section">
+                    <h4>Inkjet vs. Laser Printers</h4>
+                    <div className="page__printer-grid">
+                        <article className="page__printer-card">
+                            <div className="page__printer-card-icon page__printer-card-icon--inkjet">
+                                <UiIcon name="mdi:water" className="icon" />
+                            </div>
+                            <h5>Inkjet</h5>
+                            <ul className="page__list">
+                                <li>Use only inkjet-compatible vinyl labels.</li>
+                                <li>Inkjet prints are not automatically waterproof.</li>
+                                <li>Let ink dry completely before handling the sheet.</li>
+                                <li>Optionally add a protective layer for better durability.</li>
+                            </ul>
+                        </article>
+                        <article className="page__printer-card">
+                            <div className="page__printer-card-icon page__printer-card-icon--laser">
+                                <UiIcon name="mdi:printer" className="icon" />
+                            </div>
+                            <h5>Laser</h5>
+                            <ul className="page__list">
+                                <li>Choose laser-compatible polyester or vinyl labels.</li>
+                                <li>Prints come out immediately smudge- and water-resistant.</li>
+                                <li>Great for frequently used buttons and high-touch areas.</li>
+                            </ul>
+                        </article>
+                    </div>
+                </section>
+
+                <section className="page__section">
+                    <h4>Recommended Label Types (A4)</h4>
+                    <ul className="page__list">
+                        <li>
+                            Inkjet printer – white vinyl labels –{" "}
+                            <a href="https://www.amazon.de/dp/B000KJRDJM/" target="_blank" rel="noopener noreferrer">
+                                Herma 4866 (affiliate link)
+                            </a>
+                        </li>
+                        <li>
+                            Inkjet printer – transparent vinyl labels –{" "}
+                            <a href="https://www.amazon.de/dp/B000KJPFME/" target="_blank" rel="noopener noreferrer">
+                                Herma 8964 (affiliate link)
+                            </a>
+                        </li>
+                        <li>
+                            Laser printer – white polyester labels –{" "}
+                            <a href="https://www.amazon.de/dp/B000M24DJ0/" target="_blank" rel="noopener noreferrer">
+                                Herma 9500 (affiliate link)
+                            </a>
+                        </li>
+                        <li>
+                            Laser printer – transparent labels –{" "}
+                            <a href="https://www.amazon.de/dp/B079N763P5/" target="_blank" rel="noopener noreferrer">
+                                Herma 4585 (affiliate link)
+                            </a>
+                        </li>
+                    </ul>
+                    <p>
+                        <a href="https://www.herma-fachshop.de/Folien-Etiketten-kg478.aspx?filter-Etikettengröße=210+x+297+mm&filter-Besondere+Eigenschaften=Folienetiketten" target="_blank" rel="noopener noreferrer">
+                            Browse Herma’s film label filters for A4 film-based stickers (Folienetiketten, 210 × 297 mm).
+                        </a>
+                    </p>
+                </section>
+            </article>
         </section>
     );
 }

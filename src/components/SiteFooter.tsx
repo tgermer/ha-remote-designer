@@ -63,6 +63,10 @@ export function SiteFooter({ impressumHref, datenschutzHref, onOpenLegal }: Prop
                 </span>
                 <p>“Philips” and “Philips Hue” are trademarks of Koninklijke Philips N.V. and/or Signify. The use of the Philips brand for Philips Hue is licensed to Signify. “Home Assistant” and the Home Assistant logo are trademarks of Home Assistant and/or its licensors. This project is not affiliated with, endorsed by, or sponsored by Philips, Signify, or Home Assistant.</p>
             </div>
+
+            <div className={`${styles.row} ${styles.small}`}>
+                <span>Some links on this page are affiliate links. If you purchase through them, we may earn a small commission at no extra cost to you.</span>
+            </div>
         </footer>
     );
 }

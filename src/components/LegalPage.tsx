@@ -224,6 +224,19 @@ export function LegalPage({ kind, contact, backHref, onBack }: Props) {
                     </section>
 
                     <section className={styles.section}>
+                        <h2>Amazon-Partnerprogramm</h2>
+                        <p>
+                            Diese Website nimmt am Amazon-Partnerprogramm teil. Über bestimmte Links auf der Seite können wir eine kleine Provision
+                            erhalten, wenn Sie nach einem Klick einen qualifizierten Einkauf tätigen, ohne dass Ihnen dadurch zusätzliche Kosten
+                            entstehen.
+                        </p>
+                        <p>
+                            Amazon verarbeitet im Zusammenhang mit dem Partnerprogramm ggf. Daten über Ihren Besuch (z. B. Cookie-IDs, IP-Adresse)
+                            entsprechend den Amazon-Richtlinien. Weitere Informationen finden Sie in den Datenschutzhinweisen von Amazon.
+                        </p>
+                    </section>
+
+                    <section className={styles.section}>
                         <h2>Widerspruchsrecht</h2>
                         <p>
                             Soweit ich Daten auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO verarbeite, haben Sie jederzeit das Recht, aus Gründen,
