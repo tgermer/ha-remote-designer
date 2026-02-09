@@ -197,6 +197,35 @@ export function remotesUseHueIcons(remotes: RemoteTemplate[]) {
     return false;
 }
 
+export function stateUsesPhuIcons(state: NormalizableState) {
+    const buttonConfigs = state.buttonConfigs ?? {};
+    for (const cfg of Object.values(buttonConfigs)) {
+        const icons = cfg?.icons ?? {};
+        for (const icon of Object.values(icons)) {
+            if (typeof icon === "string" && icon.startsWith("phu:")) return true;
+        }
+    }
+    return false;
+}
+
+export function remotesUsePhuIcons(remotes: RemoteTemplate[]) {
+    for (const remote of remotes) {
+        const examples = remote.examples ?? [];
+        for (const ex of examples) {
+            if (isUserExample(ex)) {
+                if (stateUsesPhuIcons(ex.state)) return true;
+                continue;
+            }
+            for (const iconsByTap of Object.values(ex.buttonIcons)) {
+                for (const icon of Object.values(iconsByTap)) {
+                    if (typeof icon === "string" && icon.startsWith("phu:")) return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 export function stateUsesFullMdi(state: NormalizableState, isInHomeSet: (icon: string) => boolean = isMdiInHomeSet) {
     const buttonConfigs = state.buttonConfigs ?? {};
     for (const cfg of Object.values(buttonConfigs)) {

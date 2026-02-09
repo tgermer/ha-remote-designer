@@ -1,3 +1,5 @@
+import { FEATURES } from "../app/featureFlags";
+
 export function HelpSection() {
     return (
         <section className="help" aria-label="Icon help">
@@ -20,7 +22,28 @@ export function HelpSection() {
                         .
                     </p>
 
-                    <p className="help__note">Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.</p>
+                    {FEATURES.PHU_ICONS ? (
+                        <p>
+                            Custom Brand icon previews are sourced from elax46&apos;s <code>custom-brand-icons</code>{" "}
+                            collection:{" "}
+                            <a href="https://github.com/elax46/custom-brand-icons" target="_blank" rel="noopener noreferrer">
+                                github.com/elax46/custom-brand-icons
+                            </a>
+                            . These glyphs are available under CC BY-NC-SA 4.0, so keep the attribution visible when the icons
+                            are enabled.
+                        </p>
+                    ) : null}
+
+                    {FEATURES.PHU_ICONS ? (
+                        <p className="help__note">
+                            Tip: Copy the icon name from the MDI or Custom Brand library (e.g. <code>mdi:lightbulb</code> or{" "}
+                            <code>phu:wall-switch</code>) and paste it into the picker.
+                        </p>
+                    ) : (
+                        <p className="help__note">
+                            Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.
+                        </p>
+                    )}
                 </div>
             </details>
 

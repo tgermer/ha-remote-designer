@@ -1,4 +1,5 @@
 import styles from "./Footer.module.css";
+import { FEATURES } from "../app/featureFlags";
 
 type LegalPageKind = "impressum" | "datenschutz";
 
@@ -52,11 +53,21 @@ export function SiteFooter({ impressumHref, datenschutzHref, onOpenLegal }: Prop
                 <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
                     hass-hue-icons
                 </a>
+
+                {FEATURES.PHU_ICONS ? (
+                    <>
+                        <span className={styles.sep}>•</span>
+                        <a href="https://github.com/elax46/custom-brand-icons" target="_blank" rel="noopener noreferrer">
+                            Custom Brand icons (elax46)
+                        </a>
+                    </>
+                ) : null}
             </div>
 
             <div className={`${styles.row} ${styles.small}`}>
                 <span>
-                    Licenses: MIT (this app), Apache-2.0 (MDI & Hue icons).{" "}
+                    Licenses: MIT (this app), Apache-2.0 (MDI & Hue icons)
+                    {FEATURES.PHU_ICONS ? ", CC BY-NC-SA 4.0 (Custom Brand icons by elax46)." : "."}{" "}
                     <a href="https://github.com/tgermer/ha-remote-designer/blob/main/NOTICE" target="_blank" rel="noopener noreferrer">
                         See NOTICE
                     </a>
