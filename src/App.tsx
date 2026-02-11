@@ -196,13 +196,74 @@ function nextFrame() {
 
 type ViewKind = "home" | "configure" | "gallery" | "help" | "community";
 
+const VIEW_PATHS: Record<ViewKind, string> = {
+    home: "/",
+    configure: "/configurator",
+    gallery: "/gallery",
+    help: "/help",
+    community: "/community",
+};
+
+function normalizeRoutePath(path: string) {
+    const trimmed = path.trim();
+    if (!trimmed) return "/";
+    const withLeadingSlash = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+    if (withLeadingSlash.length > 1 && withLeadingSlash.endsWith("/")) {
+        return withLeadingSlash.slice(0, -1);
+    }
+    return withLeadingSlash;
+}
+
+function parseLegacyHashRoute() {
+    const raw = window.location.hash.replace(/^#/, "").trim();
+    if (!raw) return { path: "/", stateHash: "", hasRoute: false };
+    if (!raw.startsWith("/")) {
+        return { path: "/", stateHash: "", hasRoute: false };
+    }
+    const splitIndex = raw.indexOf("#");
+    if (splitIndex < 0) return { path: normalizeRoutePath(raw), stateHash: "", hasRoute: true };
+    return {
+        path: normalizeRoutePath(raw.slice(0, splitIndex)),
+        stateHash: raw.slice(splitIndex + 1).trim(),
+        hasRoute: true,
+    };
+}
+
+function getViewFromPath(path: string): ViewKind {
+    const normalized = normalizeRoutePath(path).toLowerCase();
+    if (normalized === "/" || normalized === "/home") return "home";
+    if (normalized === VIEW_PATHS.configure) return "configure";
+    if (normalized === VIEW_PATHS.gallery) return "gallery";
+    if (normalized === VIEW_PATHS.help) return "help";
+    if (normalized === VIEW_PATHS.community) return "community";
+    return "home";
+}
+
+function getPackedStateHash() {
+    const raw = window.location.hash.replace(/^#/, "").trim();
+    if (!raw) return "";
+    if (raw.startsWith("/")) {
+        const splitIndex = raw.indexOf("#");
+        if (splitIndex < 0) return "";
+        return raw.slice(splitIndex + 1).trim();
+    }
+    return raw;
+}
+
 function getUrlView(): ViewKind {
+    const pathView = getViewFromPath(window.location.pathname);
+    if (pathView !== "home") return pathView;
+
+    const legacyHashRoute = parseLegacyHashRoute();
+    if (legacyHashRoute.hasRoute) {
+        return getViewFromPath(legacyHashRoute.path);
+    }
+
     const sp = new URLSearchParams(window.location.search);
     const viewParam = sp.get("view");
     if (viewParam === "configure" || viewParam === "gallery" || viewParam === "help" || viewParam === "community") return viewParam;
     if (viewParam === "editor") return "configure";
     if (viewParam === "home") return "home";
-    if (window.location.hash && window.location.hash.length > 1) return "configure";
     return "home";
 }
 
@@ -218,24 +279,22 @@ function getUrlLegalPage(): LegalPageState {
 
 function setUrlView(view: ViewKind) {
     const url = new URL(window.location.href);
-    if (view === "home") url.searchParams.delete("view");
-    else url.searchParams.set("view", view);
+    url.searchParams.delete("view");
+    const nextPath = VIEW_PATHS[view];
+    const stateHash = getPackedStateHash();
+    const nextHash = stateHash ? `#${stateHash}` : "";
+    const nextUrl = `${nextPath}${url.search}${nextHash}`;
 
     // Use pushState so browser back/forward works.
-    window.history.pushState(null, "", url.toString());
+    window.history.pushState(null, "", nextUrl);
 }
 
 function getViewHref(view: ViewKind) {
-    const url = new URL(window.location.href);
-    if (view === "home") url.searchParams.delete("view");
-    else url.searchParams.set("view", view);
-    return url.toString();
-}
-
-function getPlausiblePageLabel(view: ViewKind, legalPage: LegalPageState) {
-    if (legalPage === "impressum") return "legal:impressum";
-    if (legalPage === "datenschutz") return "legal:datenschutz";
-    return view;
+    const stateHash = getPackedStateHash();
+    if (stateHash) {
+        return `${VIEW_PATHS[view]}#${stateHash}`;
+    }
+    return VIEW_PATHS[view];
 }
 
 function setUrlLegalPage(page: LegalPageState) {
@@ -363,19 +422,29 @@ export default function App() {
         if (!plausibleInitializedRef.current) return;
         plausibleTrack("pageview", {
             url: window.location.href,
-            props: {
-                page: getPlausiblePageLabel(view, legalPage),
-            },
         });
     }, [view, legalPage]);
 
     useEffect(() => {
-        const onPopState = () => {
+        const legacyHashRoute = parseLegacyHashRoute();
+        if (legacyHashRoute.hasRoute) {
+            const nextView = getViewFromPath(legacyHashRoute.path);
+            const nextPath = VIEW_PATHS[nextView];
+            const nextHash = nextView === "configure" && legacyHashRoute.stateHash ? `#${legacyHashRoute.stateHash}` : "";
+            const nextUrl = `${nextPath}${window.location.search}${nextHash}`;
+            window.history.replaceState(null, "", nextUrl);
+        }
+    }, []);
+
+    useEffect(() => {
+        const syncFromUrl = () => {
             setView(getUrlView());
             setLegalPage(getUrlLegalPage());
         };
-        window.addEventListener("popstate", onPopState);
-        return () => window.removeEventListener("popstate", onPopState);
+        window.addEventListener("popstate", syncFromUrl);
+        return () => {
+            window.removeEventListener("popstate", syncFromUrl);
+        };
     }, []);
 
     const communityRemotes = useMemo(() => {
@@ -734,7 +803,12 @@ export default function App() {
 
     const getShareUrl = () => {
         const url = new URL(window.location.href);
+        const packedState = getPackedStateHash();
+        url.pathname = VIEW_PATHS.configure;
         url.searchParams.delete("admin"); // never leak admin param
+        url.searchParams.delete("view");
+        url.searchParams.delete("page");
+        url.hash = packedState ? `#${packedState}` : "";
         return url.toString();
     };
 
@@ -1570,10 +1644,6 @@ export default function App() {
                             }}
                             onGoConfigure={(event) => {
                                 event.preventDefault();
-                                if (view === "community") {
-                                    launchCommunityConfigurator();
-                                    return;
-                                }
                                 goTo("configure");
                             }}
                             onGoGallery={(event) => {
