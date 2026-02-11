@@ -210,10 +210,7 @@ export function LegalPage({ kind, contact, backHref, onBack }: Props) {
                         </p>
                         <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Analyse und Verbesserung des Angebots).</p>
                         <p>Empfaenger/Kategorien: keine Weitergabe der Analytics-Daten an Dritte (eigener Betrieb).</p>
-                        <p>
-                            Speicherdauer: bis zur manuellen Loeschung bzw. gemaess technisch konfigurierter Aufbewahrungsregeln der selbst
-                            gehosteten Instanz.
-                        </p>
+                        <p>Speicherdauer: Analytics-Daten werden fuer 12 Monate gespeichert und anschliessend geloescht.</p>
                     </section>
 
                     <section className={styles.section}>
