@@ -184,7 +184,9 @@ JSON payload:
 Thanks and best regards`;
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || "dev";
 const SEND_PROMPT_COUNT_KEY = "ha-remote-designer:send-prompt-count:v1";
-const PLAUSIBLE_DOMAIN = "ha-remote-designer.netlify.app";
+const PLAUSIBLE_DOMAIN = import.meta.env.VITE_PLAUSIBLE_DOMAIN || window.location.hostname;
+const PLAUSIBLE_API_HOST = import.meta.env.VITE_PLAUSIBLE_API_HOST || "https://analytics.thebunnyhill.de";
+const PLAUSIBLE_ENDPOINT = import.meta.env.VITE_PLAUSIBLE_ENDPOINT || `${PLAUSIBLE_API_HOST.replace(/\/+$/, "")}/api/event`;
 const COMMUNITY_PREVIEW_ID = "community_preview";
 const COMMUNITY_DRAFTS_KEY = "ha-remote-designer:saved-community-drafts:v1";
 
@@ -432,6 +434,7 @@ export default function App() {
         if (plausibleInitializedRef.current) return;
         plausibleInit({
             domain: PLAUSIBLE_DOMAIN,
+            endpoint: PLAUSIBLE_ENDPOINT,
             autoCapturePageviews: false,
         });
         plausibleInitializedRef.current = true;
