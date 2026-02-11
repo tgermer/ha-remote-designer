@@ -16,12 +16,12 @@ export function OptionsSection(props: OptionsSectionProps) {
             <div className="options">
                 <label className="option">
                     <input name="showTapMarkersAlways" type="checkbox" checked={options.showTapMarkersAlways} onChange={(e) => onUpdateOptions({ showTapMarkersAlways: e.target.checked })} />
-                    Show tap marker for single tap (single icon)
+                    Show tap marker for single tap (single content)
                 </label>
 
                 <label className="option">
                     <input name="showTapDividers" type="checkbox" checked={options.showTapDividers} onChange={(e) => onUpdateOptions({ showTapDividers: e.target.checked })} />
-                    Show dividers for multi icons
+                    Show dividers for multi content
                 </label>
 
                 <label className="option">
@@ -36,7 +36,7 @@ export function OptionsSection(props: OptionsSectionProps) {
                     Tap marker color
                     <select name="tapMarkerColorMode" value={options.tapMarkerColorMode} onChange={(e) => onUpdateOptions({ tapMarkerColorMode: e.target.value as DesignOptions["tapMarkerColorMode"] })}>
                         <option value="black">Black</option>
-                        <option value="icon">Icon color</option>
+                        <option value="icon">Content color</option>
                     </select>
                 </label>
 
@@ -75,11 +75,11 @@ export function OptionsSection(props: OptionsSectionProps) {
 
                 <label className="option">
                     <input name="autoIconSizing" type="checkbox" checked={options.autoIconSizing} onChange={(e) => onUpdateOptions({ autoIconSizing: e.target.checked })} />
-                    Auto icon sizing
+                    Auto content sizing
                 </label>
 
                 <label className="option">
-                    Default icon color
+                    Default content color
                     <input name="iconColor" type="color" value={options.iconColor} onChange={(e) => onUpdateOptions({ iconColor: e.target.value })} />
                 </label>
 

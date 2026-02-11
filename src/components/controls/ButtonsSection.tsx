@@ -1,4 +1,5 @@
-import type { DesignState, TapType } from "../../app/types";
+import { useState } from "react";
+import type { DesignState, StrikeStyle, TapType } from "../../app/types";
 import { TAP_ORDER } from "../../app/types";
 import { IconPicker } from "../IconPicker";
 type ButtonsSectionProps = {
@@ -6,15 +7,18 @@ type ButtonsSectionProps = {
     state: DesignState;
     tapLabel: (tap: TapType) => string;
     onSetIcon: (buttonId: string, tap: TapType, icon?: string) => void;
+    onSetButtonText: (buttonId: string, tap: TapType, text?: string) => void;
     onToggleStrike: (buttonId: string, tap: TapType, checked: boolean) => void;
+    onSetStrikeStyle: (buttonId: string, tap: TapType, style: StrikeStyle) => void;
     onSetIconColor: (buttonId: string, tap: TapType, color?: string) => void;
     onSetButtonFill: (buttonId: string, color?: string) => void;
     highlightedButtonId?: string | null;
 };
 
 export function ButtonsSection(props: ButtonsSectionProps) {
-    const { buttonIds, state, tapLabel, onSetIcon, onToggleStrike, onSetIconColor, onSetButtonFill, highlightedButtonId } = props;
+    const { buttonIds, state, tapLabel, onSetIcon, onSetButtonText, onToggleStrike, onSetStrikeStyle, onSetIconColor, onSetButtonFill, highlightedButtonId } = props;
     const defaultButtonFill = "#e6e6e6";
+    const [contentModeOverrides, setContentModeOverrides] = useState<Record<string, "icon" | "text">>({});
 
     return (
         <section>
@@ -54,19 +58,84 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                     {TAP_ORDER.map((tap) => (
                         <div key={tap}>
                             <h4>{tapLabel(tap)}</h4>
-                            <IconPicker value={state.buttonConfigs[id]?.icons?.[tap]} onChange={(v) => onSetIcon(id, tap, v)} />
+                            {(() => {
+                                const iconValue = state.buttonConfigs[id]?.icons?.[tap];
+                                const textValue = state.buttonConfigs[id]?.texts?.[tap] ?? "";
+                                const modeKey = `${id}:${tap}`;
+                                const mode: "icon" | "text" = contentModeOverrides[modeKey] ?? (textValue ? "text" : "icon");
+
+                                return (
+                                    <>
+                                        <div className="buttonContentMode" role="radiogroup" aria-label={`${tapLabel(tap)} content mode`}>
+                                            <label className="option">
+                                                <input
+                                                    name={`buttonContentMode-${id}-${tap}`}
+                                                    type="radio"
+                                                    checked={mode === "icon"}
+                                                    onChange={() => {
+                                                        setContentModeOverrides((prev) => ({ ...prev, [modeKey]: "icon" }));
+                                                        onSetButtonText(id, tap, undefined);
+                                                    }}
+                                                />
+                                                Icon
+                                            </label>
+                                            <label className="option">
+                                                <input
+                                                    name={`buttonContentMode-${id}-${tap}`}
+                                                    type="radio"
+                                                    checked={mode === "text"}
+                                                    onChange={() => {
+                                                        setContentModeOverrides((prev) => ({ ...prev, [modeKey]: "text" }));
+                                                        onSetIcon(id, tap, undefined);
+                                                    }}
+                                                />
+                                                Text
+                                            </label>
+                                        </div>
+
+                                        {mode === "icon" ? (
+                                            <IconPicker
+                                                value={iconValue}
+                                                onChange={(v) => {
+                                                    setContentModeOverrides((prev) => ({ ...prev, [modeKey]: "icon" }));
+                                                    onSetIcon(id, tap, v);
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="buttonTextInputWrap">
+                                                <textarea
+                                                    name={`buttonText-${id}-${tap}`}
+                                                    className="buttonTextInput"
+                                                    value={textValue}
+                                                    onChange={(e) => {
+                                                        setContentModeOverrides((prev) => ({ ...prev, [modeKey]: "text" }));
+                                                        onSetButtonText(id, tap, e.target.value);
+                                                    }}
+                                                    placeholder="Enter label text (line breaks allowed)"
+                                                    rows={2}
+                                                />
+                                                <p className="option__note">Text scales automatically to fit. Use line breaks for multi-line labels.</p>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
                             <div className="option-row">
                                 {(() => {
                                     const iconName = state.buttonConfigs[id]?.icons?.[tap];
-                                    if (!iconName) return null;
+                                    const textValue = state.buttonConfigs[id]?.texts?.[tap];
+                                    const hasContent = Boolean(iconName || (textValue && textValue.trim()));
+                                    if (!hasContent) return null;
 
                                     const isOffIcon = typeof iconName === "string" && iconName.toLowerCase().includes("off");
+                                    const canStrike = !!textValue || (!!iconName && !isOffIcon);
+                                    const strikeStyle = state.buttonConfigs[id]?.strikeStyle?.[tap] ?? "diagonal";
                                     const iconColor = state.buttonConfigs[id]?.iconColors?.[tap];
                                     const hasIconColor = typeof iconColor === "string" && iconColor.length > 0;
 
                                     return (
                                         <>
-                                            {!isOffIcon && (
+                                            {canStrike && (
                                                 <label className="option">
                                                     <input
                                                         name={`buttonStrike-${id}-${tap}`}
@@ -77,18 +146,27 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                                     Strikethrough (manual “off”)
                                                 </label>
                                             )}
+                                            {textValue && (
+                                                <label className="option option--inline">
+                                                    Strikethrough style
+                                                    <select name={`buttonStrikeStyle-${id}-${tap}`} value={strikeStyle} onChange={(e) => onSetStrikeStyle(id, tap, e.target.value as StrikeStyle)}>
+                                                        <option value="diagonal">Diagonal (45°)</option>
+                                                        <option value="straight">Straight</option>
+                                                    </select>
+                                                </label>
+                                            )}
                                             <label className="option">
-                                                <input
-                                                    name={`buttonIconColorEnabled-${id}-${tap}`}
-                                                    type="checkbox"
-                                                    checked={hasIconColor}
-                                                    onChange={(e) => onSetIconColor(id, tap, e.target.checked ? iconColor || state.options.iconColor || "#000000" : undefined)}
-                                                />
-                                                Custom icon color
+                                                    <input
+                                                        name={`buttonIconColorEnabled-${id}-${tap}`}
+                                                        type="checkbox"
+                                                        checked={hasIconColor}
+                                                        onChange={(e) => onSetIconColor(id, tap, e.target.checked ? iconColor || state.options.iconColor || "#000000" : undefined)}
+                                                    />
+                                                Custom content color
                                             </label>
                                             {hasIconColor && (
                                                 <label className="option option--inline">
-                                                    Icon color
+                                                    Content color
                                                     <input name={`buttonIconColor-${id}-${tap}`} type="color" value={iconColor} onChange={(e) => onSetIconColor(id, tap, e.target.value)} />
                                                 </label>
                                             )}

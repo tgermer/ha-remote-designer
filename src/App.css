@@ -1747,6 +1747,25 @@ label {
   font-size: 0.9rem;
 }
 
+.buttonContentMode {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.buttonTextInputWrap {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.buttonTextInput {
+  width: 100%;
+  min-height: 56px;
+  resize: vertical;
+}
+
 
 /* Hidden render targets (exports) */
 .hidden {

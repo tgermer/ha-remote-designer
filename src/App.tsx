@@ -2,7 +2,7 @@ import { type CSSProperties, useMemo, useState, useEffect, useRef, useSyncExtern
 import { createPortal } from "react-dom";
 import "./App.css";
 
-import { type DesignState, type TapType } from "./app/types";
+import { type DesignState, type StrikeStyle, type TapType } from "./app/types";
 import { REMOTES, isUserExample, type CutoutElement, type RemoteTemplate } from "./app/remotes";
 import { SiteHeader } from "./components/SiteHeader";
 import { SiteFooter } from "./components/SiteFooter";
@@ -987,6 +987,8 @@ export default function App() {
             const prevCfg = s.buttonConfigs[buttonId] ?? { icons: {} };
             const prevIcons = prevCfg.icons ?? {};
             const nextIcons: Partial<Record<TapType, string>> = { ...prevIcons };
+            const prevTexts = prevCfg.texts ?? {};
+            const nextTexts: Partial<Record<TapType, string>> = { ...prevTexts };
 
             // Preserve strike map, but clear strike for this tap when icon is removed
             const prevStrike = prevCfg.strike ?? {};
@@ -996,10 +998,10 @@ export default function App() {
 
             if (icon) {
                 nextIcons[tap] = icon;
+                delete nextTexts[tap];
             } else {
                 delete nextIcons[tap];
                 delete nextStrike[tap]; // if the icon is removed, remove its strike flag too
-                delete nextIconColors[tap];
             }
 
             return {
@@ -1010,6 +1012,52 @@ export default function App() {
                     [buttonId]: {
                         ...prevCfg,
                         icons: nextIcons,
+                        texts: nextTexts,
+                        strike: nextStrike,
+                        iconColors: nextIconColors,
+                    },
+                },
+            };
+        });
+    };
+
+    const setButtonText = (buttonId: string, tap: TapType, text?: string) => {
+        const normalized = typeof text === "string" ? text.replace(/\r\n/g, "\n") : "";
+        const hasVisibleText = normalized
+            .split("\n")
+            .some((line) => line.replace(/\s+/g, " ").trim().length > 0);
+        setState((s) => {
+            let nextTapsEnabled = s.tapsEnabled;
+            if (hasVisibleText && !s.tapsEnabled.includes(tap)) {
+                nextTapsEnabled = [...s.tapsEnabled, tap];
+            }
+
+            const prevCfg = s.buttonConfigs[buttonId] ?? { icons: {} };
+            const prevTexts = prevCfg.texts ?? {};
+            const nextTexts: Partial<Record<TapType, string>> = { ...prevTexts };
+            const prevIcons = prevCfg.icons ?? {};
+            const nextIcons: Partial<Record<TapType, string>> = { ...prevIcons };
+            const prevStrike = prevCfg.strike ?? {};
+            const nextStrike: Partial<Record<TapType, boolean>> = { ...prevStrike };
+            const prevIconColors = prevCfg.iconColors ?? {};
+            const nextIconColors: Partial<Record<TapType, string>> = { ...prevIconColors };
+
+            if (hasVisibleText) {
+                nextTexts[tap] = normalized;
+                delete nextIcons[tap];
+            } else {
+                delete nextTexts[tap];
+            }
+
+            return {
+                ...s,
+                tapsEnabled: nextTapsEnabled,
+                buttonConfigs: {
+                    ...s.buttonConfigs,
+                    [buttonId]: {
+                        ...prevCfg,
+                        icons: nextIcons,
+                        texts: nextTexts,
                         strike: nextStrike,
                         iconColors: nextIconColors,
                     },
@@ -1029,6 +1077,23 @@ export default function App() {
                     [buttonId]: {
                         ...prev,
                         strike: { ...prevStrike, [tap]: checked },
+                    },
+                },
+            };
+        });
+    };
+
+    const setStrikeStyle = (buttonId: string, tap: TapType, style: StrikeStyle) => {
+        setState((s) => {
+            const prev = s.buttonConfigs[buttonId] ?? { icons: {} };
+            const prevStyle = prev.strikeStyle ?? {};
+            return {
+                ...s,
+                buttonConfigs: {
+                    ...s.buttonConfigs,
+                    [buttonId]: {
+                        ...prev,
+                        strikeStyle: { ...prevStyle, [tap]: style },
                     },
                 },
             };
@@ -1742,6 +1807,14 @@ export default function App() {
                                     iconLoadStatus={isGallery ? iconLoadStatus : null}
                                     onOpenPreview={({ state: nextState }) => {
                                         setState(normalize(nextState));
+                                        // Preview entries from gallery are not local saved designs.
+                                        // Clear saved-design editing context (name field, loaded snapshot, active id).
+                                        setActiveSavedId(null);
+                                        setLoadedSnapshot(null);
+                                        setLoadedName("");
+                                        setSaveName("");
+                                        setSaveNameError("");
+                                        setShowSavedStatus(false);
                                         goTo("configure");
                                         requestAnimationFrame(() => {
                                             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1812,7 +1885,20 @@ export default function App() {
                                                 <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} onSendConfig={openSendConfigPrompt} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} onCopyRemoteExample={copyRemoteExampleSnippet} remoteExampleStatus={remoteExampleStatus} />
                                             </>
                                         }
-                                        full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onToggleStrike={toggleStrike} onSetIconColor={setIconColor} onSetButtonFill={setButtonFill} highlightedButtonId={highlightedButtonId} />}
+                                        full={
+                                            <ButtonsSection
+                                                buttonIds={buttonIds}
+                                                state={state}
+                                                tapLabel={tapLabel}
+                                                onSetIcon={setIcon}
+                                                onSetButtonText={setButtonText}
+                                                onToggleStrike={toggleStrike}
+                                                onSetStrikeStyle={setStrikeStyle}
+                                                onSetIconColor={setIconColor}
+                                                onSetButtonFill={setButtonFill}
+                                                highlightedButtonId={highlightedButtonId}
+                                            />
+                                        }
                                     />
                                 }
                                 preview={

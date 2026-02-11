@@ -1,10 +1,13 @@
 import type { RemoteId } from "./remotes";
 
 export type TapType = "single" | "double" | "long";
+export type StrikeStyle = "diagonal" | "straight";
 
 export type ButtonConfig = {
     icons: Partial<Record<TapType, string>>; // e.g. "mdi:lightbulb-outline"
+    texts?: Partial<Record<TapType, string>>;
     strike?: Partial<Record<TapType, boolean>>;
+    strikeStyle?: Partial<Record<TapType, StrikeStyle>>;
     iconColors?: Partial<Record<TapType, string>>;
     buttonFill?: string;
 };

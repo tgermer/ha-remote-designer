@@ -1,5 +1,5 @@
 import type { ButtonDef, CutoutElement, PreviewElement, RemoteTemplate } from "../app/remotes";
-import { TAP_ORDER, type DesignState, type TapType } from "../app/types";
+import { TAP_ORDER, type DesignState, type StrikeStyle, type TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 
 type CornerRadii = { tl: number; tr: number; br: number; bl: number };
@@ -92,6 +92,136 @@ function getMarkerSizing(iconMm: number, autoIconSizing: boolean) {
     return { markerMm, gapMm };
 }
 
+const BUTTON_TEXT_PADDING_X_MM = 1.2;
+const BUTTON_TEXT_PADDING_Y_MM = 1.1;
+const BUTTON_TEXT_FONT = "IBM Plex Sans";
+const BUTTON_TEXT_LINE_HEIGHT = 1.15;
+
+function normalizeTapTextLines(text: string | undefined) {
+    if (typeof text !== "string") return [] as string[];
+    return text
+        .replace(/\r\n/g, "\n")
+        .split("\n")
+        .map((line) => line.replace(/\s+/g, " ").trim())
+        .filter((line) => line.length > 0);
+}
+
+function estimateTextWidthUnits(text: string) {
+    let units = 0;
+    for (const ch of Array.from(text)) {
+        if (" ilI|!.,'`".includes(ch)) {
+            units += 0.34;
+            continue;
+        }
+        if ("mwMW@#%&".includes(ch)) {
+            units += 0.95;
+            continue;
+        }
+        if (/[0-9]/.test(ch)) {
+            units += 0.64;
+            continue;
+        }
+        if (/[A-ZÄÖÜ]/.test(ch)) {
+            units += 0.72;
+            continue;
+        }
+        units += 0.58;
+    }
+    return Math.max(1, units);
+}
+
+function getTextFontSizeMm(lines: string[], maxWidthMm: number, maxHeightMm: number) {
+    const widestUnits = Math.max(...lines.map((line) => estimateTextWidthUnits(line)));
+    const totalUnits = lines.reduce((sum, line) => sum + estimateTextWidthUnits(line), 0);
+    const widthUnits = Math.max(widestUnits, totalUnits * 0.38);
+    const innerWidth = Math.max(0.8, maxWidthMm - BUTTON_TEXT_PADDING_X_MM * 2);
+    const innerHeight = Math.max(0.8, maxHeightMm - BUTTON_TEXT_PADDING_Y_MM * 2);
+    const byWidth = innerWidth / widthUnits;
+    const byHeight = innerHeight / (Math.max(1, lines.length) * BUTTON_TEXT_LINE_HEIGHT);
+    return Math.max(1.3, Math.min(byWidth, byHeight));
+}
+
+function getTextVisualHeightMm(lines: string[], fontSizeMm: number) {
+    const lineAdvance = BUTTON_TEXT_LINE_HEIGHT * fontSizeMm;
+    return (Math.max(1, lines.length) - 1) * lineAdvance + fontSizeMm;
+}
+
+function renderTapContent(params: {
+    icon?: string;
+    text?: string;
+    cx: number;
+    cy: number;
+    maxWidthMm: number;
+    maxHeightMm: number;
+    iconMm: number;
+    strike?: boolean;
+    strikeStyle?: StrikeStyle;
+    color?: string;
+    strikeBgColor?: string;
+    forcedFontSizeMm?: number;
+}) {
+    const { icon, text, cx, cy, maxWidthMm, maxHeightMm, iconMm, strike, strikeStyle, color, strikeBgColor, forcedFontSizeMm } = params;
+    const lines = normalizeTapTextLines(text);
+    if (lines.length) {
+        const fontSize = forcedFontSizeMm ?? getTextFontSizeMm(lines, maxWidthMm, maxHeightMm);
+        const lineAdvance = BUTTON_TEXT_LINE_HEIGHT * fontSize;
+        const blockHeight = (lines.length - 1) * lineAdvance;
+        const strikeColor = color || "black";
+        const highlightColor = strikeBgColor || "white";
+        const textBlockWidth = Math.max(...lines.map((line) => estimateTextWidthUnits(line))) * fontSize;
+        const textBlockHeight = getTextVisualHeightMm(lines, fontSize);
+        const padX = Math.max(0.2, fontSize * 0.22);
+        const padY = Math.max(0.16, fontSize * 0.16);
+        const halfW = textBlockWidth / 2 + padX;
+        const halfH = textBlockHeight / 2 + padY;
+        const d = Math.max(0.2, Math.min(halfW, halfH) * 0.82);
+        const x1 = cx - d;
+        const y1 = cy - d;
+        const x2 = cx + d;
+        const y2 = cy + d;
+        const strikeOffset = Math.max(0.08, fontSize * 0.06);
+        const strikeOx = strikeOffset / Math.SQRT2;
+        const strikeOy = -strikeOffset / Math.SQRT2;
+        const strikeWidth = Math.max(0.16, fontSize * 0.14);
+        const strikeOverlay = strike
+            ? strikeStyle === "straight"
+                ? lines.map((line, i) => {
+                      const lineY = cy - blockHeight / 2 + i * lineAdvance;
+                      const lineWidth = estimateTextWidthUnits(line) * fontSize;
+                      const linePadX = Math.max(0.2, fontSize * 0.22);
+                      const straightInset = Math.max(0.25, fontSize * 0.24);
+                      const xLeft = cx - lineWidth / 2 - linePadX + straightInset;
+                      const xRight = cx + lineWidth / 2 + linePadX - straightInset;
+                      const yOff = Math.max(0.08, fontSize * 0.06);
+                      return (
+                          <g key={`strike-${i}`}>
+                              <line x1={xLeft} y1={lineY - yOff} x2={xRight} y2={lineY - yOff} stroke={highlightColor} strokeWidth={strikeWidth} strokeLinecap="butt" />
+                              <line x1={xLeft} y1={lineY} x2={xRight} y2={lineY} stroke={strikeColor} strokeWidth={strikeWidth} strokeLinecap="butt" />
+                          </g>
+                      );
+                  })
+                : (
+                    <>
+                        <line x1={x1 + strikeOx} y1={y1 + strikeOy} x2={x2 + strikeOx} y2={y2 + strikeOy} stroke={highlightColor} strokeWidth={strikeWidth} strokeLinecap="butt" />
+                        <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={strikeColor} strokeWidth={strikeWidth} strokeLinecap="butt" />
+                    </>
+                )
+            : null;
+        return (
+            <g fill={color || "black"} fontSize={fontSize} fontWeight={600} fontFamily={BUTTON_TEXT_FONT}>
+                {lines.map((line, i) => (
+                    <text key={`${line}-${i}`} x={cx} y={cy - blockHeight / 2 + i * lineAdvance} textAnchor="middle" dominantBaseline="middle">
+                        {line}
+                    </text>
+                ))}
+                {strikeOverlay}
+            </g>
+        );
+    }
+    if (!icon) return null;
+    return renderHaIconAtMm({ icon, cx, cy, iconMm, strike, color, strikeBgColor });
+}
+
 export function RemoteSvg({
     template,
     state,
@@ -135,6 +265,41 @@ export function RemoteSvg({
     const canvasHeightMm = template.heightMm + extraBottomMm;
 
     const enabledTaps = state.tapsEnabled.length ? state.tapsEnabled : (["single"] as TapType[]);
+    const uniformTextFontSizeMm = (() => {
+        let minSize = Infinity;
+        for (const b of template.buttons) {
+            const buttonCfg = state.buttonConfigs[b.id] ?? {};
+            const cfg = buttonCfg.icons ?? {};
+            const texts = buttonCfg.texts ?? {};
+            const activeTaps = TAP_ORDER.filter((t) => enabledTaps.includes(t) && (!!cfg[t] || normalizeTapTextLines(texts[t]).length > 0));
+            const n = activeTaps.length;
+            if (n === 0) continue;
+
+            if (n === 1) {
+                const tap = activeTaps[0];
+                const lines = normalizeTapTextLines(texts[tap]);
+                if (!lines.length) continue;
+
+                const iconMm = autoIconSizing ? Math.max(5, Math.min(10, b.wMm - 2, b.hMm - 2)) : fixedIconMm;
+                const shouldShowMarker = tap !== "single" || showTapMarkersAlways;
+                const { markerMm, gapMm } = getMarkerSizing(iconMm, autoIconSizing);
+                const maxWidthMm = Math.max(1, b.wMm - 2);
+                const maxHeightMm = shouldShowMarker ? Math.max(1, b.hMm - markerMm - gapMm - 1.2) : Math.max(1, b.hMm - 2);
+                minSize = Math.min(minSize, getTextFontSizeMm(lines, maxWidthMm, maxHeightMm));
+                continue;
+            }
+
+            const colW = b.wMm / n;
+            const iconMm = autoIconSizing ? Math.max(5, Math.min(9, colW - 2, b.hMm - 3 - 1 - 2)) : Math.min(fixedIconMm, colW - 2);
+            const { markerMm, gapMm } = getMarkerSizing(iconMm, autoIconSizing);
+            for (const tap of activeTaps) {
+                const lines = normalizeTapTextLines(texts[tap]);
+                if (!lines.length) continue;
+                minSize = Math.min(minSize, getTextFontSizeMm(lines, Math.max(1, colW - 1.6), Math.max(1, b.hMm - markerMm - gapMm - 1.2)));
+            }
+        }
+        return Number.isFinite(minSize) ? minSize : undefined;
+    })();
 
     const wmEnabled = !!showWatermark && !!watermarkText;
     const wmOpacity = typeof watermarkOpacity === "number" ? watermarkOpacity : 0.12;
@@ -194,10 +359,12 @@ export function RemoteSvg({
             {template.buttons.map((b) => {
                 const buttonCfg = state.buttonConfigs[b.id] ?? {};
                 const cfg = buttonCfg.icons ?? {};
+                const texts = buttonCfg.texts ?? {};
+                const strikeStyles = buttonCfg.strikeStyle ?? {};
                 const iconColors = buttonCfg.iconColors ?? {};
                 const buttonFill = buttonCfg.buttonFill;
                 const strikeBgColor = buttonFill ?? "white";
-                const activeTaps = TAP_ORDER.filter((t) => enabledTaps.includes(t) && !!cfg[t]);
+                const activeTaps = TAP_ORDER.filter((t) => enabledTaps.includes(t) && (!!cfg[t] || normalizeTapTextLines(texts[t]).length > 0));
                 const n = activeTaps.length;
 
                 const buttonCx = b.xMm + b.wMm / 2;
@@ -288,23 +455,36 @@ export function RemoteSvg({
 
                     if (shouldShowMarker) {
                         const { markerMm, gapMm } = getMarkerSizing(iconMm, autoIconSizing);
-                        const groupH = iconMm + gapMm + markerMm;
-                        const topY = b.yMm + (b.hMm - groupH) / 2;
                         const markerColor = tapMarkerColorMode === "icon" ? iconColors[tap] ?? iconColor : "black";
-                        const renderedIcon = renderHaIconAtMm({
-                            icon: cfg[tap]!,
+                        const hasText = normalizeTapTextLines(texts[tap]).length > 0;
+                        const lines = normalizeTapTextLines(texts[tap]);
+                        const textFontSizeMm = lines.length
+                            ? (uniformTextFontSizeMm ?? getTextFontSizeMm(lines, Math.max(1, b.wMm - 2), Math.max(1, b.hMm - markerMm - gapMm - 1.2)))
+                            : 0;
+                        const contentHeightMm = hasText ? getTextVisualHeightMm(lines, textFontSizeMm) : iconMm;
+                        const groupH = contentHeightMm + gapMm + markerMm;
+                        const topY = b.yMm + (b.hMm - groupH) / 2;
+                        const contentCy = topY + contentHeightMm / 2;
+                        const markerCy = topY + contentHeightMm + gapMm + markerMm / 2;
+                        const renderedContent = renderTapContent({
+                            icon: cfg[tap],
+                            text: texts[tap],
                             cx: buttonCx,
-                            cy: topY + iconMm / 2,
+                            cy: contentCy,
+                            maxWidthMm: Math.max(1, b.wMm - 2),
+                            maxHeightMm: Math.max(1, b.hMm - markerMm - gapMm - 1.2),
                             iconMm,
                             strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                            strikeStyle: strikeStyles[tap] ?? "diagonal",
                             color: iconColors[tap] ?? iconColor,
                             strikeBgColor,
+                            forcedFontSizeMm: uniformTextFontSizeMm,
                         });
                         const fallbackIcon = showMissingIconPlaceholder ? (
                             <g fill="#b0b0b0">
-                                <circle cx={buttonCx - iconMm * 0.2} cy={topY + iconMm / 2} r={iconMm * 0.08} />
-                                <circle cx={buttonCx} cy={topY + iconMm / 2} r={iconMm * 0.08} />
-                                <circle cx={buttonCx + iconMm * 0.2} cy={topY + iconMm / 2} r={iconMm * 0.08} />
+                                <circle cx={buttonCx - iconMm * 0.2} cy={contentCy} r={iconMm * 0.08} />
+                                <circle cx={buttonCx} cy={contentCy} r={iconMm * 0.08} />
+                                <circle cx={buttonCx + iconMm * 0.2} cy={contentCy} r={iconMm * 0.08} />
                             </g>
                         ) : null;
 
@@ -314,8 +494,8 @@ export function RemoteSvg({
                                 {outline}
                                 {highlight}
                                 {buttonGuides}
-                                {renderedIcon ?? fallbackIcon}
-                                <g transform={`translate(${buttonCx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
+                                {renderedContent ?? (!hasText ? fallbackIcon : null)}
+                                <g transform={`translate(${buttonCx}, ${markerCy})`}>
                                     <TapMarker tap={tap} sizeMm={markerMm} fillMode={tapMarkerFill} color={markerColor} />
                                 </g>
                                 {hitTarget}
@@ -324,15 +504,21 @@ export function RemoteSvg({
                         );
                     }
 
-                    const renderedIcon = renderHaIconAtMm({
-                        icon: cfg[tap]!,
+                    const renderedContent = renderTapContent({
+                        icon: cfg[tap],
+                        text: texts[tap],
                         cx: buttonCx,
                         cy: buttonCy,
+                        maxWidthMm: Math.max(1, b.wMm - 2),
+                        maxHeightMm: Math.max(1, b.hMm - 2),
                         iconMm,
                         strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                        strikeStyle: strikeStyles[tap] ?? "diagonal",
                         color: iconColors[tap] ?? iconColor,
                         strikeBgColor,
+                        forcedFontSizeMm: uniformTextFontSizeMm,
                     });
+                    const hasText = normalizeTapTextLines(texts[tap]).length > 0;
                     const fallbackIcon = showMissingIconPlaceholder ? (
                         <g fill="#b0b0b0">
                             <circle cx={buttonCx - iconMm * 0.2} cy={buttonCy} r={iconMm * 0.08} />
@@ -346,7 +532,7 @@ export function RemoteSvg({
                             {outline}
                             {highlight}
                             {buttonGuides}
-                            {renderedIcon ?? fallbackIcon}
+                            {renderedContent ?? (!hasText ? fallbackIcon : null)}
                             {hitTarget}
                             {handles}
                         </g>
@@ -356,9 +542,8 @@ export function RemoteSvg({
                 const colW = b.wMm / n;
                 const iconMm = autoIconSizing ? Math.max(5, Math.min(9, colW - 2, b.hMm - 3 - 1 - 2)) : Math.min(fixedIconMm, colW - 2);
                 const { markerMm, gapMm } = getMarkerSizing(iconMm, autoIconSizing);
-
-                const groupH = iconMm + gapMm + markerMm;
-                const topY = b.yMm + (b.hMm - groupH) / 2;
+                const iconGroupH = iconMm + gapMm + markerMm;
+                const iconTopY = b.yMm + (b.hMm - iconGroupH) / 2;
 
                 return (
                     <g key={b.id}>
@@ -376,26 +561,41 @@ export function RemoteSvg({
                         {activeTaps.map((tap, i) => {
                             const cx = b.xMm + colW * (i + 0.5);
                             const markerColor = tapMarkerColorMode === "icon" ? iconColors[tap] ?? iconColor : "black";
-                            const renderedIcon = renderHaIconAtMm({
-                                icon: cfg[tap]!,
+                            const hasText = normalizeTapTextLines(texts[tap]).length > 0;
+                            const lines = normalizeTapTextLines(texts[tap]);
+                            const textFontSizeMm = lines.length
+                                ? (uniformTextFontSizeMm ?? getTextFontSizeMm(lines, Math.max(1, colW - 1.6), Math.max(1, b.hMm - markerMm - gapMm - 1.2)))
+                                : 0;
+                            const contentHeightMm = hasText ? getTextVisualHeightMm(lines, textFontSizeMm) : iconMm;
+                            const groupH = contentHeightMm + gapMm + markerMm;
+                            const topY = b.yMm + (b.hMm - groupH) / 2;
+                            const contentCy = hasText ? topY + contentHeightMm / 2 : iconTopY + iconMm / 2;
+                            const markerCy = hasText ? topY + contentHeightMm + gapMm + markerMm / 2 : iconTopY + iconMm + gapMm + markerMm / 2;
+                            const renderedContent = renderTapContent({
+                                icon: cfg[tap],
+                                text: texts[tap],
                                 cx,
-                                cy: topY + iconMm / 2,
+                                cy: contentCy,
+                                maxWidthMm: Math.max(1, colW - 1.6),
+                                maxHeightMm: Math.max(1, b.hMm - markerMm - gapMm - 1.2),
                                 iconMm,
                                 strike: state.buttonConfigs[b.id]?.strike?.[tap] ?? false,
+                                strikeStyle: strikeStyles[tap] ?? "diagonal",
                                 color: iconColors[tap] ?? iconColor,
                                 strikeBgColor,
+                                forcedFontSizeMm: uniformTextFontSizeMm,
                             });
                             const fallbackIcon = showMissingIconPlaceholder ? (
                                 <g fill="#b0b0b0">
-                                    <circle cx={cx - iconMm * 0.2} cy={topY + iconMm / 2} r={iconMm * 0.08} />
-                                    <circle cx={cx} cy={topY + iconMm / 2} r={iconMm * 0.08} />
-                                    <circle cx={cx + iconMm * 0.2} cy={topY + iconMm / 2} r={iconMm * 0.08} />
+                                    <circle cx={cx - iconMm * 0.2} cy={contentCy} r={iconMm * 0.08} />
+                                    <circle cx={cx} cy={contentCy} r={iconMm * 0.08} />
+                                    <circle cx={cx + iconMm * 0.2} cy={contentCy} r={iconMm * 0.08} />
                                 </g>
                             ) : null;
                             return (
                                 <g key={tap}>
-                                    {renderedIcon ?? fallbackIcon}
-                                    <g transform={`translate(${cx}, ${topY + iconMm + gapMm + markerMm / 2})`}>
+                                    {renderedContent ?? (!hasText ? fallbackIcon : null)}
+                                    <g transform={`translate(${cx}, ${markerCy})`}>
                                         <TapMarker tap={tap} sizeMm={markerMm} fillMode={tapMarkerFill} color={markerColor} />
                                     </g>
                                 </g>
