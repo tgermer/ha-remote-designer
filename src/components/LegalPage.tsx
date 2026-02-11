@@ -199,18 +199,20 @@ export function LegalPage({ kind, contact, backHref, onBack }: Props) {
                     <section className={styles.section}>
                         <h2>Plausible Analytics</h2>
                         <p>
-                            Wir nutzen Plausible Analytics zur Reichweitenmessung und statistischen Auswertung der Nutzung. Plausible arbeitet ohne
-                            Cookies und ohne geräteübergreifende Identifikatoren. Dabei werden u. a. IP-Adresse (gekürzt bzw. gehasht), User-Agent,
-                            Referrer und aufgerufene Seite verarbeitet, um aggregierte Statistiken zu erstellen. Zusätzlich erfassen wir
-                            Nutzungsereignisse (z. B. Remote- oder Icon-Auswahl sowie Exporte) in aggregierter Form.
+                            Wir nutzen eine selbst gehostete Instanz von Plausible Analytics zur Reichweitenmessung und statistischen Auswertung der
+                            Nutzung. Die Instanz wird auf einem eigenen Server (Proxmox) betrieben. Plausible arbeitet ohne Cookies und ohne
+                            geraeteuebergreifende Identifikatoren.
+                        </p>
+                        <p>
+                            Dabei werden insbesondere aufgerufene Seiten, Referrer, Browser-/Geraeteinformationen sowie eine aus IP-Adresse und
+                            User-Agent abgeleitete, nicht direkt rueckfuehrbare Kennung verarbeitet, um aggregierte Statistiken zu erstellen.
+                            Zusaetzlich erfassen wir Nutzungsereignisse (z. B. Remote- oder Icon-Auswahl sowie Exporte) in aggregierter Form.
                         </p>
                         <p>Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an Analyse und Verbesserung des Angebots).</p>
-                        <p>Empfänger/Auftragsverarbeiter: Plausible Analytics OÜ.</p>
+                        <p>Empfaenger/Kategorien: keine Weitergabe der Analytics-Daten an Dritte (eigener Betrieb).</p>
                         <p>
-                            Mit Plausible besteht ein Vertrag zur Auftragsverarbeitung (Art. 28 DSGVO). Die DPA ist hier einsehbar:{" "}
-                            <a href="https://plausible.io/dpa" target="_blank" rel="noopener noreferrer">
-                                https://plausible.io/dpa
-                            </a>
+                            Speicherdauer: bis zur manuellen Loeschung bzw. gemaess technisch konfigurierter Aufbewahrungsregeln der selbst
+                            gehosteten Instanz.
                         </p>
                     </section>
 
