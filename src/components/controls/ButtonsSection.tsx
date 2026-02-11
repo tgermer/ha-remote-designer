@@ -35,6 +35,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                             <div className="option-row">
                                 <label className="option">
                                     <input
+                                        name={`buttonFillEnabled-${id}`}
                                         type="checkbox"
                                         checked={hasButtonFill}
                                         onChange={(e) => onSetButtonFill(id, e.target.checked ? buttonFill || defaultButtonFill : undefined)}
@@ -44,7 +45,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                 {hasButtonFill && (
                                     <label className="option option--inline">
                                         Background color
-                                        <input type="color" value={buttonFill} onChange={(e) => onSetButtonFill(id, e.target.value)} />
+                                        <input name={`buttonFillColor-${id}`} type="color" value={buttonFill} onChange={(e) => onSetButtonFill(id, e.target.value)} />
                                     </label>
                                 )}
                             </div>
@@ -68,6 +69,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                             {!isOffIcon && (
                                                 <label className="option">
                                                     <input
+                                                        name={`buttonStrike-${id}-${tap}`}
                                                         type="checkbox"
                                                         checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
                                                         onChange={(e) => onToggleStrike(id, tap, e.target.checked)}
@@ -77,6 +79,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                             )}
                                             <label className="option">
                                                 <input
+                                                    name={`buttonIconColorEnabled-${id}-${tap}`}
                                                     type="checkbox"
                                                     checked={hasIconColor}
                                                     onChange={(e) => onSetIconColor(id, tap, e.target.checked ? iconColor || state.options.iconColor || "#000000" : undefined)}
@@ -86,7 +89,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                             {hasIconColor && (
                                                 <label className="option option--inline">
                                                     Icon color
-                                                    <input type="color" value={iconColor} onChange={(e) => onSetIconColor(id, tap, e.target.value)} />
+                                                    <input name={`buttonIconColor-${id}-${tap}`} type="color" value={iconColor} onChange={(e) => onSetIconColor(id, tap, e.target.value)} />
                                                 </label>
                                             )}
                                         </>

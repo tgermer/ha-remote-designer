@@ -39,7 +39,7 @@ export function RemoteSection(props: RemoteSectionProps) {
                         {activeRemote?.isDraft ? <span className="badge badge--draft">Draft</span> : null}
                         {activeRemote?.isCommunity ? <span className="badge badge--community">Community</span> : null}
                     </span>
-                    <select value={remoteId} onChange={(e) => onChangeRemote(e.target.value as RemoteTemplate["id"])}>
+                    <select name="remoteId" value={remoteId} onChange={(e) => onChangeRemote(e.target.value as RemoteTemplate["id"])}>
                         {remotes.map((r) => (
                             <option key={r.id} value={r.id}>
                                 {formatRemoteOption(r)}

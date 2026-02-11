@@ -507,7 +507,7 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                         <h3>Remote details</h3>
                     </div>
                     <div className="communityDraftHeader__actions">
-                        <select value={selectedDraftId} onChange={(e) => onSelectDraft(e.target.value)}>
+                        <select name="communitySelectedDraftId" value={selectedDraftId} onChange={(e) => onSelectDraft(e.target.value)}>
                             <option value="">Select draft…</option>
                             {drafts.map((entry) => (
                                 <option key={entry.id} value={entry.id}>
@@ -530,31 +530,32 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                     <div className="communityForm">
                         <label className="communityForm__field">
                             Name
-                            <input type="text" value={draft.name} onChange={(e) => onChangeDraft({ name: e.target.value })} placeholder="e.g. My Wall Remote" />
+                            <input name="communityDraftName" type="text" value={draft.name} onChange={(e) => onChangeDraft({ name: e.target.value })} placeholder="e.g. My Wall Remote" />
                         </label>
                         <label className="communityForm__field">
                             Width (mm)
-                            <input type="number" min={1} value={draft.widthMm} onChange={(e) => onChangeDraft({ widthMm: Number(e.target.value) })} />
+                            <input name="communityDraftWidthMm" type="number" min={1} value={draft.widthMm} onChange={(e) => onChangeDraft({ widthMm: Number(e.target.value) })} />
                         </label>
                         <label className="communityForm__field">
                             Height (mm)
-                            <input type="number" min={1} value={draft.heightMm} onChange={(e) => onChangeDraft({ heightMm: Number(e.target.value) })} />
+                            <input name="communityDraftHeightMm" type="number" min={1} value={draft.heightMm} onChange={(e) => onChangeDraft({ heightMm: Number(e.target.value) })} />
                         </label>
                         <label className="communityForm__field">
                             Corner radius (mm)
-                            <input type="number" min={0} value={draft.cornerMm} onChange={(e) => onChangeDraft({ cornerMm: Number(e.target.value) })} />
+                            <input name="communityDraftCornerMm" type="number" min={0} value={draft.cornerMm} onChange={(e) => onChangeDraft({ cornerMm: Number(e.target.value) })} />
                         </label>
                         <label className="communityForm__field">
                             Manufacturer URL
-                            <input type="url" value={draft.manufacturerUrl} onChange={(e) => onChangeDraft({ manufacturerUrl: e.target.value })} placeholder="https://manufacturer.com" />
+                            <input name="communityDraftManufacturerUrl" type="url" value={draft.manufacturerUrl} onChange={(e) => onChangeDraft({ manufacturerUrl: e.target.value })} placeholder="https://manufacturer.com" />
                         </label>
                         <label className="communityForm__field">
                             Image URL
-                            <input type="url" value={draft.imageUrl} onChange={(e) => onChangeDraft({ imageUrl: e.target.value })} placeholder="https://…" />
+                            <input name="communityDraftImageUrl" type="url" value={draft.imageUrl} onChange={(e) => onChangeDraft({ imageUrl: e.target.value })} placeholder="https://…" />
                         </label>
                         <label className="communityForm__field communityForm__field--full">
                             Tags (comma-separated)
                             <input
+                                name="communityDraftTags"
                                 type="text"
                                 value={draft.tags.join(", ")}
                                 onChange={(e) =>
@@ -569,7 +570,7 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                         </label>
                         <label className="communityForm__field communityForm__field--full">
                             Notes (optional)
-                            <textarea value={draft.notes} onChange={(e) => onChangeDraft({ notes: e.target.value })} placeholder="Model number, quirks, measurement notes…" />
+                            <textarea name="communityDraftNotes" value={draft.notes} onChange={(e) => onChangeDraft({ notes: e.target.value })} placeholder="Model number, quirks, measurement notes…" />
                         </label>
                     </div>
                 </div>
@@ -615,34 +616,34 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                     {draft.buttons.map((button, index) => (
                         <div key={`${button.id}-${index}`} className={`communityButtons__row${button.id === selectedButtonId ? " communityButtons__row--selected" : ""}`}>
                             <TableCell label={BUTTON_COLUMNS[0].label}>
-                                <input value={button.id} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { id: e.target.value })} />
+                                <input name={`communityButtonId-${index}`} value={button.id} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { id: e.target.value })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[1].label}>
-                                <input type="number" value={button.xMm} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { xMm: Number(e.target.value) })} />
+                                <input name={`communityButtonX-${index}`} type="number" value={button.xMm} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { xMm: Number(e.target.value) })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[2].label}>
-                                <input type="number" value={button.yMm} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { yMm: Number(e.target.value) })} />
+                                <input name={`communityButtonY-${index}`} type="number" value={button.yMm} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { yMm: Number(e.target.value) })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[3].label}>
-                                <input type="number" value={button.wMm} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { wMm: Number(e.target.value) })} />
+                                <input name={`communityButtonW-${index}`} type="number" value={button.wMm} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { wMm: Number(e.target.value) })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[4].label}>
-                                <input type="number" value={button.hMm} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { hMm: Number(e.target.value) })} />
+                                <input name={`communityButtonH-${index}`} type="number" value={button.hMm} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { hMm: Number(e.target.value) })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[5].label}>
-                                <input type="number" value={button.rMm ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { rMm: Number(e.target.value) })} />
+                                <input name={`communityButtonR-${index}`} type="number" value={button.rMm ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { rMm: Number(e.target.value) })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[6].label}>
-                                <input type="number" value={button.r?.tl ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), tl: Number(e.target.value) } })} />
+                                <input name={`communityButtonTl-${index}`} type="number" value={button.r?.tl ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), tl: Number(e.target.value) } })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[7].label}>
-                                <input type="number" value={button.r?.tr ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), tr: Number(e.target.value) } })} />
+                                <input name={`communityButtonTr-${index}`} type="number" value={button.r?.tr ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), tr: Number(e.target.value) } })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[8].label}>
-                                <input type="number" value={button.r?.br ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), br: Number(e.target.value) } })} />
+                                <input name={`communityButtonBr-${index}`} type="number" value={button.r?.br ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), br: Number(e.target.value) } })} />
                             </TableCell>
                             <TableCell label={BUTTON_COLUMNS[9].label}>
-                                <input type="number" value={button.r?.bl ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), bl: Number(e.target.value) } })} />
+                                <input name={`communityButtonBl-${index}`} type="number" value={button.r?.bl ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), bl: Number(e.target.value) } })} />
                             </TableCell>
                             <TableCell label="Actions">
                                 <Button variant="danger" type="button" onClick={() => onRemoveButton(index)} aria-label="Remove button">
@@ -675,6 +676,7 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                         <div key={`cutout-${index}`} className={`communityCutouts__row${selectedCutoutIndex === index ? " communityCutouts__row--selected" : ""}`}>
                             <TableCell label={CUTOUT_COLUMNS[0].label}>
                                 <select
+                                    name={`communityCutoutKind-${index}`}
                                     value={cutout.kind}
                                     onChange={(e) => {
                                         setSelectedCutoutIndex(index);
@@ -694,43 +696,43 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                             {cutout.kind === "rect" ? (
                                 <>
                                     <TableCell label={CUTOUT_COLUMNS[1].label}>
-                                        <input type="number" value={cutout.xMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, xMm: Number(e.target.value) })} />
+                                        <input name={`communityCutoutX-${index}`} type="number" value={cutout.xMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, xMm: Number(e.target.value) })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[2].label}>
-                                        <input type="number" value={cutout.yMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, yMm: Number(e.target.value) })} />
+                                        <input name={`communityCutoutY-${index}`} type="number" value={cutout.yMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, yMm: Number(e.target.value) })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[3].label}>
-                                        <input type="number" value={cutout.wMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, wMm: Number(e.target.value) })} />
+                                        <input name={`communityCutoutW-${index}`} type="number" value={cutout.wMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, wMm: Number(e.target.value) })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[4].label}>
-                                        <input type="number" value={cutout.hMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, hMm: Number(e.target.value) })} />
+                                        <input name={`communityCutoutH-${index}`} type="number" value={cutout.hMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, hMm: Number(e.target.value) })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[5].label}>
-                                        <input type="number" value={cutout.rMm ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, rMm: Number(e.target.value) })} />
+                                        <input name={`communityCutoutR-${index}`} type="number" value={cutout.rMm ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, rMm: Number(e.target.value) })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[6].label}>
-                                        <input type="number" value={cutout.r?.tl ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, r: { ...(cutout.r ?? {}), tl: Number(e.target.value) } })} />
+                                        <input name={`communityCutoutTl-${index}`} type="number" value={cutout.r?.tl ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, r: { ...(cutout.r ?? {}), tl: Number(e.target.value) } })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[7].label}>
-                                        <input type="number" value={cutout.r?.tr ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, r: { ...(cutout.r ?? {}), tr: Number(e.target.value) } })} />
+                                        <input name={`communityCutoutTr-${index}`} type="number" value={cutout.r?.tr ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, r: { ...(cutout.r ?? {}), tr: Number(e.target.value) } })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[8].label}>
-                                        <input type="number" value={cutout.r?.br ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, r: { ...(cutout.r ?? {}), br: Number(e.target.value) } })} />
+                                        <input name={`communityCutoutBr-${index}`} type="number" value={cutout.r?.br ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, r: { ...(cutout.r ?? {}), br: Number(e.target.value) } })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[9].label}>
-                                        <input type="number" value={cutout.r?.bl ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, r: { ...(cutout.r ?? {}), bl: Number(e.target.value) } })} />
+                                        <input name={`communityCutoutBl-${index}`} type="number" value={cutout.r?.bl ?? 0} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, r: { ...(cutout.r ?? {}), bl: Number(e.target.value) } })} />
                                     </TableCell>
                                 </>
                             ) : (
                                 <>
                                     <TableCell label={CUTOUT_COLUMNS[1].label}>
-                                        <input type="number" value={cutout.cxMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, cxMm: Number(e.target.value) })} />
+                                        <input name={`communityCutoutCx-${index}`} type="number" value={cutout.cxMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, cxMm: Number(e.target.value) })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[2].label}>
-                                        <input type="number" value={cutout.cyMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, cyMm: Number(e.target.value) })} />
+                                        <input name={`communityCutoutCy-${index}`} type="number" value={cutout.cyMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, cyMm: Number(e.target.value) })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[5].label}>
-                                        <input type="number" value={cutout.rMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, rMm: Number(e.target.value) })} />
+                                        <input name={`communityCutoutRadius-${index}`} type="number" value={cutout.rMm} onFocus={() => setSelectedCutoutIndex(index)} onChange={(e) => onUpdateCutout(index, { ...cutout, rMm: Number(e.target.value) })} />
                                     </TableCell>
                                     <TableCell label={CUTOUT_COLUMNS[3].label}>
                                         <span className="communityTable__empty">—</span>

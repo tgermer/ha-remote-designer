@@ -36,7 +36,7 @@ export function PreviewPane(props: PreviewPaneProps) {
                     </button>
                     <span>
                         Page{" "}
-                        <select value={currentPage} onChange={(e) => onChangePage?.(Number(e.target.value))}>
+                        <select name="previewPage" value={currentPage} onChange={(e) => onChangePage?.(Number(e.target.value))}>
                             {Array.from({ length: pages }, (_, i) => (
                                 <option key={i} value={i}>
                                     {i + 1}

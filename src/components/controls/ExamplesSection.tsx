@@ -23,7 +23,7 @@ export function ExamplesSection(props: ExamplesSectionProps) {
 
             <label className="modelRow__label">
                 Choose an example for this remote
-                <select value={selectedExampleId} onChange={(e) => onSelectExampleId(e.target.value)}>
+                <select name="selectedExampleId" value={selectedExampleId} onChange={(e) => onSelectExampleId(e.target.value)}>
                     {examples.map((ex) => (
                         <option key={ex.id} value={ex.id}>
                             {ex.name}

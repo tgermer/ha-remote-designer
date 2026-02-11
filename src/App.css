@@ -83,6 +83,29 @@ select {
   box-sizing: border-box;
 }
 
+input:not([type]),
+input:is([type="text"], [type="number"], [type="email"], [type="password"], [type="search"], [type="tel"], [type="url"], [type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"]),
+select,
+textarea {
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  padding: 0.4rem 0.5rem;
+}
+
+input:not([type]):focus-visible,
+input:is([type="text"], [type="number"], [type="email"], [type="password"], [type="search"], [type="tel"], [type="url"], [type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"]):focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
 @supports (padding: env(safe-area-inset-top)) {
   .app {
     padding-top: calc(1rem + env(safe-area-inset-top));
@@ -1099,11 +1122,6 @@ main {
 
 .galleryFilters__control select {
   font-size: 0.9rem;
-  padding: 0.35rem 0.5rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--stroke);
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--ink);
 }
 
 .galleryFilters__summary {
@@ -1639,7 +1657,7 @@ label {
 
 .option {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -1995,9 +2013,7 @@ label {
 }
 
 .exportRow__label select {
-  padding: 0.35rem 0.5rem;
-  border: 1px solid var(--stroke-strong);
-  border-radius: var(--radius-sm);
+  min-width: 84px;
 }
 .modelRow {
   display: grid;

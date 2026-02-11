@@ -45,7 +45,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
             {shareStatus === "failed" && (
                 <div className="share__fallback">
                     <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
-                    <input className="share__input" type="text" readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} />
+                    <input name="shareExportUrlFallback" className="share__input" type="text" readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} />
                 </div>
             )}
 
@@ -109,7 +109,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
 
                         <label className="exportRow__label">
                             DPI
-                            <select value={dpi} onChange={(e) => onChangeDpi(Number(e.target.value))}>
+                            <select name="shareExportAdminDpi" value={dpi} onChange={(e) => onChangeDpi(Number(e.target.value))}>
                                 <option value={203}>203</option>
                                 <option value={300}>300</option>
                             </select>

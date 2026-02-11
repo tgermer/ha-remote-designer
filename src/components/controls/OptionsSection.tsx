@@ -15,18 +15,18 @@ export function OptionsSection(props: OptionsSectionProps) {
             <legend>Options</legend>
             <div className="options">
                 <label className="option">
-                    <input type="checkbox" checked={options.showTapMarkersAlways} onChange={(e) => onUpdateOptions({ showTapMarkersAlways: e.target.checked })} />
+                    <input name="showTapMarkersAlways" type="checkbox" checked={options.showTapMarkersAlways} onChange={(e) => onUpdateOptions({ showTapMarkersAlways: e.target.checked })} />
                     Show tap marker for single tap (single icon)
                 </label>
 
                 <label className="option">
-                    <input type="checkbox" checked={options.showTapDividers} onChange={(e) => onUpdateOptions({ showTapDividers: e.target.checked })} />
+                    <input name="showTapDividers" type="checkbox" checked={options.showTapDividers} onChange={(e) => onUpdateOptions({ showTapDividers: e.target.checked })} />
                     Show dividers for multi icons
                 </label>
 
                 <label className="option">
                     Tap marker style
-                    <select value={options.tapMarkerFill} onChange={(e) => onUpdateOptions({ tapMarkerFill: e.target.value as DesignOptions["tapMarkerFill"] })}>
+                    <select name="tapMarkerFill" value={options.tapMarkerFill} onChange={(e) => onUpdateOptions({ tapMarkerFill: e.target.value as DesignOptions["tapMarkerFill"] })}>
                         <option value="outline">Outline</option>
                         <option value="filled">Filled</option>
                     </select>
@@ -34,35 +34,36 @@ export function OptionsSection(props: OptionsSectionProps) {
 
                 <label className="option">
                     Tap marker color
-                    <select value={options.tapMarkerColorMode} onChange={(e) => onUpdateOptions({ tapMarkerColorMode: e.target.value as DesignOptions["tapMarkerColorMode"] })}>
+                    <select name="tapMarkerColorMode" value={options.tapMarkerColorMode} onChange={(e) => onUpdateOptions({ tapMarkerColorMode: e.target.value as DesignOptions["tapMarkerColorMode"] })}>
                         <option value="black">Black</option>
                         <option value="icon">Icon color</option>
                     </select>
                 </label>
 
                 <label className="option">
-                    <input type="checkbox" checked={options.showRemoteOutline} onChange={(e) => onUpdateOptions({ showRemoteOutline: e.target.checked })} />
+                    <input name="showRemoteOutline" type="checkbox" checked={options.showRemoteOutline} onChange={(e) => onUpdateOptions({ showRemoteOutline: e.target.checked })} />
                     {outlineLabel}
                 </label>
 
                 <label className="option">
-                    <input type="checkbox" checked={options.showButtonOutlines} onChange={(e) => onUpdateOptions({ showButtonOutlines: e.target.checked })} />
+                    <input name="showButtonOutlines" type="checkbox" checked={options.showButtonOutlines} onChange={(e) => onUpdateOptions({ showButtonOutlines: e.target.checked })} />
                     Show button outlines
                 </label>
 
                 <label className="option">
-                    <input type="checkbox" checked={options.showCutouts} onChange={(e) => onUpdateOptions({ showCutouts: e.target.checked })} />
+                    <input name="showCutouts" type="checkbox" checked={options.showCutouts} onChange={(e) => onUpdateOptions({ showCutouts: e.target.checked })} />
                     Show cutouts (export + preview)
                 </label>
 
                 <label className="option">
                     Label outline color
-                    <input type="color" value={options.labelOutlineColor} onChange={(e) => onUpdateOptions({ labelOutlineColor: e.target.value })} />
+                    <input name="labelOutlineColor" type="color" value={options.labelOutlineColor} onChange={(e) => onUpdateOptions({ labelOutlineColor: e.target.value })} />
                 </label>
 
                 <label className="option">
                     Label outline stroke (mm)
                     <input
+                        name="labelOutlineStrokeMm"
                         type="number"
                         min={0.05}
                         max={2}
@@ -73,19 +74,20 @@ export function OptionsSection(props: OptionsSectionProps) {
                 </label>
 
                 <label className="option">
-                    <input type="checkbox" checked={options.autoIconSizing} onChange={(e) => onUpdateOptions({ autoIconSizing: e.target.checked })} />
+                    <input name="autoIconSizing" type="checkbox" checked={options.autoIconSizing} onChange={(e) => onUpdateOptions({ autoIconSizing: e.target.checked })} />
                     Auto icon sizing
                 </label>
 
                 <label className="option">
                     Default icon color
-                    <input type="color" value={options.iconColor} onChange={(e) => onUpdateOptions({ iconColor: e.target.value })} />
+                    <input name="iconColor" type="color" value={options.iconColor} onChange={(e) => onUpdateOptions({ iconColor: e.target.value })} />
                 </label>
 
                 {!options.autoIconSizing && (
                     <label className="option">
                         Fixed icon size (mm)
                         <input
+                            name="fixedIconMm"
                             type="number"
                             min={4}
                             max={40}
@@ -97,7 +99,7 @@ export function OptionsSection(props: OptionsSectionProps) {
                 )}
 
                 <label className="option">
-                    <input type="checkbox" checked={options.showScaleBar} onChange={(e) => onUpdateOptions({ showScaleBar: e.target.checked })} />
+                    <input name="showScaleBar" type="checkbox" checked={options.showScaleBar} onChange={(e) => onUpdateOptions({ showScaleBar: e.target.checked })} />
                     Show 1 cm scale bar (print check)
                 </label>
             </div>

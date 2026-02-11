@@ -20,7 +20,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
             <div className="options">
                 <label className="option">
                     Paper size
-                    <select value={options.sheetSize} onChange={(e) => onUpdateOptions({ sheetSize: e.target.value as DesignOptions["sheetSize"] })}>
+                    <select name="sheetSize" value={options.sheetSize} onChange={(e) => onUpdateOptions({ sheetSize: e.target.value as DesignOptions["sheetSize"] })}>
                         <option value="A4">A4</option>
                         <option value="Letter">Letter</option>
                     </select>
@@ -29,6 +29,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 <label className="option">
                     Sticker width (mm)
                     <input
+                        name="labelWidthMm"
                         type="number"
                         min={5}
                         max={210}
@@ -41,6 +42,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 <label className="option">
                     Sticker height (mm)
                     <input
+                        name="labelHeightMm"
                         type="number"
                         min={5}
                         max={297}
@@ -53,6 +55,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 <label className="option">
                     Corner radius (mm)
                     <input
+                        name="labelCornerMm"
                         type="number"
                         min={0}
                         max={20}
@@ -65,6 +68,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 <label className="option">
                     Sticker count
                     <input
+                        name="labelCount"
                         type="number"
                         min={1}
                         max={999}
@@ -77,6 +81,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 <label className="option">
                     Sheet margin X (mm)
                     <input
+                        name="sheetMarginXMm"
                         type="number"
                         min={0}
                         max={50}
@@ -89,6 +94,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 <label className="option">
                     Sheet margin Y (mm)
                     <input
+                        name="sheetMarginYMm"
                         type="number"
                         min={0}
                         max={50}
@@ -101,6 +107,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 <label className="option">
                     Sticker gap (mm)
                     <input
+                        name="sheetGapMm"
                         type="number"
                         min={0}
                         max={30}

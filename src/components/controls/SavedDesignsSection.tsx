@@ -57,6 +57,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
             <label className="modelRow__label">
                 Name
                 <input
+                    name="saveName"
                     type="text"
                     value={saveName}
                     onChange={(e) => onChangeSaveName(e.target.value)}
@@ -91,7 +92,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
 
             <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
                 Your saved remotes
-                <select value={selectedSavedId} onChange={(e) => onSelectSavedId(e.target.value)} onFocus={onRefreshSavedDesigns}>
+                <select name="selectedSavedId" value={selectedSavedId} onChange={(e) => onSelectSavedId(e.target.value)} onFocus={onRefreshSavedDesigns}>
                     <option value="">(none)</option>
                     {savedDesigns.map((d) => (
                         <option key={d.id} value={d.id}>
@@ -124,6 +125,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                     </Button>
                     <input
                         ref={importInputRef}
+                        name="savedDesignImportFile"
                         type="file"
                         accept="application/json,.json"
                         style={{ display: "none" }}

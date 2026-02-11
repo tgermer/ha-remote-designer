@@ -298,6 +298,7 @@ export function GalleryView(props: GalleryViewProps) {
                         <label className="galleryFilters__control">
                             Remote type
                             <select
+                                name="galleryRemoteType"
                                 value={selectedRemoteId}
                                 onChange={(e) => {
                                     setSelectedRemoteId(e.target.value);
@@ -315,6 +316,7 @@ export function GalleryView(props: GalleryViewProps) {
                         <label className="galleryFilters__control">
                             Source
                             <select
+                                name="gallerySourceFilter"
                                 value={sourceFilter}
                                 onChange={(e) => {
                                     setSourceFilter(e.target.value as "all" | "preview" | "saved");
@@ -329,6 +331,7 @@ export function GalleryView(props: GalleryViewProps) {
                         <label className="galleryFilters__control">
                             Examples
                             <select
+                                name="galleryExampleFilter"
                                 value={exampleFilter}
                                 onChange={(e) => {
                                     setExampleFilter(e.target.value as "all" | "official" | "user");
@@ -343,6 +346,7 @@ export function GalleryView(props: GalleryViewProps) {
                         <label className="galleryFilters__control">
                             Sort
                             <select
+                                name="gallerySortKey"
                                 value={sortKey}
                                 onChange={(e) => {
                                     setSortKey(e.target.value as "recent" | "type" | "name" | "source");

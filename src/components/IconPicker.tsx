@@ -192,6 +192,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
         <div className="iconpicker">
             <div className="iconpicker__row">
                 <input
+                    name={`iconpickerValue-${instanceId}`}
                     className="iconpicker__input"
                     value={currentText}
                     onChange={(e) => {
@@ -340,6 +341,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     </header>
 
                     <input
+                        name={`iconpickerMdiQuery-${instanceId}`}
                         className="iconpicker__search"
                         value={mdiQuery}
                         onChange={(e) => {
@@ -407,6 +409,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     </header>
 
                     <input
+                        name={`iconpickerHueQuery-${instanceId}`}
                         className="iconpicker__search"
                         value={hueQuery}
                         onChange={(e) => setHueQuery(e.target.value)}

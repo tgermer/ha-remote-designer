@@ -32,7 +32,7 @@ export function ShareSection(props: ShareSectionProps) {
             {shareStatus === "failed" && (
                 <div className="share__fallback">
                     <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
-                    <input className="share__input" type="text" readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} />
+                    <input name="shareUrlFallback" className="share__input" type="text" readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} />
                 </div>
             )}
 

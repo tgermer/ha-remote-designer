@@ -35,7 +35,7 @@ export function ExportSection(props: ExportSectionProps) {
 
                         <label className="exportRow__label">
                             DPI
-                            <select value={dpi} onChange={(e) => onChangeDpi(Number(e.target.value))}>
+                            <select name="adminExportDpi" value={dpi} onChange={(e) => onChangeDpi(Number(e.target.value))}>
                                 <option value={203}>203</option>
                                 <option value={300}>300</option>
                             </select>
