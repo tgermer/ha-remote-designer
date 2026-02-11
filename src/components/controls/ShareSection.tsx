@@ -1,4 +1,5 @@
 import { UiIcon } from "../UiIcon";
+import { Button } from "../ui/Button";
 
 type ShareStatus = "idle" | "copied" | "failed";
 
@@ -17,10 +18,10 @@ export function ShareSection(props: ShareSectionProps) {
             <legend>Share</legend>
 
             <p className="share">
-                <button type="button" className="btn" onClick={onCopyShareLink}>
+                <Button type="button" onClick={onCopyShareLink}>
                     <UiIcon name="mdi:link-variant" className="icon" />
                     Copy share link
-                </button>
+                </Button>
                 {shareStatus === "copied" && (
                     <span className="share__status" role="status">
                         Copied!
@@ -36,10 +37,10 @@ export function ShareSection(props: ShareSectionProps) {
             )}
 
             <p>
-                <button type="button" className="btn" onClick={onReset}>
+                <Button type="button" onClick={onReset}>
                     <UiIcon name="mdi:backup-restore" className="icon" />
                     Start from scratch
-                </button>
+                </Button>
             </p>
         </fieldset>
     );

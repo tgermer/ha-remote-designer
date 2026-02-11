@@ -1,5 +1,6 @@
 import type { RemoteTemplate } from "../../app/remotes";
 import { UiIcon } from "../UiIcon";
+import { Button } from "../ui/Button";
 
 const COMMUNITY_PREVIEW_ID = "community_preview";
 
@@ -71,10 +72,10 @@ export function RemoteSection(props: RemoteSectionProps) {
                 </p>
             ) : null}
             <div className="row row--spaced">
-                <button type="button" className="btn" onClick={onResetRemote}>
+                <Button type="button" onClick={onResetRemote}>
                     <UiIcon name="mdi:backup-restore" className="icon" />
                     Reset current remote
-                </button>
+                </Button>
             </div>
         </fieldset>
     );

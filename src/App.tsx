@@ -26,6 +26,7 @@ import { HiddenExportRenderers } from "./components/HiddenExportRenderers";
 import { LegalPage } from "./components/LegalPage";
 import { ConfiguratorIntro } from "./components/ConfiguratorIntro";
 import { UiIcon } from "./components/UiIcon";
+import { Button } from "./components/ui/Button";
 
 import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
@@ -1787,16 +1788,16 @@ export default function App() {
                                       }}
                                   >
                                       <div className="previewOverlay__handle" aria-hidden="true" />
-                                      <button type="button" className="previewOverlay__close" aria-label="Close preview" onClick={() => setPreviewOpen(false)}>
-                                          <UiIcon name="mdi:close-circle-outline" className="icon" />
-                                      </button>
+                                        <Button type="button" className="previewOverlay__close" aria-label="Close preview" onClick={() => setPreviewOpen(false)}>
+                                            <UiIcon name="mdi:close-circle-outline" className="icon" />
+                                        </Button>
                                   </div>
                                   <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--overlay" showMissingIconPlaceholder={!!iconLoadStatus} />
                               </div>
                           ) : (
-                              <button type="button" className="previewOverlay__bar" onClick={() => setPreviewOpen(true)}>
+                              <Button type="button" className="previewOverlay__bar" onClick={() => setPreviewOpen(true)}>
                                   Preview
-                              </button>
+                              </Button>
                           )}
                       </div>,
                       overlayRoot,
@@ -1814,9 +1815,9 @@ export default function App() {
                           <div className="sharePrompt" role="dialog" aria-modal="true" aria-label="Share configuration">
                               <div className="sharePrompt__header">
                                   <h2>Share your configuration</h2>
-                                  <button type="button" className="sharePrompt__close" onClick={() => setSendConfigOpen(false)} aria-label="Close">
+                                  <Button type="button" className="sharePrompt__close" onClick={() => setSendConfigOpen(false)} aria-label="Close">
                                       <UiIcon name="mdi:close" className="icon" />
-                                  </button>
+                                  </Button>
                               </div>
                               <div className="sharePrompt__body">
                                   <p>If you’d like, you can send your configuration to help improve this tool.</p>
@@ -1868,9 +1869,9 @@ export default function App() {
                                   </div>
                               </div>
                               <div className="sharePrompt__actions">
-                                  <button type="button" className="btn btn--danger" onClick={() => setSendConfigOpen(false)}>
+                                  <Button variant="danger" type="button" onClick={() => setSendConfigOpen(false)}>
                                       Not now
-                                  </button>
+                                  </Button>
                                   <a
                                       className="btn"
                                       href={buildShareMailto({

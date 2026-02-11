@@ -1,5 +1,6 @@
 import { HelpSection } from "./HelpSection";
 import { UiIcon } from "./UiIcon";
+import { LinkButton } from "./ui/LinkButton";
 
 type HelpPageProps = {
     configureHref: string;
@@ -16,14 +17,14 @@ export function HelpPage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                 <h2 className="page__title">Everything you need to build a great remote layout.</h2>
                 <p className="page__lead">Follow the quick start below, then dive into tips for exporting, sharing, and troubleshooting.</p>
                 <div className="page__cta">
-                    <a className="btn btn--primary" href={configureHref} onClick={onGoConfigure}>
+                    <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
                         <UiIcon name="mdi:tune-variant" className="icon" />
                         Start configuring
-                    </a>
-                    <a className="btn" href={galleryHref} onClick={onGoGallery}>
+                    </LinkButton>
+                    <LinkButton href={galleryHref} onClick={onGoGallery}>
                         <UiIcon name="mdi:image-multiple-outline" className="icon" />
                         View gallery
-                    </a>
+                    </LinkButton>
                 </div>
             </header>
 

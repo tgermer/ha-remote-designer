@@ -1,4 +1,5 @@
 import { UiIcon } from "../UiIcon";
+import { Button } from "../ui/Button";
 
 type ShareStatus = "idle" | "copied" | "failed";
 
@@ -30,10 +31,10 @@ export function ShareExportSection(props: ShareExportSectionProps) {
             <legend>Share & Export</legend>
 
             <p className="share">
-                <button type="button" className="btn" onClick={onCopyShareLink}>
+                <Button type="button" onClick={onCopyShareLink}>
                     <UiIcon name="mdi:link-variant" className="icon" />
                     Copy share link
-                </button>
+                </Button>
                 {shareStatus === "copied" && (
                     <span className="share__status" role="status">
                         Copied!
@@ -50,41 +51,41 @@ export function ShareExportSection(props: ShareExportSectionProps) {
 
             {onSendConfig ? (
                 <p className="share">
-                    <button type="button" className="btn" onClick={onSendConfig}>
+                    <Button type="button" onClick={onSendConfig}>
                         <UiIcon name="mdi:email-outline" className="icon" />
                         Send config to developer
-                    </button>
+                    </Button>
                 </p>
             ) : null}
 
             {onExportRemoteJson ? (
                 <div className="row row--spaced">
-                    <button className="btn" onClick={onExportRemoteJson}>
+                    <Button onClick={onExportRemoteJson}>
                         <UiIcon name="mdi:code-json" className="icon" />
                         Export JSON
-                    </button>
+                    </Button>
                 </div>
             ) : null}
 
             <div className="row row--spaced">
-                <button className="btn" onClick={onExportRemoteSvg}>
+                <Button onClick={onExportRemoteSvg}>
                     <UiIcon name="mdi:file-image-outline" className="icon" />
                     Export SVG
-                </button>
+                </Button>
                 {showSvgAllPages && onExportAllPagesSvgZip ? (
-                    <button className="btn" onClick={onExportAllPagesSvgZip}>
+                    <Button onClick={onExportAllPagesSvgZip}>
                         <UiIcon name="mdi:folder-zip-outline" className="icon" />
                         Export all pages SVG (ZIP)
-                    </button>
+                    </Button>
                 ) : null}
             </div>
 
             {showA4Pdf && onExportA4Pdf ? (
                 <p>
-                    <button className="btn" onClick={onExportA4Pdf}>
+                    <Button onClick={onExportA4Pdf}>
                         <UiIcon name="mdi:file-pdf-box" className="icon" />
                         Export PDF
-                    </button>
+                    </Button>
                 </p>
             ) : null}
 
@@ -92,19 +93,19 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                 <>
                     {onCopyRemoteExample ? (
                         <div className="exportRow">
-                            <button className="btn" onClick={onCopyRemoteExample}>
+                            <Button onClick={onCopyRemoteExample}>
                                 <UiIcon name="mdi:content-copy" className="icon" />
                                 Copy remote example
-                            </button>
+                            </Button>
                             {remoteExampleStatus === "copied" && <span className="exportRow__status">Copied!</span>}
                             {remoteExampleStatus === "failed" && <span className="exportRow__status exportRow__status--error">Copy failed</span>}
                         </div>
                     ) : null}
                     <div className="exportRow">
-                        <button className="btn" onClick={onExportZip} disabled={isZipping}>
+                        <Button onClick={onExportZip} disabled={isZipping}>
                             <UiIcon name="mdi:folder-zip-outline" className="icon" />
                             {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
-                        </button>
+                        </Button>
 
                         <label className="exportRow__label">
                             DPI

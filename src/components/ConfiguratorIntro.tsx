@@ -1,4 +1,6 @@
 import { UiIcon } from "./UiIcon";
+import { Button } from "./ui/Button";
+import { LinkButton } from "./ui/LinkButton";
 
 type ConfiguratorIntroProps = {
     helpHref: string;
@@ -17,14 +19,14 @@ export function ConfiguratorIntro({ helpHref, onGoHelp, onSendConfig }: Configur
                 </p>
             </div>
             <div className="configIntro__actions">
-                <button type="button" className="btn btn--primary" onClick={onSendConfig}>
+                <Button variant="primary" type="button" onClick={onSendConfig}>
                     <UiIcon name="mdi:email-fast-outline" className="icon" />
                     Send configuration
-                </button>
-                <a className="btn" href={helpHref} onClick={onGoHelp}>
+                </Button>
+                <LinkButton href={helpHref} onClick={onGoHelp}>
                     <UiIcon name="mdi:lifebuoy" className="icon" />
                     Open help
-                </a>
+                </LinkButton>
             </div>
         </div>
     );

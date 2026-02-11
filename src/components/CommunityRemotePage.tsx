@@ -3,6 +3,7 @@ import type { ButtonDef, CornerRadiiMm, CutoutElement, RemoteTemplate } from "..
 import type { DesignState } from "../app/types";
 import { PreviewPane } from "./PreviewPane";
 import { UiIcon } from "./UiIcon";
+import { Button } from "./ui/Button";
 
 type CommunityDraft = {
     id?: string;
@@ -478,23 +479,23 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                 <p className="page__kicker">Community remote model</p>
                 <h2 className="page__title">Create a remote that is not in the catalog.</h2>
                 <p className="page__lead">Measure your remote, define the button layout, test the design in the configurator, then share the JSON so it can be added to the catalog.</p>
-                <div className="page__cta">
-                    <button type="button" className="btn btn--primary" onClick={onUseInConfigurator}>
+            <div className="page__cta">
+                    <Button variant="primary" type="button" onClick={onUseInConfigurator}>
                         <UiIcon name="mdi:hammer-wrench" className="icon" />
                         Test in configurator
-                    </button>
-                    <button type="button" className="btn" onClick={onSendToDeveloper}>
+                    </Button>
+                    <Button type="button" onClick={onSendToDeveloper}>
                         <UiIcon name="mdi:email-outline" className="icon" />
                         Send to developer
-                    </button>
-                    <button type="button" className="btn" onClick={onCopyJson}>
+                    </Button>
+                    <Button type="button" onClick={onCopyJson}>
                         <UiIcon name="mdi:content-copy" className="icon" />
                         Copy JSON
-                    </button>
-                    <button type="button" className="btn" onClick={onDownloadJson}>
+                    </Button>
+                    <Button type="button" onClick={onDownloadJson}>
                         <UiIcon name="mdi:download" className="icon" />
                         Download JSON
-                    </button>
+                    </Button>
                     {copyStatus === "copied" ? <span className="page__note">Copied!</span> : null}
                     {copyStatus === "failed" ? <span className="page__note">Copy failed.</span> : null}
                 </div>
@@ -514,17 +515,17 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                                 </option>
                             ))}
                         </select>
-                        <button type="button" className="btn" onClick={onSaveDraft} disabled={!hasUnsavedChanges}>
+                        <Button type="button" onClick={onSaveDraft} disabled={!hasUnsavedChanges}>
                             <UiIcon name="mdi:content-save-outline" className="icon" />
                             Save draft
-                        </button>
-                        <button type="button" className="btn" onClick={onNewDraft}>
+                        </Button>
+                        <Button type="button" onClick={onNewDraft}>
                             <UiIcon name="mdi:plus" className="icon" />
                             New
-                        </button>
-                        <button type="button" className="btn btn--danger" onClick={onDeleteDraft} disabled={!selectedDraftId} aria-label="Delete draft">
+                        </Button>
+                        <Button variant="danger" type="button" onClick={onDeleteDraft} disabled={!selectedDraftId} aria-label="Delete draft">
                             <UiIcon name="mdi:delete-outline" className="icon" />
-                        </button>
+                        </Button>
                     </div>
                     <div className="communityForm">
                         <label className="communityForm__field">
@@ -604,10 +605,10 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
             <div className="page__card">
                 <div className="communityButtons__header">
                     <h3>Buttons</h3>
-                    <button type="button" className="btn" onClick={onAddButton}>
+                    <Button type="button" onClick={onAddButton}>
                         <UiIcon name="mdi:plus-circle-outline" className="icon" />
                         Add button
-                    </button>
+                    </Button>
                 </div>
                 <div className="communityButtons__table">
                     <TableHeaderRow className="communityButtons__row" columns={BUTTON_COLUMNS} />
@@ -644,9 +645,9 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                                 <input type="number" value={button.r?.bl ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), bl: Number(e.target.value) } })} />
                             </TableCell>
                             <TableCell label="Actions">
-                                <button type="button" className="btn btn--danger" onClick={() => onRemoveButton(index)} aria-label="Remove button">
+                                <Button variant="danger" type="button" onClick={() => onRemoveButton(index)} aria-label="Remove button">
                                     <UiIcon name="mdi:delete-outline" className="icon" />
-                                </button>
+                                </Button>
                             </TableCell>
                         </div>
                     ))}
@@ -657,14 +658,14 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                 <div className="communityButtons__header">
                     <h3>Cutouts</h3>
                     <div className="communityCutouts__actions">
-                        <button type="button" className="btn" onClick={onAddCutoutRect}>
+                        <Button type="button" onClick={onAddCutoutRect}>
                             <UiIcon name="mdi:shape-rectangle-plus" className="icon" />
                             Add rectangle
-                        </button>
-                        <button type="button" className="btn" onClick={onAddCutoutCircle}>
+                        </Button>
+                        <Button type="button" onClick={onAddCutoutCircle}>
                             <UiIcon name="mdi:shape-circle-plus" className="icon" />
                             Add circle
-                        </button>
+                        </Button>
                     </div>
                 </div>
                 <div className="communityCutouts__table">
@@ -752,9 +753,9 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                                 </>
                             )}
                             <TableCell label="Actions">
-                                <button type="button" className="btn btn--danger" onClick={() => onRemoveCutout(index)} aria-label="Remove cutout">
+                                <Button variant="danger" type="button" onClick={() => onRemoveCutout(index)} aria-label="Remove cutout">
                                     <UiIcon name="mdi:delete-outline" className="icon" />
-                                </button>
+                                </Button>
                             </TableCell>
                         </div>
                     ))}

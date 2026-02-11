@@ -4,6 +4,7 @@ import { isUserExample, type ExampleEntry, type RemoteTemplate } from "../app/re
 import type { SavedDesign } from "../app/savedDesigns";
 import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "../app/stickerSheet";
 import { RemoteSvg } from "../render/RemoteSvg";
+import { Button } from "./ui/Button";
 
 type GalleryViewProps = {
     remotes: RemoteTemplate[];
@@ -354,8 +355,7 @@ export function GalleryView(props: GalleryViewProps) {
                                 <option value="name">Name</option>
                             </select>
                         </label>
-                        <button
-                            type="button"
+                        <Button
                             className="galleryFilters__reset"
                             onClick={() => {
                                 setSelectedRemoteId("all");
@@ -366,7 +366,7 @@ export function GalleryView(props: GalleryViewProps) {
                             }}
                         >
                             Clear filters
-                        </button>
+                        </Button>
                         <div className="galleryFilters__summary">
                             Showing {safeVisibleCount} of {filteredEntries.length}
                         </div>

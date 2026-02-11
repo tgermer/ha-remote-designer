@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { UiIcon } from "../UiIcon";
+import { Button } from "../ui/Button";
 import type { SavedDesign } from "../../app/savedDesigns";
 
 type SavedDesignsSectionProps = {
@@ -66,14 +67,14 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
             {saveNameError ? <p style={{ margin: 0, fontSize: "0.85rem", color: "#b00020" }}>{saveNameError}</p> : null}
 
             <div className="row row--spaced">
-                <button type="button" className="btn" onClick={onSaveActive} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
+                <Button type="button" onClick={onSaveActive} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
                     <UiIcon name="mdi:content-save" className="icon" />
                     Save
-                </button>
-                <button type="button" className="btn" onClick={onSaveAsNew} disabled={!saveName.trim()}>
+                </Button>
+                <Button type="button" onClick={onSaveAsNew} disabled={!saveName.trim()}>
                     <UiIcon name="mdi:content-save-plus-outline" className="icon" />
                     Save as
-                </button>
+                </Button>
             </div>
             {activeSavedId && (hasUnsavedChanges || showSavedStatus) ? (
                 <p
@@ -101,26 +102,26 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
             </label>
 
             <div className="row row--spaced">
-                <button type="button" className="btn" onClick={onLoadSelected} disabled={!selectedSavedId}>
+                <Button type="button" onClick={onLoadSelected} disabled={!selectedSavedId}>
                     <UiIcon name="mdi:folder-open-outline" className="icon" />
                     Load
-                </button>
-                <button type="button" className="btn btn--danger" onClick={onDeleteSelected} disabled={!selectedSavedId} aria-label="Delete saved remote" title="Delete saved remote">
+                </Button>
+                <Button variant="danger" type="button" onClick={onDeleteSelected} disabled={!selectedSavedId} aria-label="Delete saved remote" title="Delete saved remote">
                     <UiIcon name="mdi:delete-outline" className="icon" />
-                </button>
+                </Button>
             </div>
 
             <div className="savedDesigns__io">
                 <div className="savedDesigns__ioTitle">Backup (Export/Import)</div>
                 <div className="row row--spaced" style={{ marginTop: "0.25rem" }}>
-                    <button type="button" className="btn" onClick={onExportAll} disabled={!savedDesigns.length}>
+                    <Button type="button" onClick={onExportAll} disabled={!savedDesigns.length}>
                         <UiIcon name="mdi:file-export-outline" className="icon" />
                         Export all
-                    </button>
-                    <button type="button" className="btn" onClick={() => importInputRef.current?.click()}>
+                    </Button>
+                    <Button type="button" onClick={() => importInputRef.current?.click()}>
                         <UiIcon name="mdi:file-import-outline" className="icon" />
                         Import
-                    </button>
+                    </Button>
                     <input
                         ref={importInputRef}
                         type="file"

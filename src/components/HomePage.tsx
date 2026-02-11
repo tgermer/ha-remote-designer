@@ -3,6 +3,7 @@ import type { DesignState } from "../app/types";
 import type { ReactNode } from "react";
 import { RemoteSvg } from "../render/RemoteSvg";
 import { UiIcon } from "./UiIcon";
+import { LinkButton } from "./ui/LinkButton";
 
 type HomePageProps = {
     configureHref: string;
@@ -90,18 +91,18 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
 
     const heroCta = (
         <div className="page__cta">
-            <a className="btn btn--primary" href={configureHref} onClick={onGoConfigure}>
+            <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
                 <UiIcon name="mdi:tune-variant" className="icon" />
                 Start configuring
-            </a>
-            <a className="btn" href={galleryHref} onClick={onGoGallery}>
+            </LinkButton>
+            <LinkButton href={galleryHref} onClick={onGoGallery}>
                 <UiIcon name="mdi:image-multiple-outline" className="icon" />
                 View gallery
-            </a>
-            {/* <a className="btn" href={helpHref} onClick={onGoHelp}>
+            </LinkButton>
+            {/* <LinkButton href={helpHref} onClick={onGoHelp}>
                 <UiIcon name="mdi:lifebuoy" className="icon" />
                 Get help
-            </a> */}
+            </LinkButton> */}
         </div>
     );
 
