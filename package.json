@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@fontsource/ibm-plex-sans": "^5.2.8",
     "@mdi/js": "^7.4.47",
     "@plausible-analytics/tracker": "^0.4.4",
     "jspdf": "^4.0.0",

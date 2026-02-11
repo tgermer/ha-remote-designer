@@ -1,5 +1,11 @@
 :root {
   color-scheme: light;
+  --font-sans: "IBM Plex Sans", "Segoe UI", -apple-system, BlinkMacSystemFont,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
   --ink: #252545;
   --ink-muted: #515168;
   --surface: rgba(255, 255, 255, 0.72);
@@ -68,13 +74,25 @@ html {
 }
 
 body {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-regular);
   color: var(--ink);
   background: transparent;
+  line-height: 1.45;
   min-height: 100dvh;
 }
 
 p {
-  line-height: 1.3;
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
 }
 
 input,
@@ -136,8 +154,7 @@ main {
   padding: 1rem;
   padding-bottom: calc(1rem + var(--app-preview-safe, 0px) + var(--app-preview-state, 0px));
   min-height: calc(100vh - 20px + var(--app-preview-state, 0px) + var(--app-preview-safe, 0px));
-  font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   box-sizing: border-box;
   min-width: 0;
 }
@@ -195,7 +212,8 @@ main {
   border: 1px solid var(--stroke);
   background: rgba(255, 255, 255, 0.85);
   color: var(--ink);
-  font-weight: 600;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.005em;
   cursor: pointer;
 }
 
@@ -232,7 +250,8 @@ main {
   text-decoration: none;
   color: var(--ink-muted);
   border-radius: 999px;
-  font-weight: 600;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.005em;
   position: relative;
   z-index: 1;
 }
@@ -345,7 +364,9 @@ main {
 
 .homeHero__copy .page__title {
   font-size: clamp(2.2rem, 3vw, 3.1rem);
-  line-height: 1.1;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   margin-bottom: 0.65rem;
 }
 
@@ -596,7 +617,7 @@ main {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--ink-muted);
   margin: 0 0 0.35rem;
 }
@@ -604,12 +625,16 @@ main {
 .page__title {
   margin: 0 0 0.5rem;
   font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.15;
+  letter-spacing: -0.016em;
 }
 
 .page__lead {
   margin: 0 0 1rem;
   color: var(--ink-muted);
   font-size: 1.05rem;
+  line-height: 1.5;
 }
 
 .page__note {
