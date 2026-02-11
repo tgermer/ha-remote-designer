@@ -185,6 +185,19 @@ const BASE_REMOTES: RemoteDefinition[] = [
         widthMm: 34,
         heightMm: 91,
         cornerMm: 5.6,
+        cutoutElements: [
+            {
+                kind: "rect",
+                xMm: 14,
+                yMm: 26.5,
+                wMm: 6,
+                hMm: 1,
+                rMm: 0.5,
+                stroke: "#6f6f6f",
+                fill: "#eeeeee",
+                strokeWidthMm: 0.3,
+            },
+        ],
         buttons: [
             { id: "on", xMm: 0, yMm: 0, wMm: 34, hMm: 28.5, r: { tl: 5.6, tr: 5.6, br: 0, bl: 0 } },
             { id: "up", xMm: 0, yMm: 29.25, wMm: 34, hMm: 16.25, rMm: 0 },
