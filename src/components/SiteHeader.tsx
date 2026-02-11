@@ -11,7 +11,15 @@ export function SiteHeader({ isAdmin = false, title = "Remote Label Designer for
             <div className={styles.title}>
                 <img className={styles.logo} src="/dimmer-switch.svg" alt="" aria-hidden="true" />
                 <h1>{title}</h1>
-                <a className={styles.tipLink} href="https://www.buymeacoffee.com/tgermer" target="_blank" rel="noopener noreferrer">
+                <a
+                    className={styles.tipLink}
+                    href="https://www.buymeacoffee.com/tgermer"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-outbound-kind="coffee"
+                    data-outbound-placement="header"
+                    data-outbound-label="buy_me_a_coffee"
+                >
                     <img className={styles.tipImage} src="/buyMeACoffee.webp" alt="Buy Me A Coffee" />
                 </a>
             </div>

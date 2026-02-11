@@ -106,31 +106,31 @@ export function HelpPage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                     <ul className="page__list">
                         <li>
                             Inkjet printer – white vinyl labels –{" "}
-                            <a href="https://www.amazon.de/dp/B000KJRDJM/" target="_blank" rel="noopener noreferrer">
+                            <a href="https://www.amazon.de/dp/B000KJRDJM/" target="_blank" rel="noopener noreferrer" data-outbound-kind="amazon_affiliate" data-outbound-placement="help_recommendations" data-outbound-label="herma_4866">
                                 Herma 4866 (affiliate link)
                             </a>
                         </li>
                         <li>
                             Inkjet printer – transparent vinyl labels –{" "}
-                            <a href="https://www.amazon.de/dp/B000KJPFME/" target="_blank" rel="noopener noreferrer">
+                            <a href="https://www.amazon.de/dp/B000KJPFME/" target="_blank" rel="noopener noreferrer" data-outbound-kind="amazon_affiliate" data-outbound-placement="help_recommendations" data-outbound-label="herma_8964">
                                 Herma 8964 (affiliate link)
                             </a>
                         </li>
                         <li>
                             Laser printer – white polyester labels –{" "}
-                            <a href="https://www.amazon.de/dp/B000M24DJ0/" target="_blank" rel="noopener noreferrer">
+                            <a href="https://www.amazon.de/dp/B000M24DJ0/" target="_blank" rel="noopener noreferrer" data-outbound-kind="amazon_affiliate" data-outbound-placement="help_recommendations" data-outbound-label="herma_9500">
                                 Herma 9500 (affiliate link)
                             </a>
                         </li>
                         <li>
                             Laser printer – transparent labels –{" "}
-                            <a href="https://www.amazon.de/dp/B079N763P5/" target="_blank" rel="noopener noreferrer">
+                            <a href="https://www.amazon.de/dp/B079N763P5/" target="_blank" rel="noopener noreferrer" data-outbound-kind="amazon_affiliate" data-outbound-placement="help_recommendations" data-outbound-label="herma_4585">
                                 Herma 4585 (affiliate link)
                             </a>
                         </li>
                     </ul>
                     <p>
-                        <a href="https://www.herma-fachshop.de/Folien-Etiketten-kg478.aspx?filter-Etikettengröße=210+x+297+mm&filter-Besondere+Eigenschaften=Folienetiketten" target="_blank" rel="noopener noreferrer">
+                        <a href="https://www.herma-fachshop.de/Folien-Etiketten-kg478.aspx?filter-Etikettengröße=210+x+297+mm&filter-Besondere+Eigenschaften=Folienetiketten" target="_blank" rel="noopener noreferrer" data-outbound-kind="herma_fachshop" data-outbound-placement="help_recommendations" data-outbound-label="folienetiketten">
                             Browse Herma’s film label filters for A4 film-based stickers (Folienetiketten, 210 × 297 mm).
                         </a>
                     </p>

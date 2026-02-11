@@ -376,6 +376,26 @@ export default function App() {
     };
 
     useEffect(() => {
+        const onDocumentClick = (event: MouseEvent) => {
+            const target = event.target as HTMLElement | null;
+            const link = target?.closest<HTMLAnchorElement>("a[data-outbound-kind]");
+            if (!link) return;
+
+            trackEvent("outbound_link_click", {
+                kind: link.dataset.outboundKind ?? "unknown",
+                placement: link.dataset.outboundPlacement ?? "unknown",
+                label: link.dataset.outboundLabel ?? "unknown",
+                href: link.href || "",
+            });
+        };
+
+        document.addEventListener("click", onDocumentClick);
+        return () => {
+            document.removeEventListener("click", onDocumentClick);
+        };
+    }, []);
+
+    useEffect(() => {
         if (legalPage === "impressum") {
             document.title = "Impressum – Remote Designer";
             return;
@@ -1916,7 +1936,15 @@ export default function App() {
                                             </div>
                                         ) : null}
                                         <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--desktop" showMissingIconPlaceholder={!!iconLoadStatus} />
-                                        <a className="tipJar__imageLink" href="https://www.buymeacoffee.com/tgermer" target="_blank" rel="noopener noreferrer">
+                                        <a
+                                            className="tipJar__imageLink"
+                                            href="https://www.buymeacoffee.com/tgermer"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            data-outbound-kind="coffee"
+                                            data-outbound-placement="preview"
+                                            data-outbound-label="buy_me_a_coffee"
+                                        >
                                             <img className="tipJar__image" src="/buyMeACoffee.webp" alt="Buy Me A Coffee" />
                                         </a>
                                     </div>
