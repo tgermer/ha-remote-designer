@@ -64,6 +64,163 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
                 },
             },
         },
+        {
+            meta: {
+                id: "0f91e257-a60a-4892-ae9c-e1050b486e98",
+                userExample: true,
+                allowGallery: true,
+                savedName: "Home Control",
+                description: "Text-first home routine layout with morning/evening shortcuts, vacation mode, and awning control.",
+                savedId: "50543ce8-a9e7-4146-b409-4a3aa6fe324e",
+                exportedAt: "2026-02-11T13:53:32.937Z",
+                consentId: "consent_0f91e257-a60a-4892-ae9c-e1050b486e98",
+                appVersion: "dev",
+                stateSig: '{"remoteId":"hue_dimmer_v1","tapsEnabled":["single","long"],"buttonConfigs":{"on":{"icons":{},"texts":{"single":"Guten \\nMorgen"},"strike":{},"iconColors":{}},"off":{"icons":{},"texts":{"single":"Guten \\nAbend"},"strike":{},"iconColors":{}},"up":{"icons":{},"texts":{"single":"Urlaubs-\\nmodus"},"strike":{},"iconColors":{}},"down":{"icons":{},"texts":{"single":"Markiesen"},"strike":{"single":false},"iconColors":{},"strikeStyle":{"single":"straight"}}},"options":{"showTapMarkersAlways":false,"showTapDividers":true,"showRemoteOutline":true,"showButtonOutlines":true,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":true,"fixedIconMm":6,"iconColor":"#454545","tapMarkerFill":"outline","tapMarkerColorMode":"icon","labelOutlineColor":"#ccc","labelOutlineStrokeMm":0.1,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
+            },
+            state: {
+                remoteId: "hue_dimmer_v1",
+                tapsEnabled: ["single", "long"],
+                buttonConfigs: {
+                    on: {
+                        icons: {},
+                        texts: {
+                            single: "Guten \nMorgen",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    off: {
+                        icons: {},
+                        texts: {
+                            single: "Guten \nAbend",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    up: {
+                        icons: {},
+                        texts: {
+                            single: "Urlaubs-\nmodus",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    down: {
+                        icons: {},
+                        texts: {
+                            single: "Markiesen",
+                        },
+                        strike: {
+                            single: false,
+                        },
+                        iconColors: {},
+                        strikeStyle: {
+                            single: "straight",
+                        },
+                    },
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showCutouts: true,
+                    showGuides: false,
+                    showScaleBar: true,
+                    autoIconSizing: true,
+                    fixedIconMm: 6,
+                    iconColor: "#454545",
+                    tapMarkerFill: "outline",
+                    tapMarkerColorMode: "icon",
+                    labelOutlineColor: "#ccc",
+                    labelOutlineStrokeMm: 0.1,
+                },
+            },
+        },
+        {
+            meta: {
+                id: "ecce4eee-3bce-481f-9dac-82a1675eb273",
+                userExample: true,
+                allowGallery: true,
+                savedName: "Alarm Guard",
+                description: "High-contrast security preset with clear red/green alarm states and mixed icon/text controls.",
+                savedId: "edbe490e-188d-403f-a6d9-0b0c10f09645",
+                exportedAt: "2026-02-11T13:53:59.771Z",
+                consentId: "consent_ecce4eee-3bce-481f-9dac-82a1675eb273",
+                appVersion: "dev",
+                stateSig:
+                    '{"remoteId":"hue_dimmer_v1","tapsEnabled":["single","double"],"buttonConfigs":{"on":{"icons":{},"strike":{"single":false},"iconColors":{"single":"#ffffff"},"texts":{"single":"Alarm\\n"},"buttonFill":"#ff0000","strikeStyle":{"single":"straight"}},"up":{"icons":{"single":"mdi:lightbulb-outline"},"texts":{},"strike":{"single":false},"iconColors":{}},"off":{"icons":{},"texts":{"single":"Alarm\\n"},"strike":{"single":true},"iconColors":{"single":"#ffffff"},"buttonFill":"#50c304"},"down":{"icons":{"single":"mdi:lightbulb-off-outline"},"texts":{},"strike":{},"iconColors":{}}},"options":{"showTapMarkersAlways":true,"showTapDividers":true,"showRemoteOutline":true,"showButtonOutlines":true,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":true,"fixedIconMm":6.5,"iconColor":"#454545","tapMarkerFill":"outline","tapMarkerColorMode":"icon","labelOutlineColor":"#ccc","labelOutlineStrokeMm":0.1,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
+            },
+            state: {
+                remoteId: "hue_dimmer_v1",
+                tapsEnabled: ["single", "double"],
+                buttonConfigs: {
+                    on: {
+                        icons: {},
+                        strike: {
+                            single: false,
+                        },
+                        iconColors: {
+                            single: "#ffffff",
+                        },
+                        texts: {
+                            single: "Alarm\n",
+                        },
+                        buttonFill: "#ff0000",
+                        strikeStyle: {
+                            single: "straight",
+                        },
+                    },
+                    up: {
+                        icons: {
+                            single: "mdi:lightbulb-outline",
+                        },
+                        texts: {},
+                        strike: {
+                            single: false,
+                        },
+                        iconColors: {},
+                    },
+                    off: {
+                        icons: {},
+                        texts: {
+                            single: "Alarm\n",
+                        },
+                        strike: {
+                            single: true,
+                        },
+                        iconColors: {
+                            single: "#ffffff",
+                        },
+                        buttonFill: "#50c304",
+                    },
+                    down: {
+                        icons: {
+                            single: "mdi:lightbulb-off-outline",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                },
+                options: {
+                    showTapMarkersAlways: true,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showCutouts: true,
+                    showGuides: false,
+                    showScaleBar: true,
+                    autoIconSizing: true,
+                    fixedIconMm: 6.5,
+                    iconColor: "#454545",
+                    tapMarkerFill: "outline",
+                    tapMarkerColorMode: "icon",
+                    labelOutlineColor: "#ccc",
+                    labelOutlineStrokeMm: 0.1,
+                },
+            },
+        },
     ],
     hue_dimmer_v2: [
         {
@@ -320,7 +477,7 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
                 id: "6d3943c7-6405-4983-82de-eccf39fa1a95",
                 userExample: true,
                 allowGallery: true,
-                savedName: "Home Automation Master Switch in Color",
+                savedName: "Home Automation Master Switch Variant Color",
                 description: "Master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
                 savedId: null,
                 exportedAt: "2026-01-27T11:20:37.071Z",
@@ -398,6 +555,89 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
                     tapMarkerFill: "outline",
                     tapMarkerColorMode: "icon",
                     labelOutlineColor: "#000000",
+                    labelOutlineStrokeMm: 0.2,
+                },
+            },
+        },
+        {
+            meta: {
+                id: "b0dcd967-be5c-49b8-8ae2-deff2f671bcd",
+                userExample: true,
+                allowGallery: true,
+                savedName: "Home Automation Master Switch Variant Text",
+                description: "Text-focused master switch to control all major home functions: light groups on/off, windows, pool and day/night scenes.",
+                savedId: null,
+                exportedAt: "2026-02-11T13:52:33.858Z",
+                consentId: "consent_b0dcd967-be5c-49b8-8ae2-deff2f671bcd",
+                appVersion: "dev",
+                stateSig:
+                    '{"remoteId":"HM-PB-6-WM55","tapsEnabled":["single"],"buttonConfigs":{"top_left":{"icons":{},"strike":{},"iconColors":{},"texts":{"single":"Licht\\nAN"}},"top_right":{"icons":{},"strike":{},"iconColors":{},"texts":{"single":"Licht\\nAUS"}},"center_left":{"icons":{},"strike":{},"iconColors":{},"texts":{"single":"Status\\nFens-\\nter"}},"center_right":{"icons":{},"strike":{},"iconColors":{},"texts":{"single":"Pool"}},"bottom_left":{"icons":{"single":"mdi:weather-sunny"},"strike":{},"iconColors":{}},"bottom_right":{"icons":{"single":"mdi:weather-night"},"strike":{},"iconColors":{}}},"options":{"showTapMarkersAlways":false,"showTapDividers":true,"showRemoteOutline":true,"showButtonOutlines":true,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":false,"fixedIconMm":6.5,"iconColor":"#000000","tapMarkerFill":"outline","tapMarkerColorMode":"icon","labelOutlineColor":"#464646","labelOutlineStrokeMm":0.2,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
+            },
+            state: {
+                remoteId: "HM-PB-6-WM55",
+                tapsEnabled: ["single"],
+                buttonConfigs: {
+                    top_left: {
+                        icons: {},
+                        strike: {},
+                        iconColors: {},
+                        texts: {
+                            single: "Licht\nAN",
+                        },
+                    },
+                    top_right: {
+                        icons: {},
+                        strike: {},
+                        iconColors: {},
+                        texts: {
+                            single: "Licht\nAUS",
+                        },
+                    },
+                    center_left: {
+                        icons: {},
+                        strike: {},
+                        iconColors: {},
+                        texts: {
+                            single: "Status\nFens-\nter",
+                        },
+                    },
+                    center_right: {
+                        icons: {},
+                        strike: {},
+                        iconColors: {},
+                        texts: {
+                            single: "Pool",
+                        },
+                    },
+                    bottom_left: {
+                        icons: {
+                            single: "mdi:weather-sunny",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                    bottom_right: {
+                        icons: {
+                            single: "mdi:weather-night",
+                        },
+                        strike: {},
+                        iconColors: {},
+                    },
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showCutouts: true,
+                    showGuides: false,
+                    showScaleBar: true,
+                    autoIconSizing: false,
+                    fixedIconMm: 6.5,
+                    iconColor: "#000000",
+                    tapMarkerFill: "outline",
+                    tapMarkerColorMode: "icon",
+                    labelOutlineColor: "#464646",
                     labelOutlineStrokeMm: 0.2,
                 },
             },

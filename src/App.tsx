@@ -672,14 +672,20 @@ export default function App() {
 
     const deleteSelectedDesign = () => {
         if (!selectedSavedId) return;
+        const deletingActive = activeSavedId === selectedSavedId;
         const next = readSavedDesigns().filter((d) => d.id !== selectedSavedId);
         writeSavedDesigns(next);
 
         // If we deleted the active document, clear it
-        if (activeSavedId === selectedSavedId) {
+        if (deletingActive) {
             setActiveSavedId(null);
             setLoadedSnapshot(null);
             setLoadedName("");
+            setSaveName("");
+            setSaveNameError("");
+            setShowSavedStatus(false);
+            // Reset editor so deletion is immediately visible.
+            setState((s) => normalizeState({ ...initial, remoteId: s.remoteId, buttonConfigs: {} }, remotes));
         }
 
         refreshSavedDesigns();
