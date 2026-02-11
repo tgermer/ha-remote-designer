@@ -1859,7 +1859,7 @@ export default function App() {
                                   >
                                       <div className="previewOverlay__handle" aria-hidden="true" />
                                         <Button type="button" className="previewOverlay__close" aria-label="Close preview" onClick={() => setPreviewOpen(false)}>
-                                            <UiIcon name="mdi:close-circle-outline" className="icon" />
+                                            <UiIcon name="mdi:close" className="icon" />
                                         </Button>
                                   </div>
                                   <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--overlay" showMissingIconPlaceholder={!!iconLoadStatus} />
