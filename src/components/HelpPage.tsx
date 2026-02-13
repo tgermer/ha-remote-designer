@@ -1,4 +1,5 @@
 import { HelpSection } from "./HelpSection";
+import { MigrationNotice } from "./MigrationNotice";
 import { UiIcon } from "./UiIcon";
 import { LinkButton } from "./ui/LinkButton";
 import { useTranslation } from "react-i18next";
@@ -30,6 +31,8 @@ export function HelpPage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                     </LinkButton>
                 </div>
             </header>
+
+            <MigrationNotice variant="page" />
 
             <div className="page__grid">
                 <article className="page__card">

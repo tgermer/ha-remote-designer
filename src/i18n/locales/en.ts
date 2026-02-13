@@ -6,6 +6,11 @@ export const enTranslation = {
         },
         languageLabel: "Language",
     },
+    migration: {
+        noticeTitle: "Already used the old domain?",
+        noticeBody: "Saved remotes from ha-remote-designer.netlify.app are stored separately in your browser. Use the migration page once to export and import your data. Available until March 27, 2026.",
+        noticeCta: "Open migration page (old domain)",
+    },
     header: {
         title: "ClearControl.",
         titleLead: "Clear",

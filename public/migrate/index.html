@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="robots" content="noindex, nofollow" />
+        <title>ClearControl. - Migration</title>
+        <style>
+            :root {
+                color-scheme: light;
+                --bg: #f5f7f8;
+                --card: #ffffff;
+                --text: #0f2b2a;
+                --muted: #4a6462;
+                --accent: #0b7a75;
+                --accent-strong: #075d59;
+                --border: #d5dfde;
+                --warn-bg: #fff3cd;
+                --warn-border: #f0d98c;
+                --warn-text: #6b5700;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+                background: radial-gradient(circle at 20% 10%, #e9f7f6, var(--bg) 45%);
+                color: var(--text);
+                min-height: 100vh;
+                padding: 24px;
+            }
+
+            .shell {
+                max-width: 780px;
+                margin: 0 auto;
+            }
+
+            .card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 24px;
+                box-shadow: 0 14px 30px rgba(15, 43, 42, 0.08);
+            }
+
+            h1 {
+                margin: 0 0 10px;
+                font-size: clamp(1.6rem, 2.5vw, 2.1rem);
+                line-height: 1.2;
+            }
+
+            p {
+                margin: 0 0 12px;
+                line-height: 1.5;
+                color: var(--muted);
+            }
+
+            .steps {
+                margin: 18px 0 20px;
+                padding-left: 20px;
+                color: var(--text);
+            }
+
+            .steps li {
+                margin: 8px 0;
+                line-height: 1.4;
+            }
+
+            .status {
+                margin: 14px 0 18px;
+                padding: 12px 14px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: #f9fbfb;
+                color: var(--text);
+                font-size: 0.95rem;
+            }
+
+            .status.warn {
+                background: var(--warn-bg);
+                border-color: var(--warn-border);
+                color: var(--warn-text);
+            }
+
+            .actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin: 10px 0 16px;
+            }
+
+            button,
+            a.button-link {
+                appearance: none;
+                border: 1px solid transparent;
+                border-radius: 10px;
+                padding: 10px 14px;
+                font-size: 0.95rem;
+                font-weight: 600;
+                text-decoration: none;
+                cursor: pointer;
+                transition:
+                    transform 120ms ease,
+                    background-color 120ms ease,
+                    border-color 120ms ease;
+            }
+
+            button.primary,
+            a.button-link.primary {
+                background: var(--accent);
+                color: #fff;
+            }
+
+            button.primary:hover,
+            a.button-link.primary:hover {
+                background: var(--accent-strong);
+                transform: translateY(-1px);
+            }
+
+            button.secondary,
+            a.button-link.secondary {
+                background: #fff;
+                color: var(--text);
+                border-color: var(--border);
+            }
+
+            button.secondary:hover,
+            a.button-link.secondary:hover {
+                background: #f6f9f9;
+                transform: translateY(-1px);
+            }
+
+            .small {
+                font-size: 0.88rem;
+                color: var(--muted);
+            }
+
+            code {
+                background: #edf3f3;
+                border: 1px solid #d8e4e3;
+                border-radius: 5px;
+                padding: 0 5px;
+                font-size: 0.86em;
+            }
+        </style>
+    </head>
+    <body>
+        <main class="shell">
+            <section class="card">
+                <h1>Datenmigration zu clearcontrol.de</h1>
+                <p>
+                    Diese Seite hilft dir, gespeicherte Remotes vom alten Host
+                    <code>ha-remote-designer.netlify.app</code> nach <code>clearcontrol.de</code> zu uebernehmen.
+                </p>
+
+                <ol class="steps">
+                    <li>Backup auf dieser Seite herunterladen.</li>
+                    <li>Danach clearcontrol.de oeffnen.</li>
+                    <li>Im Bereich "Gespeicherte Remotes" die JSON-Datei importieren.</li>
+                </ol>
+
+                <div id="status" class="status">Pruefe lokale Daten...</div>
+
+                <div class="actions">
+                    <button id="download" class="primary" type="button">Backup herunterladen</button>
+                    <a class="button-link secondary" href="https://clearcontrol.de/configurator">clearcontrol.de oeffnen</a>
+                </div>
+
+                <p class="small">
+                    Verwendeter Key: <code>ha-remote-designer:saved-designs:v1</code><br />
+                    Optionaler Entwurfs-Key: <code>ha-remote-designer:saved-community-drafts:v1</code>
+                </p>
+            </section>
+        </main>
+
+        <script>
+            (function () {
+                var SAVED_KEY = "ha-remote-designer:saved-designs:v1";
+                var COMMUNITY_KEY = "ha-remote-designer:saved-community-drafts:v1";
+                var EXPORT_APP = "ha-remote-labeler";
+                var EXPORT_VERSION = 1;
+                var statusNode = document.getElementById("status");
+                var downloadBtn = document.getElementById("download");
+
+                function parseJson(raw) {
+                    if (!raw) return null;
+                    try {
+                        return JSON.parse(raw);
+                    } catch (_err) {
+                        return null;
+                    }
+                }
+
+                function readData() {
+                    var savedRaw = window.localStorage.getItem(SAVED_KEY);
+                    var communityRaw = window.localStorage.getItem(COMMUNITY_KEY);
+                    var savedParsed = parseJson(savedRaw);
+                    var communityParsed = parseJson(communityRaw);
+
+                    var savedItems = Array.isArray(savedParsed) ? savedParsed : [];
+                    var communityItems = Array.isArray(communityParsed) ? communityParsed : [];
+
+                    return {
+                        savedRaw: savedRaw,
+                        communityRaw: communityRaw,
+                        savedItems: savedItems,
+                        communityItems: communityItems,
+                    };
+                }
+
+                function dateStamp() {
+                    var d = new Date();
+                    var pad = function (n) {
+                        return String(n).padStart(2, "0");
+                    };
+                    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+                }
+
+                function downloadText(filename, text) {
+                    var blob = new Blob([text], { type: "application/json;charset=utf-8" });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement("a");
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(function () {
+                        URL.revokeObjectURL(url);
+                    }, 1200);
+                }
+
+                function setStatus(text, isWarn) {
+                    statusNode.textContent = text;
+                    statusNode.classList.toggle("warn", Boolean(isWarn));
+                }
+
+                var data = readData();
+                var savedCount = data.savedItems.length;
+                var communityCount = data.communityItems.length;
+
+                if (!data.savedRaw && !data.communityRaw) {
+                    setStatus("Keine gespeicherten Daten in localStorage gefunden.", true);
+                } else {
+                    setStatus("Gefunden: " + savedCount + " gespeicherte Remote(s)" + (communityCount ? ", " + communityCount + " Community-Entwurf/Entwuerfe" : "") + ".", false);
+                }
+
+                downloadBtn.addEventListener("click", function () {
+                    var current = readData();
+                    var payload = {
+                        app: EXPORT_APP,
+                        version: EXPORT_VERSION,
+                        exportedAt: Date.now(),
+                        sourceOrigin: window.location.origin,
+                        items: current.savedItems,
+                        communityDrafts: current.communityItems,
+                    };
+
+                    if (!payload.items.length && !payload.communityDrafts.length) {
+                        setStatus("Kein Inhalt zum Exportieren gefunden.", true);
+                        return;
+                    }
+
+                    var filename = "ha-remote-designer-migration-" + dateStamp() + ".json";
+                    downloadText(filename, JSON.stringify(payload, null, 2));
+                    setStatus("Backup heruntergeladen. Jetzt auf clearcontrol.de importieren.", false);
+                });
+            })();
+        </script>
+    </body>
+</html>

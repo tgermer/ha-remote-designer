@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ButtonDef, CornerRadiiMm, CutoutElement, RemoteTemplate } from "../app/remotes";
 import type { DesignState } from "../app/types";
+import { MigrationNotice } from "./MigrationNotice";
 import { PreviewPane } from "./PreviewPane";
 import { UiIcon } from "./UiIcon";
 import { Button } from "./ui/Button";
@@ -103,7 +104,7 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
 
     useEffect(() => {
         if (selectedButtonId && draft.buttons.some((button) => button.id === selectedButtonId)) return;
-        const nextId = selectedCutoutIndex !== null ? "" : draft.buttons[0]?.id ?? "";
+        const nextId = selectedCutoutIndex !== null ? "" : (draft.buttons[0]?.id ?? "");
         const handle = window.requestAnimationFrame(() => {
             setSelectedButtonId(nextId);
         });
@@ -479,7 +480,8 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                 <p className="page__kicker">{t("community.kicker")}</p>
                 <h2 className="page__title">{t("community.title")}</h2>
                 <p className="page__lead">{t("community.lead")}</p>
-            <div className="page__cta">
+
+                <div className="page__cta">
                     <Button variant="primary" type="button" onClick={onUseInConfigurator}>
                         <UiIcon name="mdi:hammer-wrench" className="icon" />
                         {t("community.testInConfigurator")}
@@ -501,6 +503,7 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                 </div>
             </header>
 
+            <MigrationNotice variant="hero" />
             <div className="communityGrid">
                 <div className="page__card">
                     <div className="communityDraftHeader">

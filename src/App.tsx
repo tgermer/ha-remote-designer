@@ -11,6 +11,7 @@ import { GalleryView } from "./components/GalleryView";
 import { HomePage } from "./components/HomePage";
 import { HelpPage } from "./components/HelpPage";
 import { CommunityRemotePage } from "./components/CommunityRemotePage";
+import { MigrationNotice } from "./components/MigrationNotice";
 import { EditorLayout } from "./components/layout/EditorLayout";
 import { GalleryLayout } from "./components/layout/GalleryLayout";
 import { ControlsLayout } from "./components/layout/ControlsLayout";
@@ -131,7 +132,7 @@ const LEGAL_CONTACT = {
     projectName: "ClearControl.",
     name: "Tristan Germer",
     addressLines: ["Petrarcatraße 32", "80933 München", "Deutschland"],
-    email: "nachspeise.haltegurt.1e@icloud.com",
+    email: "info@clearcontrol.de",
     updatedAt: "25. Januar 2026",
 };
 
@@ -1886,14 +1887,17 @@ export default function App() {
                                 title={t("app.editorTitle")}
                                 subtitle={t("app.editorSubtitle")}
                                 intro={
-                                    <ConfiguratorIntro
-                                        helpHref={getViewHref("help")}
-                                        onGoHelp={(event) => {
-                                            event.preventDefault();
-                                            goTo("help");
-                                        }}
-                                        onSendConfig={openSendConfigPrompt}
-                                    />
+                                    <>
+                                        <ConfiguratorIntro
+                                            helpHref={getViewHref("help")}
+                                            onGoHelp={(event) => {
+                                                event.preventDefault();
+                                                goTo("help");
+                                            }}
+                                            onSendConfig={openSendConfigPrompt}
+                                        />
+                                        <MigrationNotice className="migrationNotice--configBelow" />
+                                    </>
                                 }
                                 controls={
                                     <ControlsLayout

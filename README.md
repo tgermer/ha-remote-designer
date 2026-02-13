@@ -2,7 +2,7 @@
 
 **aka: ha-remote-designer**
 
-👉 **Try the tool:** https://ha-remote-designer.netlify.app/
+👉 **Try the tool:** https://clearcontrol.de/
 
 Design printable button labels for physical smart-home remotes – without graphic design tools.
 
@@ -47,9 +47,27 @@ Labeling sounds trivial, but in practice it isn’t:
 
 You can try the current prototype directly in your browser:
 
-👉 https://ha-remote-designer.netlify.app/
+👉 https://clearcontrol.de/
 
 No installation required. No account needed.
+
+### Migration notice for existing users
+
+The primary domain is now **https://clearcontrol.de/**.
+
+If you used the old domain (`ha-remote-designer.netlify.app`) and saved remotes in your browser, those entries are stored per domain and do not transfer automatically.
+
+Use the migration page once:
+
+👉 https://ha-remote-designer.netlify.app/migrate
+
+The migration page will remain available until **March 27, 2026** (6-week transition window).
+
+Steps:
+
+1. Open the migration page on the old domain and download your backup JSON.
+2. Open `https://clearcontrol.de/configurator`.
+3. Import the JSON in **Saved remotes -> Backup (Export/Import)**.
 
 ---
 
@@ -155,7 +173,7 @@ Nothing here is guaranteed. Community feedback will decide.
 
 ## Feedback wanted
 
-Please test the tool first: 👉 https://ha-remote-designer.netlify.app/
+Please test the tool first: 👉 https://clearcontrol.de/
 
 This project lives or dies by real usage.
 

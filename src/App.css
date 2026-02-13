@@ -1151,6 +1151,50 @@ main {
   gap: 0.5rem;
 }
 
+.migrationNotice {
+  border: 1px solid rgba(231, 180, 76, 0.55);
+  background: linear-gradient(180deg, rgba(255, 245, 214, 0.96), rgba(255, 255, 255, 0.94));
+  color: var(--ink);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+}
+
+.migrationNotice a {
+  color: var(--ink-strong);
+  font-weight: var(--font-weight-semibold);
+}
+
+.migrationNotice__title {
+  margin: 0 0 0.35rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.migrationNotice__body {
+  margin: 0 0 0.45rem;
+  color: var(--ink-muted);
+}
+
+.migrationNotice--page {
+  margin-bottom: 1rem;
+}
+
+.migrationNotice--page h3 {
+  margin: 0 0 0.35rem;
+}
+
+.migrationNotice--page p {
+  margin: 0 0 0.45rem;
+}
+
+.migrationNotice--hero {
+  margin: 0 auto 1rem;
+  text-align: left;
+}
+
+.migrationNotice--configBelow {
+  margin: -0.25rem 0 1rem;
+}
+
 @media (max-width: 720px) {
   .page__hero {
     padding:2.5rem 1.1rem;
