@@ -34,25 +34,28 @@
     Cache-Control = "public, max-age=0, must-revalidate"
 
 [[redirects]]
-  from = "/migrate"
-  to = "/migrate/"
-  status = 301
+  from = "https://ha-remote-designer.netlify.app/migrate"
+  to = "/migrate/index.html"
   force = true
-  conditions = { Host = ["ha-remote-designer.netlify.app"] }
+  status = 200
 
 [[redirects]]
-  from = "/migrate/*"
+  from = "https://ha-remote-designer.netlify.app/migrate/"
+  to = "/migrate/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "https://ha-remote-designer.netlify.app/migrate/*"
   to = "/migrate/:splat"
   status = 200
   force = true
-  conditions = { Host = ["ha-remote-designer.netlify.app"] }
 
 [[redirects]]
-  from = "/*"
+  from = "https://ha-remote-designer.netlify.app/*"
   to = "https://clearcontrol.de/:splat?from=legacy"
   status = 301
   force = true
-  conditions = { Host = ["ha-remote-designer.netlify.app"] }
 
 [[redirects]]
   from = "/*"
