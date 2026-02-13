@@ -1,4 +1,4 @@
-# Remote Label Designer for Home Automation
+# ClearControl
 
 **aka: ha-remote-designer**
 
@@ -37,7 +37,7 @@ Labeling sounds trivial, but in practice it isn’t:
 - Consistent sizing is hard
 - Printing at the correct scale is error-prone
 
-**Remote Label Designer** closes the gap between automation logic and the physical remote in your hand.
+**ClearControl** closes the gap between automation logic and the physical remote in your hand.
 
 <img src="public/hero-image.webp" alt="Printed button labels applied to smart-home remotes" width="400">
 

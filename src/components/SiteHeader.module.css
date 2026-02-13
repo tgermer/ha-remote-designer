@@ -10,10 +10,35 @@
 
 .title {
   display: inline-flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   justify-content: flex-start;
-  gap: 0.6rem;
+  gap: 0.35rem;
   text-align: left;
+}
+
+.brandTitle {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  font-size: clamp(2.15rem, 4.6vw, 3.35rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  -webkit-text-stroke: 0.012em currentColor;
+}
+
+.brandAccent {
+  color: var(--accent);
+}
+
+.claim {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ink-muted);
 }
 
 .badge {
@@ -35,6 +60,11 @@
   .title {
     justify-content: center;
     text-align: center;
+    align-items: center;
+  }
+
+  .brandTitle {
+    justify-content: center;
   }
 
 }

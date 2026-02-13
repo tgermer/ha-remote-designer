@@ -38,22 +38,8 @@ import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "./app/sticker
 import { FEATURES } from "./app/featureFlags";
 import { getHueIconsLoadedSnapshot, preloadHueIcons, subscribeHueIcons } from "./hue/hueIcons";
 import { getFullMdiLoadedSnapshot, preloadFullMdi, subscribeFullMdi } from "./app/mdi";
-import {
-    initial,
-    normalizeState,
-    buildStateFromExample,
-    tapLabel,
-    stateUsesHueIcons,
-    remotesUseHueIcons,
-    stateUsesFullMdi,
-    remotesUseFullMdi,
-    type NormalizableState,
-} from "./app/stateUtils";
-import {
-    createCommunityDraft,
-    buildCommunityTemplate,
-    buildCommunityPayload,
-} from "./app/communityUtils";
+import { initial, normalizeState, buildStateFromExample, tapLabel, stateUsesHueIcons, remotesUseHueIcons, stateUsesFullMdi, remotesUseFullMdi, type NormalizableState } from "./app/stateUtils";
+import { createCommunityDraft, buildCommunityTemplate, buildCommunityPayload } from "./app/communityUtils";
 import type { CommunityButtonDraft, CommunityDraft, CommunityDraftEntry } from "./app/communityUtils";
 
 import JSZip from "jszip";
@@ -142,7 +128,7 @@ function getIconName(icon: string) {
 }
 
 const LEGAL_CONTACT = {
-    projectName: "Remote Label Designer for Home Automation",
+    projectName: "ClearControl.",
     name: "Tristan Germer",
     addressLines: ["Petrarcatraße 32", "80933 München", "Deutschland"],
     email: "nachspeise.haltegurt.1e@icloud.com",
@@ -152,7 +138,7 @@ const LEGAL_CONTACT = {
 const SHARE_MAIL_SUBJECT = "Shared remote configuration";
 const SHARE_MAIL_BODY_TEMPLATE = `Hi Tristan,
 
-I created a configuration with the Remote Label Designer.
+I created a configuration with ClearControl
 Remote: {remoteName} ({remoteId})
 
 Here is the share link:
@@ -362,9 +348,7 @@ export default function App() {
     const initialCommunityState = useMemo(() => {
         const drafts = readCommunityDrafts().sort((a, b) => b.updatedAt - a.updatedAt);
         const nextId = drafts[0]?.id ?? "";
-        const nextDraft = drafts[0]
-            ? createCommunityDraft({ ...drafts[0].draft, id: drafts[0].id })
-            : createCommunityDraft();
+        const nextDraft = drafts[0] ? createCommunityDraft({ ...drafts[0].draft, id: drafts[0].id }) : createCommunityDraft();
         return { drafts, selectedId: nextId, draft: nextDraft };
     }, []);
     const [communityDraft, setCommunityDraft] = useState<CommunityDraft>(initialCommunityState.draft);
@@ -540,7 +524,6 @@ export default function App() {
         template.appVersion = APP_VERSION;
         return template;
     }, [communityDraft]);
-
 
     const remotes = useMemo(() => {
         const list = [...REMOTES, ...communityRemotes];
@@ -1092,9 +1075,7 @@ export default function App() {
 
     const setButtonText = (buttonId: string, tap: TapType, text?: string) => {
         const normalized = typeof text === "string" ? text.replace(/\r\n/g, "\n") : "";
-        const hasVisibleText = normalized
-            .split("\n")
-            .some((line) => line.replace(/\s+/g, " ").trim().length > 0);
+        const hasVisibleText = normalized.split("\n").some((line) => line.replace(/\s+/g, " ").trim().length > 0);
         setState((s) => {
             let nextTapsEnabled = s.tapsEnabled;
             if (hasVisibleText && !s.tapsEnabled.includes(tap)) {
@@ -1954,20 +1935,7 @@ export default function App() {
                                                 <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} onSendConfig={openSendConfigPrompt} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} onCopyRemoteExample={copyRemoteExampleSnippet} remoteExampleStatus={remoteExampleStatus} />
                                             </>
                                         }
-                                        full={
-                                            <ButtonsSection
-                                                buttonIds={buttonIds}
-                                                state={state}
-                                                tapLabel={tapLabel}
-                                                onSetIcon={setIcon}
-                                                onSetButtonText={setButtonText}
-                                                onToggleStrike={toggleStrike}
-                                                onSetStrikeStyle={setStrikeStyle}
-                                                onSetIconColor={setIconColor}
-                                                onSetButtonFill={setButtonFill}
-                                                highlightedButtonId={highlightedButtonId}
-                                            />
-                                        }
+                                        full={<ButtonsSection buttonIds={buttonIds} state={state} tapLabel={tapLabel} onSetIcon={setIcon} onSetButtonText={setButtonText} onToggleStrike={toggleStrike} onSetStrikeStyle={setStrikeStyle} onSetIconColor={setIconColor} onSetButtonFill={setButtonFill} highlightedButtonId={highlightedButtonId} />}
                                     />
                                 }
                                 preview={
@@ -1979,15 +1947,7 @@ export default function App() {
                                             </div>
                                         ) : null}
                                         <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--desktop" showMissingIconPlaceholder={!!iconLoadStatus} />
-                                        <a
-                                            className="tipJar__imageLink"
-                                            href="https://www.buymeacoffee.com/tgermer"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            data-outbound-kind="coffee"
-                                            data-outbound-placement="preview"
-                                            data-outbound-label="buy_me_a_coffee"
-                                        >
+                                        <a className="tipJar__imageLink" href="https://www.buymeacoffee.com/tgermer" target="_blank" rel="noopener noreferrer" data-outbound-kind="coffee" data-outbound-placement="preview" data-outbound-label="buy_me_a_coffee">
                                             <img className="tipJar__image" src="/buyMeACoffee.webp" alt={t("header.supportAlt")} />
                                         </a>
                                     </div>
@@ -2021,9 +1981,9 @@ export default function App() {
                                       }}
                                   >
                                       <div className="previewOverlay__handle" aria-hidden="true" />
-                                        <Button type="button" className="previewOverlay__close" aria-label={t("app.closePreview")} onClick={() => setPreviewOpen(false)}>
-                                            <UiIcon name="mdi:close" className="icon" />
-                                        </Button>
+                                      <Button type="button" className="previewOverlay__close" aria-label={t("app.closePreview")} onClick={() => setPreviewOpen(false)}>
+                                          <UiIcon name="mdi:close" className="icon" />
+                                      </Button>
                                   </div>
                                   <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--overlay" showMissingIconPlaceholder={!!iconLoadStatus} />
                               </div>
