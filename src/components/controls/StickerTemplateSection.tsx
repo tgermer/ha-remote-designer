@@ -1,5 +1,6 @@
 import type { DesignOptions } from "../../app/types";
 import type { StickerSheetLayout } from "../../app/stickerSheet";
+import { useTranslation } from "react-i18next";
 
 type StickerTemplateSectionProps = {
     options: DesignOptions;
@@ -8,26 +9,27 @@ type StickerTemplateSectionProps = {
 };
 
 export function StickerTemplateSection(props: StickerTemplateSectionProps) {
+    const { t } = useTranslation();
     const { options, layout, onUpdateOptions } = props;
 
     const sizeFits = layout.maxCount > 0;
     const countTooHigh = options.labelCount > layout.maxCount && layout.maxCount > 0;
-    const pagesLabel = layout.pages === 1 ? "1 page" : `${layout.pages} pages`;
+    const pagesLabel = layout.pages === 1 ? t("controls.sticker.onePage") : t("controls.sticker.pages", { count: layout.pages });
 
     return (
         <fieldset>
-            <legend>Sticker Template</legend>
+            <legend>{t("controls.sticker.legend")}</legend>
             <div className="options">
                 <label className="option">
-                    Paper size
+                    {t("controls.sticker.paperSize")}
                     <select name="sheetSize" value={options.sheetSize} onChange={(e) => onUpdateOptions({ sheetSize: e.target.value as DesignOptions["sheetSize"] })}>
                         <option value="A4">A4</option>
-                        <option value="Letter">Letter</option>
+                        <option value="Letter">{t("controls.sticker.letter")}</option>
                     </select>
                 </label>
 
                 <label className="option">
-                    Sticker width (mm)
+                    {t("controls.sticker.width")}
                     <input
                         name="labelWidthMm"
                         type="number"
@@ -40,7 +42,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 </label>
 
                 <label className="option">
-                    Sticker height (mm)
+                    {t("controls.sticker.height")}
                     <input
                         name="labelHeightMm"
                         type="number"
@@ -53,7 +55,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 </label>
 
                 <label className="option">
-                    Corner radius (mm)
+                    {t("controls.sticker.corner")}
                     <input
                         name="labelCornerMm"
                         type="number"
@@ -66,7 +68,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 </label>
 
                 <label className="option">
-                    Sticker count
+                    {t("controls.sticker.count")}
                     <input
                         name="labelCount"
                         type="number"
@@ -79,7 +81,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 </label>
 
                 <label className="option">
-                    Sheet margin X (mm)
+                    {t("controls.sticker.marginX")}
                     <input
                         name="sheetMarginXMm"
                         type="number"
@@ -92,7 +94,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 </label>
 
                 <label className="option">
-                    Sheet margin Y (mm)
+                    {t("controls.sticker.marginY")}
                     <input
                         name="sheetMarginYMm"
                         type="number"
@@ -105,7 +107,7 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 </label>
 
                 <label className="option">
-                    Sticker gap (mm)
+                    {t("controls.sticker.gap")}
                     <input
                         name="sheetGapMm"
                         type="number"
@@ -118,11 +120,11 @@ export function StickerTemplateSection(props: StickerTemplateSectionProps) {
                 </label>
 
                 <p className="option__note">
-                    {options.sheetSize} layout: {layout.columns} × {layout.rows} (max {layout.maxCount} stickers per page) — {pagesLabel}
+                    {t("controls.sticker.layoutNote", { sheetSize: options.sheetSize, columns: layout.columns, rows: layout.rows, max: layout.maxCount, pagesLabel })}
                 </p>
 
-                {!sizeFits && <p className="option__note option__note--warn">Sticker size is too large to fit on A4.</p>}
-                {countTooHigh && <p className="option__note option__note--warn">Only the first {layout.maxCount} stickers fit on one A4 page.</p>}
+                {!sizeFits && <p className="option__note option__note--warn">{t("controls.sticker.tooLarge")}</p>}
+                {countTooHigh && <p className="option__note option__note--warn">{t("controls.sticker.countTooHigh", { max: layout.maxCount })}</p>}
             </div>
         </fieldset>
     );

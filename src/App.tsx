@@ -58,6 +58,7 @@ import type { CommunityButtonDraft, CommunityDraft, CommunityDraftEntry } from "
 
 import JSZip from "jszip";
 import { init as plausibleInit, track as plausibleTrack } from "@plausible-analytics/tracker";
+import { useTranslation } from "react-i18next";
 
 // Load remote images from src/assets (png/svg/jpg/webp). Filenames must match the remote id.
 const remoteImageModules = import.meta.glob("./assets/**/*.{png,svg,jpg,jpeg,webp}", {
@@ -189,11 +190,19 @@ const PLAUSIBLE_API_HOST = import.meta.env.VITE_PLAUSIBLE_API_HOST || "https://a
 const PLAUSIBLE_ENDPOINT = import.meta.env.VITE_PLAUSIBLE_ENDPOINT || `${PLAUSIBLE_API_HOST.replace(/\/+$/, "")}/api/event`;
 const COMMUNITY_PREVIEW_ID = "community_preview";
 const COMMUNITY_DRAFTS_KEY = "ha-remote-designer:saved-community-drafts:v1";
+const LANGUAGE_SESSION_EVENT_KEY = "ha-remote-designer:plausible-language-session:v1";
+const LANGUAGE_SOURCE_KEY = "ha-remote-designer:lang-source";
+const LANGUAGE_CHANGE_SOURCE_KEY = "ha-remote-designer:lang-change-source";
 
 /* ------------------------------- helpers -------------------------------- */
 
 function nextFrame() {
     return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+function normalizeAppLanguage(input: string | undefined | null): "de" | "en" {
+    const value = (input ?? "").toLowerCase();
+    return value.startsWith("de") ? "de" : "en";
 }
 
 type ViewKind = "home" | "configure" | "gallery" | "help" | "community";
@@ -341,6 +350,7 @@ function writeCommunityDrafts(drafts: CommunityDraftEntry[]) {
 /* --------------------------------- App ---------------------------------- */
 
 export default function App() {
+    const { t, i18n } = useTranslation();
     const [view, setView] = useState<ViewKind>(() => getUrlView());
     const isGallery = view === "gallery";
     const isHome = view === "home";
@@ -362,6 +372,7 @@ export default function App() {
     const [communitySelectedId, setCommunitySelectedId] = useState<string>(initialCommunityState.selectedId);
     const [communityCopyStatus, setCommunityCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
     const plausibleInitializedRef = useRef(false);
+    const previousLanguageRef = useRef<string>(normalizeAppLanguage(i18n.resolvedLanguage ?? i18n.language));
     const trackEvent = (name: string, props?: Record<string, string | number | boolean | null | undefined>) => {
         if (!import.meta.env.PROD) return;
         if (!plausibleInitializedRef.current) return;
@@ -399,35 +410,35 @@ export default function App() {
 
     useEffect(() => {
         if (legalPage === "impressum") {
-            document.title = "Impressum – Remote Designer";
+            document.title = t("meta.impressumTitle");
             return;
         }
         if (legalPage === "datenschutz") {
-            document.title = "Datenschutzerklärung – Remote Designer";
+            document.title = t("meta.privacyTitle");
             return;
         }
         if (view === "home") {
-            document.title = "Home – Remote Designer";
+            document.title = t("meta.homeTitle");
             return;
         }
         if (view === "configure") {
-            document.title = "Configurator – Remote Designer";
+            document.title = t("meta.configureTitle");
             return;
         }
         if (view === "gallery") {
-            document.title = "Gallery – Remote Designer";
+            document.title = t("meta.galleryTitle");
             return;
         }
         if (view === "help") {
-            document.title = "Help – Remote Designer";
+            document.title = t("meta.helpTitle");
             return;
         }
         if (view === "community") {
-            document.title = "Community Remote – Remote Designer";
+            document.title = t("meta.communityTitle");
             return;
         }
-        document.title = "Remote Label Designer for Home Automation";
-    }, [legalPage, view]);
+        document.title = t("header.title");
+    }, [legalPage, t, view]);
 
     useEffect(() => {
         if (!import.meta.env.PROD) return;
@@ -447,6 +458,36 @@ export default function App() {
             url: window.location.href,
         });
     }, [view, legalPage]);
+
+    useEffect(() => {
+        if (!import.meta.env.PROD) return;
+        if (!plausibleInitializedRef.current) return;
+        const lang = normalizeAppLanguage(i18n.resolvedLanguage ?? i18n.language);
+        try {
+            const alreadyTracked = window.sessionStorage.getItem(LANGUAGE_SESSION_EVENT_KEY) === "1";
+            if (alreadyTracked) return;
+            const source = window.localStorage.getItem(LANGUAGE_SOURCE_KEY) === "manual" ? "manual" : "auto";
+            trackEvent("language_session", { lang, source });
+            window.sessionStorage.setItem(LANGUAGE_SESSION_EVENT_KEY, "1");
+        } catch {
+            trackEvent("language_session", { lang, source: "unknown" });
+        }
+    }, [i18n.language, i18n.resolvedLanguage]);
+
+    useEffect(() => {
+        const current = normalizeAppLanguage(i18n.resolvedLanguage ?? i18n.language);
+        const previous = previousLanguageRef.current;
+        if (current === previous) return;
+        previousLanguageRef.current = current;
+        let source = "auto";
+        try {
+            source = window.sessionStorage.getItem(LANGUAGE_CHANGE_SOURCE_KEY) === "manual" ? "manual" : "auto";
+            window.sessionStorage.removeItem(LANGUAGE_CHANGE_SOURCE_KEY);
+        } catch {
+            source = "unknown";
+        }
+        trackEvent("language_changed", { from: previous, to: current, source });
+    }, [i18n.language, i18n.resolvedLanguage]);
 
     useEffect(() => {
         const legacyHashRoute = parseLegacyHashRoute();
@@ -668,7 +709,7 @@ export default function App() {
 
         // Block renaming to an existing name for the same remote model.
         if (nameExistsForRemote(existing, state.remoteId, name, activeSavedId)) {
-            setSaveNameError("Name already exists for this remote model. Choose another name or use Save as.");
+            setSaveNameError(t("app.errors.nameExists"));
             return;
         }
         setSaveNameError("");
@@ -721,7 +762,7 @@ export default function App() {
         const payload = encodeSavedDesignsExport(items);
         const filename = `ha-remote-designer-saved-remotes-${getDateStamp()}.json`;
         downloadTextFile(filename, JSON.stringify(payload, null, 2), "application/json");
-        setImportExportStatus({ type: "success", message: `Exported ${items.length} saved remotes.` });
+        setImportExportStatus({ type: "success", message: t("app.saved.exportedAll", { count: items.length }) });
         trackEvent("export_saved_designs", { count: items.length });
     };
 
@@ -730,7 +771,7 @@ export default function App() {
         const items = readSavedDesigns();
         const found = items.find((d) => d.id === selectedSavedId);
         if (!found) {
-            setImportExportStatus({ type: "error", message: "Selected remote no longer exists." });
+            setImportExportStatus({ type: "error", message: t("app.saved.selectedMissing") });
             return;
         }
 
@@ -738,7 +779,7 @@ export default function App() {
         const base = `${sanitizeFilenameBase(found.name)}-${found.state.remoteId || "remote"}`;
         const filename = `${base}-${getDateStamp()}.json`;
         downloadTextFile(filename, JSON.stringify(payload, null, 2), "application/json");
-        setImportExportStatus({ type: "success", message: "Exported selected remote." });
+        setImportExportStatus({ type: "success", message: t("app.saved.exportedSelected") });
         trackEvent("export_saved_design", { remote_id: found.state.remoteId || "remote" });
     };
 
@@ -748,7 +789,7 @@ export default function App() {
         try {
             text = await file.text();
         } catch {
-            setImportExportStatus({ type: "error", message: "Failed to read the file." });
+            setImportExportStatus({ type: "error", message: t("app.saved.readFailed") });
             return;
         }
 
@@ -759,7 +800,7 @@ export default function App() {
         }
 
         if (!parsed.items.length) {
-            setImportExportStatus({ type: "error", message: "No valid remotes found in the file." });
+            setImportExportStatus({ type: "error", message: t("app.saved.noValidFound") });
             return;
         }
 
@@ -786,8 +827,7 @@ export default function App() {
         writeSavedDesigns(next);
         refreshSavedDesigns();
 
-        const invalidNote = parsed.invalidCount ? ` (${parsed.invalidCount} skipped)` : "";
-        setImportExportStatus({ type: "success", message: `Imported ${parsed.items.length} remotes${invalidNote}.` });
+        setImportExportStatus({ type: "success", message: t("app.saved.imported", { count: parsed.items.length, skipped: parsed.invalidCount }) });
         trackEvent("import_saved_designs", { count: parsed.items.length, skipped: parsed.invalidCount });
     };
 
@@ -1862,8 +1902,8 @@ export default function App() {
 
                         {isConfigure ? (
                             <EditorLayout
-                                title="Configurator"
-                                subtitle="Set up your remote, test the layout, and export the final stickers."
+                                title={t("app.editorTitle")}
+                                subtitle={t("app.editorSubtitle")}
                                 intro={
                                     <ConfiguratorIntro
                                         helpHref={getViewHref("help")}
@@ -1909,7 +1949,7 @@ export default function App() {
                                             <>
                                                 {isStickerSheet && stickerLayout ? <StickerTemplateSection options={o} layout={stickerLayout} onUpdateOptions={updateOptions} /> : null}
 
-                                                <OptionsSection options={o} onUpdateOptions={updateOptions} remoteOutlineLabel={isStickerSheet ? "Show paper outline" : "Show remote outline"} />
+                                                <OptionsSection options={o} onUpdateOptions={updateOptions} remoteOutlineLabel={isStickerSheet ? t("app.optionOutlinePaper") : t("app.optionOutlineRemote")} />
 
                                                 <ShareExportSection shareStatus={shareStatus} onCopyShareLink={copyShareLink} shareUrl={shareUrl} onSendConfig={openSendConfigPrompt} isAdmin={isAdmin} onExportRemoteSvg={exportRemoteSvg} onExportZip={exportZip} isZipping={isZipping} dpi={dpi} onChangeDpi={setDpi} showA4Pdf={isStickerSheet} onExportA4Pdf={exportA4Pdf} showSvgAllPages={isStickerSheet && stickerPages > 1} onExportAllPagesSvgZip={exportAllPagesSvgZip} onExportRemoteJson={exportSelectedDesign} onCopyRemoteExample={copyRemoteExampleSnippet} remoteExampleStatus={remoteExampleStatus} />
                                             </>
@@ -1948,7 +1988,7 @@ export default function App() {
                                             data-outbound-placement="preview"
                                             data-outbound-label="buy_me_a_coffee"
                                         >
-                                            <img className="tipJar__image" src="/buyMeACoffee.webp" alt="Buy Me A Coffee" />
+                                            <img className="tipJar__image" src="/buyMeACoffee.webp" alt={t("header.supportAlt")} />
                                         </a>
                                     </div>
                                 }
@@ -1973,7 +2013,7 @@ export default function App() {
                 ? createPortal(
                       <div className={`previewOverlay ${previewOpen ? "previewOverlay--open" : "previewOverlay--closed"}`} style={{ ["--preview-height" as string]: `${previewHeightVh}vh` }}>
                           {previewOpen ? (
-                              <div className="previewOverlay__sheet" role="dialog" aria-label="Preview">
+                              <div className="previewOverlay__sheet" role="dialog" aria-label={t("app.preview")}>
                                   <div
                                       className="previewOverlay__header"
                                       onPointerDown={(event) => {
@@ -1981,7 +2021,7 @@ export default function App() {
                                       }}
                                   >
                                       <div className="previewOverlay__handle" aria-hidden="true" />
-                                        <Button type="button" className="previewOverlay__close" aria-label="Close preview" onClick={() => setPreviewOpen(false)}>
+                                        <Button type="button" className="previewOverlay__close" aria-label={t("app.closePreview")} onClick={() => setPreviewOpen(false)}>
                                             <UiIcon name="mdi:close" className="icon" />
                                         </Button>
                                   </div>
@@ -1989,7 +2029,7 @@ export default function App() {
                               </div>
                           ) : (
                               <Button type="button" className="previewOverlay__bar" onClick={() => setPreviewOpen(true)}>
-                                  Preview
+                                  {t("app.preview")}
                               </Button>
                           )}
                       </div>,
@@ -2005,31 +2045,31 @@ export default function App() {
                               if (event.target === event.currentTarget) setSendConfigOpen(false);
                           }}
                       >
-                          <div className="sharePrompt" role="dialog" aria-modal="true" aria-label="Share configuration">
+                          <div className="sharePrompt" role="dialog" aria-modal="true" aria-label={t("app.shareDialog")}>
                               <div className="sharePrompt__header">
-                                  <h2>Share your configuration</h2>
-                                  <Button type="button" className="sharePrompt__close" onClick={() => setSendConfigOpen(false)} aria-label="Close">
+                                  <h2>{t("app.shareTitle")}</h2>
+                                  <Button type="button" className="sharePrompt__close" onClick={() => setSendConfigOpen(false)} aria-label={t("app.close")}>
                                       <UiIcon name="mdi:close" className="icon" />
                                   </Button>
                               </div>
                               <div className="sharePrompt__body">
-                                  <p>If you’d like, you can send your configuration to help improve this tool.</p>
-                                  <p>Real-world setups help me understand how the tool is used and which remote models and layouts are most valuable to add.</p>
+                                  <p>{t("app.sharePrompt.p1")}</p>
+                                  <p>{t("app.sharePrompt.p2")}</p>
                                   <p>
-                                      Your configuration is only reviewed by the developer and is not published by default. <strong>Thank you!</strong>
+                                      {t("app.sharePrompt.p3")} <strong>{t("app.sharePrompt.thanks")}</strong>
                                   </p>
                                   <hr className="sharePrompt__divider" />
                                   <div className="sharePrompt__section">
-                                      <div className="sharePrompt__subtitle">Optional: allow use in the public gallery</div>
-                                      <p>Would you like to allow this configuration (or parts of it) to be used as an anonymized example in the public gallery?</p>
+                                      <div className="sharePrompt__subtitle">{t("app.sharePrompt.optionalGallery")}</div>
+                                      <p>{t("app.sharePrompt.question")}</p>
                                       <ul>
-                                          <li>No personal names or identifiable details will be shown</li>
-                                          <li>Declining has no effect on using the tool</li>
-                                          <li>You can withdraw your consent at any time</li>
+                                          <li>{t("app.sharePrompt.bullet1")}</li>
+                                          <li>{t("app.sharePrompt.bullet2")}</li>
+                                          <li>{t("app.sharePrompt.bullet3")}</li>
                                       </ul>
                                       <div className={`sharePrompt__consent${showConsentError ? " sharePrompt__consent--error" : ""}`}>
                                           <div className="sharePrompt__consentRequired" aria-hidden="true">
-                                              Required *
+                                              {t("app.sharePrompt.required")}
                                           </div>
                                           <label>
                                               <input
@@ -2042,7 +2082,7 @@ export default function App() {
                                                       setShowConsentError(false);
                                                   }}
                                               />
-                                              Yes, you may use this configuration as an anonymized gallery example
+                                              {t("app.sharePrompt.consentYes")}
                                           </label>
                                           <label>
                                               <input
@@ -2055,15 +2095,15 @@ export default function App() {
                                                       setShowConsentError(false);
                                                   }}
                                               />
-                                              No, keep this configuration private
+                                              {t("app.sharePrompt.consentNo")}
                                           </label>
-                                          {showConsentError ? <div className="sharePrompt__error">Please select one option.</div> : null}
+                                          {showConsentError ? <div className="sharePrompt__error">{t("app.sharePrompt.selectOne")}</div> : null}
                                       </div>
                                   </div>
                               </div>
                               <div className="sharePrompt__actions">
                                   <Button variant="danger" type="button" onClick={() => setSendConfigOpen(false)}>
-                                      Not now
+                                      {t("app.sharePrompt.notNow")}
                                   </Button>
                                   <a
                                       className="btn"
@@ -2084,7 +2124,7 @@ export default function App() {
                                           setSendConfigOpen(false);
                                       }}
                                   >
-                                      Open email
+                                      {t("app.sharePrompt.openEmail")}
                                   </a>
                               </div>
                           </div>

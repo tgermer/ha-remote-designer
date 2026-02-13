@@ -2,59 +2,18 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 0.75rem;
   width: 100%;
-  justify-content: center;
-  margin:  3rem auto;
+  margin: 3rem 0 0;
 }
 
-/* .title {
+.title {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 0.6rem;
-  font-size: 1.2rem;
-} */
-
-.tipLink {
-  display: none;
-}
-
-.tipImage {
-  width: 217px;
-  height: 60px;
-  max-width: 100%;
-  object-fit: contain;
-  transform: scale(0.6);
-  transform-origin: center top;
-}
-
-.header {
-    justify-content: center;
-  }
-
-  .title {
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-    gap: 0.35rem;
-  }
-
-  .tipLink {
-    display: inline-flex;
-    margin-top: 0.35rem;
-  }
-
-
-.logo {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  padding: 2px;
-  background: transparent;
-  border: 1px solid rgba(37, 37, 69, 0.08);
-  box-shadow: none;
-  opacity: 0.75;
+  text-align: left;
 }
 
 .badge {
@@ -66,4 +25,16 @@
   font-size: 0.8rem;
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 2px 6px rgba(25, 25, 50, 0.08);
+}
+
+@media (max-width: 800px) {
+  .header {
+    justify-content: center;
+  }
+
+  .title {
+    justify-content: center;
+    text-align: center;
+  }
+
 }

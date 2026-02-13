@@ -1,29 +1,19 @@
 import styles from "./SiteHeader.module.css";
+import { useTranslation } from "react-i18next";
 
 type SiteHeaderProps = {
     isAdmin?: boolean;
-    title?: string;
 };
 
-export function SiteHeader({ isAdmin = false, title = "Remote Label Designer for Home Automation" }: SiteHeaderProps) {
+export function SiteHeader({ isAdmin = false }: SiteHeaderProps) {
+    const { t } = useTranslation();
+
     return (
         <header className={styles.header}>
             <div className={styles.title}>
-                <img className={styles.logo} src="/dimmer-switch.svg" alt="" aria-hidden="true" />
-                <h1>{title}</h1>
-                <a
-                    className={styles.tipLink}
-                    href="https://www.buymeacoffee.com/tgermer"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-outbound-kind="coffee"
-                    data-outbound-placement="header"
-                    data-outbound-label="buy_me_a_coffee"
-                >
-                    <img className={styles.tipImage} src="/buyMeACoffee.webp" alt="Buy Me A Coffee" />
-                </a>
+                <h1>{t("header.title")}</h1>
             </div>
-            {isAdmin && <span className={styles.badge}>Admin</span>}
+            {isAdmin && <span className={styles.badge}>{t("header.admin")}</span>}
         </header>
     );
 }

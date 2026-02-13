@@ -2,6 +2,7 @@ import type { DesignState } from "../app/types";
 import type { RemoteTemplate } from "../app/remotes";
 import { RemoteSvg } from "../render/RemoteSvg";
 import { UiIcon } from "./UiIcon";
+import { useTranslation } from "react-i18next";
 
 type PreviewPaneProps = {
     template: RemoteTemplate;
@@ -22,6 +23,7 @@ type PreviewPaneProps = {
 };
 
 export function PreviewPane(props: PreviewPaneProps) {
+    const { t } = useTranslation();
     const { template, state, showWatermark, watermarkText, watermarkOpacity, isStickerSheet, pageIndex = 0, pages = 0, onChangePage, onSelectButton, highlightedButtonId, highlightedCutoutIndex, showResizeHandles, className, showMissingIconPlaceholder } = props;
     const showPager = isStickerSheet && pages > 1 && !!onChangePage;
     const currentPage = Math.min(Math.max(0, pageIndex), Math.max(0, pages - 1));
@@ -32,10 +34,10 @@ export function PreviewPane(props: PreviewPaneProps) {
                 <div className="preview__pager">
                     <button type="button" className="preview__pagerBtn" onClick={() => onChangePage?.(Math.max(0, currentPage - 1))} disabled={currentPage <= 0}>
                         <UiIcon name="mdi:chevron-left" className="icon" />
-                        <span>Prev</span>
+                        <span>{t("preview.prev")}</span>
                     </button>
                     <span>
-                        Page{" "}
+                        {t("preview.page")}{" "}
                         <select name="previewPage" value={currentPage} onChange={(e) => onChangePage?.(Number(e.target.value))}>
                             {Array.from({ length: pages }, (_, i) => (
                                 <option key={i} value={i}>
@@ -43,10 +45,10 @@ export function PreviewPane(props: PreviewPaneProps) {
                                 </option>
                             ))}
                         </select>{" "}
-                        of {pages}
+                        {t("preview.of", { pages })}
                     </span>
                     <button type="button" className="preview__pagerBtn" onClick={() => onChangePage?.(Math.min(pages - 1, currentPage + 1))} disabled={currentPage >= pages - 1}>
-                        <span>Next</span>
+                        <span>{t("preview.next")}</span>
                         <UiIcon name="mdi:chevron-right" className="icon" />
                     </button>
                 </div>

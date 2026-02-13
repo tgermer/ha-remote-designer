@@ -5,6 +5,7 @@ import type { SavedDesign } from "../app/savedDesigns";
 import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "../app/stickerSheet";
 import { RemoteSvg } from "../render/RemoteSvg";
 import { Button } from "./ui/Button";
+import { useTranslation } from "react-i18next";
 
 type GalleryViewProps = {
     remotes: RemoteTemplate[];
@@ -52,6 +53,7 @@ const GalleryCard = memo(function GalleryCard({
     onOpenPreview: (params: { state: DesignState }) => void;
     onOpenSaved: (design: SavedDesign) => void;
 }) {
+    const { t } = useTranslation();
     const handleOpen = () => {
         if (entry.kind === "saved") {
             onOpenSaved(entry.saved!);
@@ -93,8 +95,8 @@ const GalleryCard = memo(function GalleryCard({
             <div className="galleryCard__meta">
                 <div className="galleryCard__title">{entry.title}</div>
                 <div className="galleryCard__model">{entry.remoteName}</div>
-                {entry.kind === "saved" ? <div className="galleryCard__tag">Saved</div> : null}
-                {entry.userExample ? <div className="galleryCard__tag">User example</div> : null}
+                {entry.kind === "saved" ? <div className="galleryCard__tag">{t("gallery.tagSaved")}</div> : null}
+                {entry.userExample ? <div className="galleryCard__tag">{t("gallery.tagUserExample")}</div> : null}
                 {entry.description ? <div className="galleryCard__desc">{entry.description}</div> : null}
             </div>
         </button>
@@ -120,6 +122,7 @@ const GalleryCard = memo(function GalleryCard({
 GalleryCard.displayName = "GalleryCard";
 
 export function GalleryView(props: GalleryViewProps) {
+    const { t } = useTranslation();
     const { remotes, savedDesigns, buildStateFromExample, onOpenPreview, onOpenSaved, showWatermark, watermarkText, watermarkOpacity, iconLoadStatus } = props;
     const [selectedRemoteId, setSelectedRemoteId] = useState<string>("all");
     const [sourceFilter, setSourceFilter] = useState<"all" | "preview" | "saved">("all");
@@ -177,8 +180,8 @@ export function GalleryView(props: GalleryViewProps) {
                 const meta = ex.meta;
                 if (!meta || !meta.allowGallery) return [];
                 const state = buildStateFromExample({ remoteId: r.id, example: ex });
-                const title = meta.savedName?.trim() || "User example";
-                const description = meta.description ?? "Shared by a user";
+                const title = meta.savedName?.trim() || t("gallery.userExampleTitle");
+                const description = meta.description ?? t("gallery.userExampleDescription");
                 const userId = meta.id ?? `user_${meta.exportedAt ?? index}`;
                 return [
                     {
@@ -222,7 +225,7 @@ export function GalleryView(props: GalleryViewProps) {
                 remoteId: design.state.remoteId,
                 remoteName: remote.name,
                 title: design.name,
-                description: `Saved ${new Date(design.updatedAt).toLocaleDateString()}`,
+                description: t("gallery.savedOn", { date: new Date(design.updatedAt).toLocaleDateString() }),
                 state: design.state,
                 template: remote,
                 saved: design,
@@ -262,8 +265,8 @@ export function GalleryView(props: GalleryViewProps) {
 
     const emptyMessage =
         allEntries.length === 0
-            ? "No gallery entries yet."
-            : "No entries match the selected filters.";
+            ? t("gallery.emptyNoEntries")
+            : t("gallery.emptyNoMatch");
 
     const safeVisibleCount = Math.min(visibleCount, filteredEntries.length);
 
@@ -282,10 +285,10 @@ export function GalleryView(props: GalleryViewProps) {
     }, [filteredEntries.length]);
 
     return (
-        <section className="gallery" aria-label="Gallery">
+        <section className="gallery" aria-label={t("gallery.sectionLabel")}>
             <header className="gallery__header">
-                <h2 className="gallery__title">Gallery</h2>
-                <p className="gallery__subtitle">Browse preview presets and your saved remotes. Click any card to open it in the editor.</p>
+                <h2 className="gallery__title">{t("gallery.title")}</h2>
+                <p className="gallery__subtitle">{t("gallery.subtitle")}</p>
                 {iconLoadStatus ? (
                     <p className="gallery__status" role="status" aria-live="polite">
                         <span className="statusSpinner" aria-hidden="true" />
@@ -293,10 +296,10 @@ export function GalleryView(props: GalleryViewProps) {
                     </p>
                 ) : null}
                 <div className="galleryFiltersBlock">
-                    <div className="galleryFilters__title">Filters</div>
-                    <div className="galleryFilters" role="group" aria-label="Gallery filters">
+                    <div className="galleryFilters__title">{t("gallery.filtersTitle")}</div>
+                    <div className="galleryFilters" role="group" aria-label={t("gallery.filtersLabel")}>
                         <label className="galleryFilters__control">
-                            Remote type
+                            {t("gallery.remoteType")}
                             <select
                                 name="galleryRemoteType"
                                 value={selectedRemoteId}
@@ -305,7 +308,7 @@ export function GalleryView(props: GalleryViewProps) {
                                     setVisibleCount(12);
                                 }}
                             >
-                                <option value="all">All types</option>
+                                <option value="all">{t("gallery.allTypes")}</option>
                                 {remoteOptions.map((option) => (
                                     <option key={option.id} value={option.id}>
                                         {option.name}
@@ -314,7 +317,7 @@ export function GalleryView(props: GalleryViewProps) {
                             </select>
                         </label>
                         <label className="galleryFilters__control">
-                            Source
+                            {t("gallery.source")}
                             <select
                                 name="gallerySourceFilter"
                                 value={sourceFilter}
@@ -323,13 +326,13 @@ export function GalleryView(props: GalleryViewProps) {
                                     setVisibleCount(12);
                                 }}
                             >
-                                <option value="all">All sources</option>
-                                <option value="preview">Preview presets</option>
-                                <option value="saved">My saved remotes</option>
+                                <option value="all">{t("gallery.allSources")}</option>
+                                <option value="preview">{t("gallery.sourcePreview")}</option>
+                                <option value="saved">{t("gallery.sourceSaved")}</option>
                             </select>
                         </label>
                         <label className="galleryFilters__control">
-                            Examples
+                            {t("gallery.examples")}
                             <select
                                 name="galleryExampleFilter"
                                 value={exampleFilter}
@@ -338,13 +341,13 @@ export function GalleryView(props: GalleryViewProps) {
                                     setVisibleCount(12);
                                 }}
                             >
-                                <option value="all">All examples</option>
-                                <option value="official">Official examples</option>
-                                <option value="user">User examples</option>
+                                <option value="all">{t("gallery.examplesAll")}</option>
+                                <option value="official">{t("gallery.examplesOfficial")}</option>
+                                <option value="user">{t("gallery.examplesUser")}</option>
                             </select>
                         </label>
                         <label className="galleryFilters__control">
-                            Sort
+                            {t("gallery.sort")}
                             <select
                                 name="gallerySortKey"
                                 value={sortKey}
@@ -353,10 +356,10 @@ export function GalleryView(props: GalleryViewProps) {
                                     setVisibleCount(12);
                                 }}
                             >
-                                <option value="recent">Recently saved</option>
-                                <option value="type">Remote type</option>
-                                <option value="source">Source</option>
-                                <option value="name">Name</option>
+                                <option value="recent">{t("gallery.sortRecent")}</option>
+                                <option value="type">{t("gallery.sortType")}</option>
+                                <option value="source">{t("gallery.sortSource")}</option>
+                                <option value="name">{t("gallery.sortName")}</option>
                             </select>
                         </label>
                         <Button
@@ -369,10 +372,10 @@ export function GalleryView(props: GalleryViewProps) {
                                 setVisibleCount(12);
                             }}
                         >
-                            Clear filters
+                            {t("gallery.clearFilters")}
                         </Button>
                         <div className="galleryFilters__summary">
-                            Showing {safeVisibleCount} of {filteredEntries.length}
+                            {t("gallery.showing", { visible: safeVisibleCount, total: filteredEntries.length })}
                         </div>
                     </div>
                 </div>

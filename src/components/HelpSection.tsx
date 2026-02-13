@@ -1,11 +1,15 @@
+import { useTranslation } from "react-i18next";
+
 export function HelpSection() {
+    const { t } = useTranslation();
+
     return (
-        <section className="help" aria-label="Icon help">
+        <section className="help" aria-label={t("helpSection.iconHelpLabel")}>
             <details className="help__details">
-                <summary>Icon help & sources</summary>
+                <summary>{t("helpSection.iconSourcesSummary")}</summary>
                 <div className="help__content">
                     <p>
-                        This app supports all Material Design Icons (MDI). Browse and search icons here:{" "}
+                        {t("helpSection.mdiBody")}{" "}
                         <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noopener noreferrer">
                             pictogrammers.com/library/mdi
                         </a>
@@ -13,23 +17,23 @@ export function HelpSection() {
                     </p>
 
                     <p>
-                        Hue icon previews are sourced from the <code>hass-hue-icons</code> project:{" "}
+                        {t("helpSection.hueBody")}{" "}
                         <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noopener noreferrer">
                             github.com/arallsopp/hass-hue-icons
                         </a>
                         .
                     </p>
 
-                    <p className="help__note">Tip: Copy the icon name from the MDI library (e.g. <code>mdi:lightbulb</code>) and paste it into the picker.</p>
+                    <p className="help__note">{t("helpSection.tip")}</p>
                 </div>
             </details>
 
             <details className="help__details">
-                <summary>Saved remotes: export & import</summary>
+                <summary>{t("helpSection.savedSummary")}</summary>
                 <div className="help__content">
-                    <p>Use Export to download a JSON backup of your saved remotes. Import merges the file with your current saved remotes.</p>
-                    <p>If a name already exists for the same remote model, it will be auto-renamed with a timestamp to avoid overwriting.</p>
-                    <p className="help__note">Note: Saved remotes live in your browser storage. Clearing site data removes them, so keep backups if needed.</p>
+                    <p>{t("helpSection.savedBody1")}</p>
+                    <p>{t("helpSection.savedBody2")}</p>
+                    <p className="help__note">{t("helpSection.savedNote")}</p>
                 </div>
             </details>
         </section>

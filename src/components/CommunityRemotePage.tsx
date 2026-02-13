@@ -4,6 +4,7 @@ import type { DesignState } from "../app/types";
 import { PreviewPane } from "./PreviewPane";
 import { UiIcon } from "./UiIcon";
 import { Button } from "./ui/Button";
+import { useTranslation } from "react-i18next";
 
 type CommunityDraft = {
     id?: string;
@@ -53,34 +54,6 @@ type TableColumn = {
     label: string;
 };
 
-const BUTTON_COLUMNS: TableColumn[] = [
-    { key: "id", label: "ID" },
-    { key: "x", label: "X (mm)" },
-    { key: "y", label: "Y (mm)" },
-    { key: "w", label: "W (mm)" },
-    { key: "h", label: "H (mm)" },
-    { key: "r", label: "R (Default, mm)" },
-    { key: "tl", label: "TL (Override)" },
-    { key: "tr", label: "TR (Override)" },
-    { key: "br", label: "BR (Override)" },
-    { key: "bl", label: "BL (Override)" },
-    { key: "actions", label: "" },
-];
-
-const CUTOUT_COLUMNS: TableColumn[] = [
-    { key: "type", label: "Type" },
-    { key: "x", label: "X" },
-    { key: "y", label: "Y" },
-    { key: "w", label: "W" },
-    { key: "h", label: "H" },
-    { key: "r", label: "R (Default)" },
-    { key: "tl", label: "TL (Override)" },
-    { key: "tr", label: "TR (Override)" },
-    { key: "br", label: "BR (Override)" },
-    { key: "bl", label: "BL (Override)" },
-    { key: "actions", label: "" },
-];
-
 function TableCell({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div className="communityTable__cell" data-label={label}>
@@ -94,7 +67,34 @@ function TableHeaderRow({ className, columns }: { className: string; columns: Ta
 }
 
 export function CommunityRemotePage(props: CommunityRemotePageProps) {
+    const { t } = useTranslation();
     const { draft, template, previewState, showWatermark, watermarkText, watermarkOpacity, onChangeDraft, onUpdateButton, onAddButton, onRemoveButton, onUpdateCutout, onAddCutoutRect, onAddCutoutCircle, onRemoveCutout, onUseInConfigurator, onCopyJson, onDownloadJson, onSendToDeveloper, copyStatus = "idle", drafts, selectedDraftId, hasUnsavedChanges, onSelectDraft, onSaveDraft, onDeleteDraft, onNewDraft } = props;
+    const BUTTON_COLUMNS: TableColumn[] = [
+        { key: "id", label: t("community.columns.id") },
+        { key: "x", label: t("community.columns.xMm") },
+        { key: "y", label: t("community.columns.yMm") },
+        { key: "w", label: t("community.columns.wMm") },
+        { key: "h", label: t("community.columns.hMm") },
+        { key: "r", label: t("community.columns.rDefaultMm") },
+        { key: "tl", label: t("community.columns.tlOverride") },
+        { key: "tr", label: t("community.columns.trOverride") },
+        { key: "br", label: t("community.columns.brOverride") },
+        { key: "bl", label: t("community.columns.blOverride") },
+        { key: "actions", label: "" },
+    ];
+    const CUTOUT_COLUMNS: TableColumn[] = [
+        { key: "type", label: t("community.columns.type") },
+        { key: "x", label: t("community.columns.x") },
+        { key: "y", label: t("community.columns.y") },
+        { key: "w", label: t("community.columns.w") },
+        { key: "h", label: t("community.columns.h") },
+        { key: "r", label: t("community.columns.rDefault") },
+        { key: "tl", label: t("community.columns.tlOverride") },
+        { key: "tr", label: t("community.columns.trOverride") },
+        { key: "br", label: t("community.columns.brOverride") },
+        { key: "bl", label: t("community.columns.blOverride") },
+        { key: "actions", label: "" },
+    ];
     const previewRef = useRef<HTMLDivElement | null>(null);
     const dragRef = useRef<{ kind: "move-button"; buttonId: string; offsetX: number; offsetY: number } | { kind: "resize-button"; buttonId: string; handle: "e" | "s" | "se"; startX: number; startY: number; startW: number; startH: number } | { kind: "move-cutout"; index: number; offsetX: number; offsetY: number } | { kind: "resize-cutout-rect"; index: number; handle: "e" | "s" | "se"; startX: number; startY: number; startW: number; startH: number } | { kind: "resize-cutout-circle"; index: number; startCx: number; startCy: number } | null>(null);
     const [selectedButtonId, setSelectedButtonId] = useState<string>(draft.buttons[0]?.id ?? "");
@@ -474,41 +474,41 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
     }, [nudgeSelected, selectedButtonIndex, selectedCutoutIndex]);
 
     return (
-        <section className="page" aria-label="Community remote builder">
+        <section className="page" aria-label={t("community.sectionLabel")}>
             <header className="page__hero">
-                <p className="page__kicker">Community remote model</p>
-                <h2 className="page__title">Create a remote that is not in the catalog.</h2>
-                <p className="page__lead">Measure your remote, define the button layout, test the design in the configurator, then share the JSON so it can be added to the catalog.</p>
+                <p className="page__kicker">{t("community.kicker")}</p>
+                <h2 className="page__title">{t("community.title")}</h2>
+                <p className="page__lead">{t("community.lead")}</p>
             <div className="page__cta">
                     <Button variant="primary" type="button" onClick={onUseInConfigurator}>
                         <UiIcon name="mdi:hammer-wrench" className="icon" />
-                        Test in configurator
+                        {t("community.testInConfigurator")}
                     </Button>
                     <Button type="button" onClick={onSendToDeveloper}>
                         <UiIcon name="mdi:email-outline" className="icon" />
-                        Send to developer
+                        {t("community.sendToDeveloper")}
                     </Button>
                     <Button type="button" onClick={onCopyJson}>
                         <UiIcon name="mdi:content-copy" className="icon" />
-                        Copy JSON
+                        {t("community.copyJson")}
                     </Button>
                     <Button type="button" onClick={onDownloadJson}>
                         <UiIcon name="mdi:download" className="icon" />
-                        Download JSON
+                        {t("community.downloadJson")}
                     </Button>
-                    {copyStatus === "copied" ? <span className="page__note">Copied!</span> : null}
-                    {copyStatus === "failed" ? <span className="page__note">Copy failed.</span> : null}
+                    {copyStatus === "copied" ? <span className="page__note">{t("community.copied")}</span> : null}
+                    {copyStatus === "failed" ? <span className="page__note">{t("community.copyFailed")}</span> : null}
                 </div>
             </header>
 
             <div className="communityGrid">
                 <div className="page__card">
                     <div className="communityDraftHeader">
-                        <h3>Remote details</h3>
+                        <h3>{t("community.remoteDetails")}</h3>
                     </div>
                     <div className="communityDraftHeader__actions">
                         <select name="communitySelectedDraftId" value={selectedDraftId} onChange={(e) => onSelectDraft(e.target.value)}>
-                            <option value="">Select draft…</option>
+                            <option value="">{t("community.selectDraft")}</option>
                             {drafts.map((entry) => (
                                 <option key={entry.id} value={entry.id}>
                                     {entry.name}
@@ -517,43 +517,43 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                         </select>
                         <Button type="button" onClick={onSaveDraft} disabled={!hasUnsavedChanges}>
                             <UiIcon name="mdi:content-save-outline" className="icon" />
-                            Save draft
+                            {t("community.saveDraft")}
                         </Button>
                         <Button type="button" onClick={onNewDraft}>
                             <UiIcon name="mdi:plus" className="icon" />
-                            New
+                            {t("community.new")}
                         </Button>
-                        <Button variant="danger" type="button" onClick={onDeleteDraft} disabled={!selectedDraftId} aria-label="Delete draft">
+                        <Button variant="danger" type="button" onClick={onDeleteDraft} disabled={!selectedDraftId} aria-label={t("community.deleteDraft")}>
                             <UiIcon name="mdi:delete-outline" className="icon" />
                         </Button>
                     </div>
                     <div className="communityForm">
                         <label className="communityForm__field">
-                            Name
-                            <input name="communityDraftName" type="text" value={draft.name} onChange={(e) => onChangeDraft({ name: e.target.value })} placeholder="e.g. My Wall Remote" />
+                            {t("community.name")}
+                            <input name="communityDraftName" type="text" value={draft.name} onChange={(e) => onChangeDraft({ name: e.target.value })} placeholder={t("community.namePlaceholder")} />
                         </label>
                         <label className="communityForm__field">
-                            Width (mm)
+                            {t("community.width")}
                             <input name="communityDraftWidthMm" type="number" min={1} value={draft.widthMm} onChange={(e) => onChangeDraft({ widthMm: Number(e.target.value) })} />
                         </label>
                         <label className="communityForm__field">
-                            Height (mm)
+                            {t("community.height")}
                             <input name="communityDraftHeightMm" type="number" min={1} value={draft.heightMm} onChange={(e) => onChangeDraft({ heightMm: Number(e.target.value) })} />
                         </label>
                         <label className="communityForm__field">
-                            Corner radius (mm)
+                            {t("community.corner")}
                             <input name="communityDraftCornerMm" type="number" min={0} value={draft.cornerMm} onChange={(e) => onChangeDraft({ cornerMm: Number(e.target.value) })} />
                         </label>
                         <label className="communityForm__field">
-                            Manufacturer URL
+                            {t("community.manufacturerUrl")}
                             <input name="communityDraftManufacturerUrl" type="url" value={draft.manufacturerUrl} onChange={(e) => onChangeDraft({ manufacturerUrl: e.target.value })} placeholder="https://manufacturer.com" />
                         </label>
                         <label className="communityForm__field">
-                            Image URL
-                            <input name="communityDraftImageUrl" type="url" value={draft.imageUrl} onChange={(e) => onChangeDraft({ imageUrl: e.target.value })} placeholder="https://…" />
+                            {t("community.imageUrl")}
+                            <input name="communityDraftImageUrl" type="url" value={draft.imageUrl} onChange={(e) => onChangeDraft({ imageUrl: e.target.value })} placeholder="https://..." />
                         </label>
                         <label className="communityForm__field communityForm__field--full">
-                            Tags (comma-separated)
+                            {t("community.tags")}
                             <input
                                 name="communityDraftTags"
                                 type="text"
@@ -569,46 +569,46 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                             />
                         </label>
                         <label className="communityForm__field communityForm__field--full">
-                            Notes (optional)
-                            <textarea name="communityDraftNotes" value={draft.notes} onChange={(e) => onChangeDraft({ notes: e.target.value })} placeholder="Model number, quirks, measurement notes…" />
+                            {t("community.notes")}
+                            <textarea name="communityDraftNotes" value={draft.notes} onChange={(e) => onChangeDraft({ notes: e.target.value })} placeholder={t("community.notesPlaceholder")} />
                         </label>
                     </div>
                 </div>
 
                 <div className="page__card communityPreview">
-                    <h3>Preview</h3>
+                    <h3>{t("community.preview")}</h3>
                     <div ref={previewRef} onPointerDownCapture={handlePreviewPointerDown}>
                         <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} className="preview--community" showMissingIconPlaceholder={false} onSelectButton={setSelectedButtonId} highlightedButtonId={selectedButtonId} highlightedCutoutIndex={selectedCutoutIndex} showResizeHandles />
                     </div>
                     <div className="communityNudge">
-                        <div className="communityNudge__title">Button placement</div>
-                        <p className="page__note">Drag in the preview or use arrow keys to move the selected item by 1 mm.</p>
+                        <div className="communityNudge__title">{t("community.buttonPlacement")}</div>
+                        <p className="page__note">{t("community.dragHint")}</p>
                     </div>
-                    <p className="page__note">Tip: enable button outlines in the configurator to validate your measurements.</p>
+                    <p className="page__note">{t("community.outlineTip")}</p>
                 </div>
             </div>
 
             <div className="page__grid">
                 <article className="page__card">
-                    <h3>Measurement guide</h3>
-                    <p>All coordinates use the top-left corner of the remote as (0,0). Width and height define the outer dimensions.</p>
-                    <p>Button positions use X/Y for the top-left of each button, and W/H for size.</p>
-                    <p>Corner radius: R is the default; TL/TR/BR/BL override when set. Empty fields use R.</p>
-                    <p className="page__note">Use a ruler or caliper for best accuracy. Start with whole millimeters, then refine.</p>
+                    <h3>{t("community.measurementGuide")}</h3>
+                    <p>{t("community.measurement1")}</p>
+                    <p>{t("community.measurement2")}</p>
+                    <p>{t("community.measurement3")}</p>
+                    <p className="page__note">{t("community.measurement4")}</p>
                 </article>
                 <article className="page__card">
-                    <h3>What are cutouts?</h3>
-                    <p>Cutouts mark areas you want to keep empty, such as LED windows, sensors, screws, or switches.</p>
-                    <p>They show up as outlines to help you avoid placing labels over those areas.</p>
+                    <h3>{t("community.whatAreCutouts")}</h3>
+                    <p>{t("community.cutouts1")}</p>
+                    <p>{t("community.cutouts2")}</p>
                 </article>
             </div>
 
             <div className="page__card">
                 <div className="communityButtons__header">
-                    <h3>Buttons</h3>
+                    <h3>{t("community.buttons")}</h3>
                     <Button type="button" onClick={onAddButton}>
                         <UiIcon name="mdi:plus-circle-outline" className="icon" />
-                        Add button
+                        {t("community.addButton")}
                     </Button>
                 </div>
                 <div className="communityButtons__table">
@@ -645,8 +645,8 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                             <TableCell label={BUTTON_COLUMNS[9].label}>
                                 <input name={`communityButtonBl-${index}`} type="number" value={button.r?.bl ?? 0} onFocus={() => setSelectedButtonId(button.id)} onChange={(e) => onUpdateButton(index, { r: { ...(button.r ?? {}), bl: Number(e.target.value) } })} />
                             </TableCell>
-                            <TableCell label="Actions">
-                                <Button variant="danger" type="button" onClick={() => onRemoveButton(index)} aria-label="Remove button">
+                            <TableCell label={t("community.actions")}>
+                                <Button variant="danger" type="button" onClick={() => onRemoveButton(index)} aria-label={t("community.removeButton")}>
                                     <UiIcon name="mdi:delete-outline" className="icon" />
                                 </Button>
                             </TableCell>
@@ -657,21 +657,21 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
 
             <div className="page__card">
                 <div className="communityButtons__header">
-                    <h3>Cutouts</h3>
+                    <h3>{t("community.cutouts")}</h3>
                     <div className="communityCutouts__actions">
                         <Button type="button" onClick={onAddCutoutRect}>
                             <UiIcon name="mdi:shape-rectangle-plus" className="icon" />
-                            Add rectangle
+                            {t("community.addRectangle")}
                         </Button>
                         <Button type="button" onClick={onAddCutoutCircle}>
                             <UiIcon name="mdi:shape-circle-plus" className="icon" />
-                            Add circle
+                            {t("community.addCircle")}
                         </Button>
                     </div>
                 </div>
                 <div className="communityCutouts__table">
                     <TableHeaderRow className="communityCutouts__row" columns={CUTOUT_COLUMNS} />
-                    {draft.cutouts.length === 0 ? <p className="page__note">No cutouts yet.</p> : null}
+                    {draft.cutouts.length === 0 ? <p className="page__note">{t("community.noCutouts")}</p> : null}
                     {draft.cutouts.map((cutout, index) => (
                         <div key={`cutout-${index}`} className={`communityCutouts__row${selectedCutoutIndex === index ? " communityCutouts__row--selected" : ""}`}>
                             <TableCell label={CUTOUT_COLUMNS[0].label}>
@@ -689,8 +689,8 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                                         }
                                     }}
                                 >
-                                    <option value="rect">Rectangle</option>
-                                    <option value="circle">Circle</option>
+                                    <option value="rect">{t("community.rectangle")}</option>
+                                    <option value="circle">{t("community.circle")}</option>
                                 </select>
                             </TableCell>
                             {cutout.kind === "rect" ? (
@@ -754,8 +754,8 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
                                     </TableCell>
                                 </>
                             )}
-                            <TableCell label="Actions">
-                                <Button variant="danger" type="button" onClick={() => onRemoveCutout(index)} aria-label="Remove cutout">
+                            <TableCell label={t("community.actions")}>
+                                <Button variant="danger" type="button" onClick={() => onRemoveCutout(index)} aria-label={t("community.removeCutout")}>
                                     <UiIcon name="mdi:delete-outline" className="icon" />
                                 </Button>
                             </TableCell>

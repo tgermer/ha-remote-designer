@@ -1,6 +1,7 @@
 import type { RemoteExample } from "../../app/remotes";
 import { UiIcon } from "../UiIcon";
 import { Button } from "../ui/Button";
+import { useTranslation } from "react-i18next";
 
 type ExamplesSectionProps = {
     examples: RemoteExample[];
@@ -13,16 +14,17 @@ type ExamplesSectionProps = {
 };
 
 export function ExamplesSection(props: ExamplesSectionProps) {
+    const { t } = useTranslation();
     const { examples, selectedExampleId, onSelectExampleId, selectedExample, previewExampleOn, onTogglePreview, onApplyExample } = props;
 
     if (!examples.length) return null;
 
     return (
         <fieldset>
-            <legend>Examples</legend>
+            <legend>{t("controls.examples.legend")}</legend>
 
             <label className="modelRow__label">
-                Choose an example for this remote
+                {t("controls.examples.choose")}
                 <select name="selectedExampleId" value={selectedExampleId} onChange={(e) => onSelectExampleId(e.target.value)}>
                     {examples.map((ex) => (
                         <option key={ex.id} value={ex.id}>
@@ -38,12 +40,12 @@ export function ExamplesSection(props: ExamplesSectionProps) {
                 <div className="row">
                     <Button type="button" disabled={!selectedExample} onClick={onTogglePreview}>
                         <UiIcon name={previewExampleOn ? "mdi:eye-off-outline" : "mdi:eye-outline"} className="icon" />
-                        {previewExampleOn ? "Stop preview" : "Preview"}
+                        {previewExampleOn ? t("controls.examples.stopPreview") : t("controls.examples.preview")}
                     </Button>
 
                     <Button type="button" disabled={!selectedExample} onClick={onApplyExample}>
                         <UiIcon name="mdi:check-bold" className="icon" />
-                        Apply
+                        {t("controls.examples.apply")}
                     </Button>
                 </div>
             </div>

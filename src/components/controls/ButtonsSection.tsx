@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { DesignState, StrikeStyle, TapType } from "../../app/types";
 import { TAP_ORDER } from "../../app/types";
 import { IconPicker } from "../IconPicker";
+import { useTranslation } from "react-i18next";
 type ButtonsSectionProps = {
     buttonIds: string[];
     state: DesignState;
@@ -16,13 +17,14 @@ type ButtonsSectionProps = {
 };
 
 export function ButtonsSection(props: ButtonsSectionProps) {
+    const { t } = useTranslation();
     const { buttonIds, state, tapLabel, onSetIcon, onSetButtonText, onToggleStrike, onSetStrikeStyle, onSetIconColor, onSetButtonFill, highlightedButtonId } = props;
     const defaultButtonFill = "#e6e6e6";
     const [contentModeOverrides, setContentModeOverrides] = useState<Record<string, "icon" | "text">>({});
 
     return (
         <section>
-            <h2>Buttons</h2>
+            <h2>{t("controls.buttons.title")}</h2>
             {buttonIds.map((id) => (
                 <section
                     key={id}
@@ -30,7 +32,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                     data-button-id={id}
                     className={`button-config${highlightedButtonId === id ? " button-config--flash" : ""}`}
                 >
-                    <h3>{id.startsWith("label_") ? `Sticker ${id.slice("label_".length)}` : `${id.toUpperCase()} Button`}</h3>
+                    <h3>{id.startsWith("label_") ? t("controls.buttons.sticker", { index: id.slice("label_".length) }) : t("controls.buttons.button", { id: id.toUpperCase() })}</h3>
                     {(() => {
                         const buttonFill = state.buttonConfigs[id]?.buttonFill;
                         const hasButtonFill = typeof buttonFill === "string" && buttonFill.length > 0;
@@ -44,11 +46,11 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                         checked={hasButtonFill}
                                         onChange={(e) => onSetButtonFill(id, e.target.checked ? buttonFill || defaultButtonFill : undefined)}
                                     />
-                                    Custom button background
+                                    {t("controls.buttons.customBackground")}
                                 </label>
                                 {hasButtonFill && (
                                     <label className="option option--inline">
-                                        Background color
+                                        {t("controls.buttons.backgroundColor")}
                                         <input name={`buttonFillColor-${id}`} type="color" value={buttonFill} onChange={(e) => onSetButtonFill(id, e.target.value)} />
                                     </label>
                                 )}
@@ -77,7 +79,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                                         onSetButtonText(id, tap, undefined);
                                                     }}
                                                 />
-                                                Icon
+                                                {t("controls.buttons.icon")}
                                             </label>
                                             <label className="option">
                                                 <input
@@ -89,7 +91,7 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                                         onSetIcon(id, tap, undefined);
                                                     }}
                                                 />
-                                                Text
+                                                {t("controls.buttons.text")}
                                             </label>
                                         </div>
 
@@ -111,10 +113,10 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                                         setContentModeOverrides((prev) => ({ ...prev, [modeKey]: "text" }));
                                                         onSetButtonText(id, tap, e.target.value);
                                                     }}
-                                                    placeholder="Enter label text (line breaks allowed)"
+                                                    placeholder={t("controls.buttons.textPlaceholder")}
                                                     rows={2}
                                                 />
-                                                <p className="option__note">Text scales automatically to fit. Use line breaks for multi-line labels.</p>
+                                                <p className="option__note">{t("controls.buttons.textHint")}</p>
                                             </div>
                                         )}
                                     </>
@@ -143,15 +145,15 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                                         checked={state.buttonConfigs[id]?.strike?.[tap] ?? false}
                                                         onChange={(e) => onToggleStrike(id, tap, e.target.checked)}
                                                     />
-                                                    Strikethrough (manual “off”)
+                                                    {t("controls.buttons.strikethrough")}
                                                 </label>
                                             )}
                                             {textValue && (
                                                 <label className="option option--inline">
-                                                    Strikethrough style
+                                                    {t("controls.buttons.strikeStyle")}
                                                     <select name={`buttonStrikeStyle-${id}-${tap}`} value={strikeStyle} onChange={(e) => onSetStrikeStyle(id, tap, e.target.value as StrikeStyle)}>
-                                                        <option value="diagonal">Diagonal (45°)</option>
-                                                        <option value="straight">Straight</option>
+                                                        <option value="diagonal">{t("controls.buttons.diagonal")}</option>
+                                                        <option value="straight">{t("controls.buttons.straight")}</option>
                                                     </select>
                                                 </label>
                                             )}
@@ -162,11 +164,11 @@ export function ButtonsSection(props: ButtonsSectionProps) {
                                                         checked={hasIconColor}
                                                         onChange={(e) => onSetIconColor(id, tap, e.target.checked ? iconColor || state.options.iconColor || "#000000" : undefined)}
                                                     />
-                                                Custom content color
+                                                {t("controls.buttons.customContentColor")}
                                             </label>
                                             {hasIconColor && (
                                                 <label className="option option--inline">
-                                                    Content color
+                                                    {t("controls.buttons.contentColor")}
                                                     <input name={`buttonIconColor-${id}-${tap}`} type="color" value={iconColor} onChange={(e) => onSetIconColor(id, tap, e.target.value)} />
                                                 </label>
                                             )}

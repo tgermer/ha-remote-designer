@@ -1,5 +1,6 @@
 import { UiIcon } from "../UiIcon";
 import { Button } from "../ui/Button";
+import { useTranslation } from "react-i18next";
 
 type ShareStatus = "idle" | "copied" | "failed";
 
@@ -24,27 +25,28 @@ type ShareExportSectionProps = {
 };
 
 export function ShareExportSection(props: ShareExportSectionProps) {
+    const { t } = useTranslation();
     const { shareStatus, onCopyShareLink, shareUrl, onSendConfig, isAdmin, onExportRemoteSvg, onExportRemoteJson, onExportAllPagesSvgZip, showSvgAllPages, onExportA4Pdf, showA4Pdf, onCopyRemoteExample, remoteExampleStatus, onExportZip, isZipping, dpi, onChangeDpi } = props;
 
     return (
         <fieldset>
-            <legend>Share & Export</legend>
+            <legend>{t("controls.shareExport.legend")}</legend>
 
             <p className="share">
                 <Button type="button" onClick={onCopyShareLink}>
                     <UiIcon name="mdi:link-variant" className="icon" />
-                    Copy share link
+                    {t("controls.shareExport.copyLink")}
                 </Button>
                 {shareStatus === "copied" && (
                     <span className="share__status" role="status">
-                        Copied!
+                        {t("controls.shareExport.copied")}
                     </span>
                 )}
             </p>
 
             {shareStatus === "failed" && (
                 <div className="share__fallback">
-                    <p className="share__hint">Clipboard access was blocked. Copy the URL manually:</p>
+                    <p className="share__hint">{t("controls.shareExport.clipboardBlocked")}</p>
                     <input name="shareExportUrlFallback" className="share__input" type="text" readOnly value={shareUrl} onFocus={(e) => e.currentTarget.select()} />
                 </div>
             )}
@@ -53,7 +55,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                 <p className="share">
                     <Button type="button" onClick={onSendConfig}>
                         <UiIcon name="mdi:email-outline" className="icon" />
-                        Send config to developer
+                        {t("controls.shareExport.sendToDeveloper")}
                     </Button>
                 </p>
             ) : null}
@@ -62,7 +64,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                 <div className="row row--spaced">
                     <Button onClick={onExportRemoteJson}>
                         <UiIcon name="mdi:code-json" className="icon" />
-                        Export JSON
+                        {t("controls.shareExport.exportJson")}
                     </Button>
                 </div>
             ) : null}
@@ -70,12 +72,12 @@ export function ShareExportSection(props: ShareExportSectionProps) {
             <div className="row row--spaced">
                 <Button onClick={onExportRemoteSvg}>
                     <UiIcon name="mdi:file-image-outline" className="icon" />
-                    Export SVG
+                    {t("controls.shareExport.exportSvg")}
                 </Button>
                 {showSvgAllPages && onExportAllPagesSvgZip ? (
                     <Button onClick={onExportAllPagesSvgZip}>
                         <UiIcon name="mdi:folder-zip-outline" className="icon" />
-                        Export all pages SVG (ZIP)
+                        {t("controls.shareExport.exportAllSvgZip")}
                     </Button>
                 ) : null}
             </div>
@@ -84,7 +86,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                 <p>
                     <Button onClick={onExportA4Pdf}>
                         <UiIcon name="mdi:file-pdf-box" className="icon" />
-                        Export PDF
+                        {t("controls.shareExport.exportPdf")}
                     </Button>
                 </p>
             ) : null}
@@ -95,16 +97,16 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                         <div className="exportRow">
                             <Button onClick={onCopyRemoteExample}>
                                 <UiIcon name="mdi:content-copy" className="icon" />
-                                Copy remote example
+                                {t("controls.shareExport.copyRemoteExample")}
                             </Button>
-                            {remoteExampleStatus === "copied" && <span className="exportRow__status">Copied!</span>}
-                            {remoteExampleStatus === "failed" && <span className="exportRow__status exportRow__status--error">Copy failed</span>}
+                            {remoteExampleStatus === "copied" && <span className="exportRow__status">{t("controls.shareExport.copied")}</span>}
+                            {remoteExampleStatus === "failed" && <span className="exportRow__status exportRow__status--error">{t("controls.shareExport.copyFailed")}</span>}
                         </div>
                     ) : null}
                     <div className="exportRow">
                         <Button onClick={onExportZip} disabled={isZipping}>
                             <UiIcon name="mdi:folder-zip-outline" className="icon" />
-                            {isZipping ? "Creating ZIP…" : "Export Button PNGs"}
+                            {isZipping ? t("controls.shareExport.creatingZip") : t("controls.shareExport.exportPngs")}
                         </Button>
 
                         <label className="exportRow__label">

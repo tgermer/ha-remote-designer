@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { UiIcon } from "../UiIcon";
 import { Button } from "../ui/Button";
 import type { SavedDesign } from "../../app/savedDesigns";
+import { useTranslation } from "react-i18next";
 
 type SavedDesignsSectionProps = {
     saveName: string;
@@ -26,6 +27,7 @@ type SavedDesignsSectionProps = {
 };
 
 export function SavedDesignsSection(props: SavedDesignsSectionProps) {
+    const { t } = useTranslation();
     const {
         saveName,
         saveNameError,
@@ -52,17 +54,17 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
 
     return (
         <fieldset>
-            <legend>Saved remotes</legend>
+            <legend>{t("controls.saved.legend")}</legend>
 
             <label className="modelRow__label">
-                Name
+                {t("controls.saved.name")}
                 <input
                     name="saveName"
                     type="text"
                     value={saveName}
                     onChange={(e) => onChangeSaveName(e.target.value)}
                     onBlur={onBlurSaveName}
-                    placeholder="e.g. Living room dimmer"
+                    placeholder={t("controls.saved.namePlaceholder")}
                 />
             </label>
             {saveNameError ? <p style={{ margin: 0, fontSize: "0.85rem", color: "#b00020" }}>{saveNameError}</p> : null}
@@ -70,11 +72,11 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
             <div className="row row--spaced">
                 <Button type="button" onClick={onSaveActive} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
                     <UiIcon name="mdi:content-save" className="icon" />
-                    Save
+                    {t("controls.saved.save")}
                 </Button>
                 <Button type="button" onClick={onSaveAsNew} disabled={!saveName.trim()}>
                     <UiIcon name="mdi:content-save-plus-outline" className="icon" />
-                    Save as
+                    {t("controls.saved.saveAs")}
                 </Button>
             </div>
             {activeSavedId && (hasUnsavedChanges || showSavedStatus) ? (
@@ -86,14 +88,14 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                         color: hasUnsavedChanges ? "inherit" : "#1b5e20",
                     }}
                 >
-                    {hasUnsavedChanges ? "Unsaved changes" : "All changes saved"}
+                    {hasUnsavedChanges ? t("controls.saved.unsavedChanges") : t("controls.saved.allSaved")}
                 </p>
             ) : null}
 
             <label className="modelRow__label" style={{ marginTop: "0.5rem" }}>
-                Your saved remotes
+                {t("controls.saved.yourSaved")}
                 <select name="selectedSavedId" value={selectedSavedId} onChange={(e) => onSelectSavedId(e.target.value)} onFocus={onRefreshSavedDesigns}>
-                    <option value="">(none)</option>
+                    <option value="">{t("controls.saved.none")}</option>
                     {savedDesigns.map((d) => (
                         <option key={d.id} value={d.id}>
                             {d.name} — {remoteNameById.get(d.state.remoteId) ?? d.state.remoteId}
@@ -105,23 +107,23 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
             <div className="row row--spaced">
                 <Button type="button" onClick={onLoadSelected} disabled={!selectedSavedId}>
                     <UiIcon name="mdi:folder-open-outline" className="icon" />
-                    Load
+                    {t("controls.saved.load")}
                 </Button>
-                <Button variant="danger" type="button" onClick={onDeleteSelected} disabled={!selectedSavedId} aria-label="Delete saved remote" title="Delete saved remote">
+                <Button variant="danger" type="button" onClick={onDeleteSelected} disabled={!selectedSavedId} aria-label={t("controls.saved.deleteSaved")} title={t("controls.saved.deleteSaved")}>
                     <UiIcon name="mdi:delete-outline" className="icon" />
                 </Button>
             </div>
 
             <div className="savedDesigns__io">
-                <div className="savedDesigns__ioTitle">Backup (Export/Import)</div>
+                <div className="savedDesigns__ioTitle">{t("controls.saved.backupTitle")}</div>
                 <div className="row row--spaced" style={{ marginTop: "0.25rem" }}>
                     <Button type="button" onClick={onExportAll} disabled={!savedDesigns.length}>
                         <UiIcon name="mdi:file-export-outline" className="icon" />
-                        Export all
+                        {t("controls.saved.exportAll")}
                     </Button>
                     <Button type="button" onClick={() => importInputRef.current?.click()}>
                         <UiIcon name="mdi:file-import-outline" className="icon" />
-                        Import
+                        {t("controls.saved.import")}
                     </Button>
                     <input
                         ref={importInputRef}
@@ -138,7 +140,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                 </div>
 
                 <p style={{ margin: "0.5rem 0 0", fontSize: "0.85rem", opacity: 0.85 }}>
-                    Export creates a JSON backup you can import later (or on another device). Import merges with your existing saved remotes.
+                    {t("controls.saved.backupHint")}
                 </p>
             </div>
 
@@ -147,7 +149,7 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
             ) : null}
 
             <p style={{ margin: "0.5rem 0 0", fontSize: "0.85rem", opacity: 0.85 }}>
-                Saved in your browser (localStorage). It remains after reloads, but will be removed if you clear site data.
+                {t("controls.saved.storageHint")}
             </p>
         </fieldset>
     );

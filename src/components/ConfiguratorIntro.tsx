@@ -1,6 +1,7 @@
 import { UiIcon } from "./UiIcon";
 import { Button } from "./ui/Button";
 import { LinkButton } from "./ui/LinkButton";
+import { useTranslation } from "react-i18next";
 
 type ConfiguratorIntroProps = {
     helpHref: string;
@@ -9,23 +10,22 @@ type ConfiguratorIntroProps = {
 };
 
 export function ConfiguratorIntro({ helpHref, onGoHelp, onSendConfig }: ConfiguratorIntroProps) {
+    const { t } = useTranslation();
+
     return (
-        <div className="configIntro" role="region" aria-label="Configurator guidance">
+        <div className="configIntro" role="region" aria-label={t("configIntro.regionLabel")}>
             <div>
-                <h3>Configure, test, and submit your remote</h3>
-                <p>
-                    Use the controls below to match your real remote, then preview and export. When you are happy with the result, you can send your
-                    configuration to help expand the supported library.
-                </p>
+                <h3>{t("configIntro.title")}</h3>
+                <p>{t("configIntro.body")}</p>
             </div>
             <div className="configIntro__actions">
                 <Button variant="primary" type="button" onClick={onSendConfig}>
                     <UiIcon name="mdi:email-fast-outline" className="icon" />
-                    Send configuration
+                    {t("configIntro.send")}
                 </Button>
                 <LinkButton href={helpHref} onClick={onGoHelp}>
                     <UiIcon name="mdi:lifebuoy" className="icon" />
-                    Open help
+                    {t("configIntro.openHelp")}
                 </LinkButton>
             </div>
         </div>

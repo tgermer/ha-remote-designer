@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { RemoteSvg } from "../render/RemoteSvg";
 import { UiIcon } from "./UiIcon";
 import { LinkButton } from "./ui/LinkButton";
+import { useTranslation } from "react-i18next";
 
 type HomePageProps = {
     configureHref: string;
@@ -14,27 +15,6 @@ type HomePageProps = {
     problemFactoryState?: DesignState | null;
     problemLayoutState?: DesignState | null;
 };
-
-const HOME_STORY_SECTIONS = [
-    {
-        id: "1",
-        label: "",
-        title: "What you design",
-        description: "Design custom button labels based on your actual smart-home setup — icons, text, grouping, and layout.",
-    },
-    {
-        id: "2",
-        label: "",
-        title: "How it works",
-        description: "Choose a remote template, customize each button, and export perfectly sized labels — ready to print.",
-    },
-    {
-        id: "3",
-        label: "",
-        title: "Who it’s for",
-        description: "Built for Home Automation users, tinkerers, and anyone who wants their smart-home remote to finally make sense.",
-    },
-] as const;
 
 type HeroSection = {
     id: string;
@@ -49,19 +29,41 @@ type HeroSection = {
 };
 
 export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGallery, problemRemote, problemFactoryState, problemLayoutState }: HomePageProps) {
+    const { t } = useTranslation();
+    const homeStorySections = [
+        {
+            id: "1",
+            label: "",
+            title: t("home.story.whatDesignTitle"),
+            description: t("home.story.whatDesignDescription"),
+        },
+        {
+            id: "2",
+            label: "",
+            title: t("home.story.howWorksTitle"),
+            description: t("home.story.howWorksDescription"),
+        },
+        {
+            id: "3",
+            label: "",
+            title: t("home.story.whoForTitle"),
+            description: t("home.story.whoForDescription"),
+        },
+    ] as const;
+
     const heroSections: HeroSection[] = [
         {
             id: "problem",
             title: (
                 <>
-                    <span>Too many buttons.</span>
+                    <span>{t("home.hero.titleLine1")}</span>
                     <br />
-                    <span>No idea what they do.</span>
+                    <span>{t("home.hero.titleLine2")}</span>
                 </>
             ),
-            lead: "Create clear, printable labels for your smart-home remote — readable at a glance.",
-            factorySubtitle: problemRemote?.name ?? "tuya_ts0044 (factory)",
-            layoutSubtitle: problemRemote?.name ?? "tuya_ts0044 (custom)",
+            lead: t("home.hero.lead"),
+            factorySubtitle: problemRemote?.name ?? t("home.hero.factorySubtitleFallback"),
+            layoutSubtitle: problemRemote?.name ?? t("home.hero.customSubtitleFallback"),
             remote: problemRemote ?? null,
             factoryState: problemFactoryState ?? null,
             layoutState: problemLayoutState ?? null,
@@ -93,11 +95,11 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
         <div className="page__cta">
             <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
                 <UiIcon name="mdi:tune-variant" className="icon" />
-                Start configuring
+                {t("home.ctaStart")}
             </LinkButton>
             <LinkButton href={galleryHref} onClick={onGoGallery}>
                 <UiIcon name="mdi:image-multiple-outline" className="icon" />
-                View gallery
+                {t("home.ctaGallery")}
             </LinkButton>
             {/* <LinkButton href={helpHref} onClick={onGoHelp}>
                 <UiIcon name="mdi:lifebuoy" className="icon" />
@@ -113,7 +115,7 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                 <div className="homeRemoteStack">
                     <div className="homeRemoteCard homeRemoteCard--factory">
                         <div className="homeRemoteCard__title">{factorySubtitle}</div>
-                        <div className="homeRemoteCard__subtitle">Plain factory remote</div>
+                        <div className="homeRemoteCard__subtitle">{t("home.hero.factoryCardSubtitle")}</div>
                         <div className={`homeRemoteMock homeRemoteMock--factory${hasPreview ? " homeRemoteMock--preview" : ""}`}>
                             {hasPreview ? (
                                 <RemoteSvg
@@ -133,7 +135,7 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                     </div>
                     <div className="homeRemoteCard homeRemoteCard--custom">
                         <div className="homeRemoteCard__title">{layoutSubtitle}</div>
-                        <div className="homeRemoteCard__subtitle">Your future layout</div>
+                        <div className="homeRemoteCard__subtitle">{t("home.hero.customCardSubtitle")}</div>
                         <div className={`homeRemoteMock homeRemoteMock--custom${hasPreview ? " homeRemoteMock--preview" : ""}`}>
                             {hasPreview ? (
                                 <RemoteSvg
@@ -157,14 +159,14 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
     };
 
     return (
-        <section className="page" aria-label="Welcome">
+        <section className="page" aria-label={t("home.pageLabel")}>
             <header className="page__hero homeHero">
                 {heroSections.map((section, index) => {
                     const isReversed = index % 2 === 1;
                     return (
                         <div key={section.id} className={`homeHero__section${isReversed ? " homeHero__section--reverse" : ""}`}>
                             <div className="homeHero__copy">
-                                <p className="page__kicker">Remote Label Designer</p>
+                                <p className="page__kicker">{t("home.kicker")}</p>
                                 <h2 className="page__title">{section.title}</h2>
                                 <p className="page__lead">{section.lead}</p>
                                 {heroCta}
@@ -177,7 +179,7 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
             </header>
 
             <section className="homeStory">
-                {HOME_STORY_SECTIONS.map((section) => (
+                {homeStorySections.map((section) => (
                     <div className="homeStatement" key={section.id}>
                         <p className="homeStatement__label">{section.label}</p>
                         <h3>{section.title}</h3>

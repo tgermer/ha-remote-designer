@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type TopNavProps = {
     view: "home" | "configure" | "gallery" | "help" | "community";
@@ -15,13 +16,15 @@ type TopNavProps = {
 };
 
 export function TopNav(props: TopNavProps) {
+    const { t, i18n } = useTranslation();
     const { view, homeHref, configureHref, galleryHref, helpHref, communityHref, onGoHome, onGoConfigure, onGoGallery, onGoHelp, onGoCommunity } = props;
+    const currentLanguage = (i18n.resolvedLanguage ?? i18n.language ?? "en").startsWith("de") ? "de" : "en";
     const items = [
-        { id: "home", label: "Home", href: homeHref, onClick: onGoHome },
-        { id: "configure", label: "Configure", href: configureHref, onClick: onGoConfigure },
-        { id: "gallery", label: "Gallery", href: galleryHref, onClick: onGoGallery },
-        { id: "help", label: "Help", href: helpHref, onClick: onGoHelp },
-        { id: "community", label: "Community", href: communityHref, onClick: onGoCommunity },
+        { id: "home", label: t("nav.home"), href: homeHref, onClick: onGoHome },
+        { id: "configure", label: t("nav.configure"), href: configureHref, onClick: onGoConfigure },
+        { id: "gallery", label: t("nav.gallery"), href: galleryHref, onClick: onGoGallery },
+        { id: "help", label: t("nav.help"), href: helpHref, onClick: onGoHelp },
+        { id: "community", label: t("nav.community"), href: communityHref, onClick: onGoCommunity },
     ] as const;
     const activeIndex = Math.max(
         0,
@@ -77,7 +80,7 @@ export function TopNav(props: TopNavProps) {
         <nav
             ref={navRef}
             className={`topnav${menuOpen ? " topnav--open" : ""}`}
-            aria-label="Primary navigation"
+            aria-label={t("nav.primary")}
             data-view={view}
             style={
                 {
@@ -99,26 +102,65 @@ export function TopNav(props: TopNavProps) {
                     <span />
                     <span />
                 </span>
-                Menu
+                {t("nav.menu")}
             </button>
             <div id="topnav-menu" className="topnav__links" aria-hidden={!menuOpen}>
-                {items.map((item, index) => (
+                <div className="topnav__items">
+                    {items.map((item, index) => (
+                        <a
+                            key={item.id}
+                            href={item.href}
+                            className={view === item.id ? "topnav__link topnav__link--active" : "topnav__link"}
+                            onClick={(event) => {
+                                item.onClick(event);
+                                setMenuOpen(false);
+                            }}
+                            aria-current={view === item.id ? "page" : undefined}
+                            ref={(el) => {
+                                linkRefs.current[index] = el;
+                            }}
+                        >
+                            {item.label}
+                        </a>
+                    ))}
+                </div>
+                <div className="topnav__utilities">
                     <a
-                        key={item.id}
-                        href={item.href}
-                        className={view === item.id ? "topnav__link topnav__link--active" : "topnav__link"}
-                        onClick={(event) => {
-                            item.onClick(event);
-                            setMenuOpen(false);
-                        }}
-                        aria-current={view === item.id ? "page" : undefined}
-                        ref={(el) => {
-                            linkRefs.current[index] = el;
-                        }}
+                        className="topnav__donate"
+                        href="https://www.buymeacoffee.com/tgermer"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-outbound-kind="coffee"
+                        data-outbound-placement="topnav"
+                        data-outbound-label="donate"
                     >
-                        {item.label}
+                        {t("nav.donate")}
                     </a>
-                ))}
+                    <div className="topnav__lang">
+                        <label className="topnav__langLabel" htmlFor="topnav-language">
+                            {t("common.languageLabel")}
+                        </label>
+                        <select
+                            id="topnav-language"
+                            className="topnav__langSelect"
+                            value={currentLanguage}
+                            onChange={(event) => {
+                                try {
+                                    window.localStorage.setItem("ha-remote-designer:lang-source", "manual");
+                                    window.sessionStorage.setItem("ha-remote-designer:lang-change-source", "manual");
+                                } catch {
+                                    // ignore storage errors
+                                }
+                                void i18n.changeLanguage(event.target.value);
+                                setMenuOpen(false);
+                            }}
+                            aria-label={t("common.languageLabel")}
+                        >
+                            <option value="en">{t("common.languages.en")}</option>
+                            <option value="de">{t("common.languages.de")}</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </nav>
     );

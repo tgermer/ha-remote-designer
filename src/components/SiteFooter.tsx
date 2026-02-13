@@ -1,4 +1,5 @@
 import styles from "./Footer.module.css";
+import { useTranslation } from "react-i18next";
 
 type LegalPageKind = "impressum" | "datenschutz";
 
@@ -9,8 +10,10 @@ type Props = {
 };
 
 export function SiteFooter({ impressumHref, datenschutzHref, onOpenLegal }: Props) {
+    const { t } = useTranslation();
+
     return (
-        <footer className={styles.footer} aria-label="Legal and credits">
+        <footer className={styles.footer} aria-label={t("footer.label")}>
             <div className={styles.row}>
                 <span>© {new Date().getFullYear()} Tristan Germer</span>
 
@@ -40,7 +43,7 @@ export function SiteFooter({ impressumHref, datenschutzHref, onOpenLegal }: Prop
 
                 <span className={styles.sep}>•</span>
                 <a href="https://github.com/tgermer/ha-remote-designer" target="_blank" rel="noopener noreferrer">
-                    Open source · Code on GitHub
+                    {t("footer.openSource")}
                 </a>
 
                 <span className={styles.sep}>•</span>
@@ -56,16 +59,16 @@ export function SiteFooter({ impressumHref, datenschutzHref, onOpenLegal }: Prop
 
             <div className={`${styles.row} ${styles.small}`}>
                 <span>
-                    Licenses: MIT (this app), Apache-2.0 (MDI & Hue icons).{" "}
+                    {t("footer.licenses")}{" "}
                     <a href="https://github.com/tgermer/ha-remote-designer/blob/main/NOTICE" target="_blank" rel="noopener noreferrer">
-                        See NOTICE
+                        {t("footer.notice")}
                     </a>
                 </span>
-                <p>“Philips” and “Philips Hue” are trademarks of Koninklijke Philips N.V. and/or Signify. The use of the Philips brand for Philips Hue is licensed to Signify. “Home Assistant” and the Home Assistant logo are trademarks of Home Assistant and/or its licensors. This project is not affiliated with, endorsed by, or sponsored by Philips, Signify, or Home Assistant.</p>
+                <p>{t("footer.trademarks")}</p>
             </div>
 
             <div className={`${styles.row} ${styles.small}`}>
-                <span>Some links on this page are affiliate links. If you purchase through them, we may earn a small commission at no extra cost to you.</span>
+                <span>{t("footer.affiliate")}</span>
             </div>
         </footer>
     );
