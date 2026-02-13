@@ -8,16 +8,19 @@
         <style>
             :root {
                 color-scheme: light;
-                --bg: #f5f7f8;
-                --card: #ffffff;
-                --text: #0f2b2a;
-                --muted: #4a6462;
-                --accent: #0b7a75;
-                --accent-strong: #075d59;
-                --border: #d5dfde;
+                --font-sans: "IBM Plex Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+                --ink: #252545;
+                --ink-muted: #515168;
+                --surface: rgba(255, 255, 255, 0.78);
+                --stroke: rgba(37, 37, 69, 0.14);
+                --accent: #6d5cc6;
+                --accent-strong: #5f4fba;
                 --warn-bg: #fff3cd;
                 --warn-border: #f0d98c;
                 --warn-text: #6b5700;
+                --radius-md: 14px;
+                --shadow-soft: 0 22px 60px rgba(25, 25, 50, 0.18);
+                --shadow-tight: 0 8px 20px rgba(25, 25, 50, 0.16);
             }
 
             * {
@@ -26,24 +29,49 @@
 
             body {
                 margin: 0;
-                font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
-                background: radial-gradient(circle at 20% 10%, #e9f7f6, var(--bg) 45%);
-                color: var(--text);
+                font-family: var(--font-sans);
+                background-color: #e8e0f3;
+                background-image: linear-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.35) 1px, transparent 1px), linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px), radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.2), transparent 55%), radial-gradient(circle at 90% 0%, rgba(199, 188, 255, 0.3), transparent 40%), radial-gradient(circle at 85% 100%, rgba(255, 255, 255, 0.6), transparent 55%), linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(233, 225, 244, 0.95));
+                background-size:
+                    20px 20px,
+                    20px 20px,
+                    100px 100px,
+                    100px 100px,
+                    auto,
+                    auto,
+                    auto,
+                    auto;
+                background-repeat: repeat, repeat, repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+                background-position:
+                    -1px -1px,
+                    -1px -1px,
+                    -2px -2px,
+                    -2px -2px,
+                    center,
+                    center,
+                    center,
+                    center;
+                color: var(--ink);
                 min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 padding: 24px;
             }
 
             .shell {
                 max-width: 780px;
+                width: 100%;
                 margin: 0 auto;
             }
 
             .card {
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 14px;
+                background: var(--surface);
+                border: 1px solid rgba(255, 255, 255, 0.7);
+                border-radius: 22px;
                 padding: 24px;
-                box-shadow: 0 14px 30px rgba(15, 43, 42, 0.08);
+                box-shadow: var(--shadow-soft);
+                backdrop-filter: blur(28px) saturate(140%);
             }
 
             h1 {
@@ -55,13 +83,13 @@
             p {
                 margin: 0 0 12px;
                 line-height: 1.5;
-                color: var(--muted);
+                color: var(--ink-muted);
             }
 
             .steps {
                 margin: 18px 0 20px;
                 padding-left: 20px;
-                color: var(--text);
+                color: var(--ink);
             }
 
             .steps li {
@@ -72,11 +100,12 @@
             .status {
                 margin: 14px 0 18px;
                 padding: 12px 14px;
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                background: #f9fbfb;
-                color: var(--text);
+                border: 1px solid var(--stroke);
+                border-radius: var(--radius-md);
+                background: rgba(255, 255, 255, 0.72);
+                color: var(--ink);
                 font-size: 0.95rem;
+                box-shadow: var(--shadow-tight);
             }
 
             .status.warn {
@@ -94,56 +123,69 @@
 
             button,
             a.button-link {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
                 appearance: none;
-                border: 1px solid transparent;
-                border-radius: 10px;
-                padding: 10px 14px;
-                font-size: 0.95rem;
-                font-weight: 600;
+                border: 1px solid rgba(37, 37, 69, 0.16);
+                border-radius: 999px;
+                padding: 0 0.9rem;
+                min-height: 36px;
+                font-size: 0.9rem;
+                line-height: 1.1;
+                font-weight: 500;
                 text-decoration: none;
                 cursor: pointer;
                 transition:
                     transform 120ms ease,
-                    background-color 120ms ease,
-                    border-color 120ms ease;
+                    background 120ms ease;
+                box-shadow: 0 6px 16px rgba(25, 25, 50, 0.14);
+                backdrop-filter: blur(10px) saturate(130%);
             }
 
             button.primary,
             a.button-link.primary {
-                background: var(--accent);
+                background: linear-gradient(180deg, #9c89e0, #7766c9);
+                border-color: rgba(99, 82, 178, 0.6);
                 color: #fff;
+                font-weight: 600;
             }
 
             button.primary:hover,
             a.button-link.primary:hover {
-                background: var(--accent-strong);
+                background: linear-gradient(180deg, #a898e6, #6f5fc2);
                 transform: translateY(-1px);
             }
 
             button.secondary,
             a.button-link.secondary {
-                background: #fff;
-                color: var(--text);
-                border-color: var(--border);
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 244, 255, 0.85));
+                color: var(--ink);
             }
 
             button.secondary:hover,
             a.button-link.secondary:hover {
-                background: #f6f9f9;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(236, 235, 252, 0.95));
                 transform: translateY(-1px);
             }
 
             .small {
                 font-size: 0.88rem;
-                color: var(--muted);
+                color: var(--ink-muted);
             }
 
             code {
-                background: #edf3f3;
-                border: 1px solid #d8e4e3;
+                background: rgba(109, 92, 198, 0.12);
+                border: 1px solid rgba(37, 37, 69, 0.14);
                 border-radius: 5px;
                 padding: 0 5px;
                 font-size: 0.86em;
+            }
+
+            @media (max-height: 780px) {
+                body {
+                    align-items: flex-start;
+                }
             }
         </style>
     </head>
@@ -158,15 +200,15 @@
 
                 <ol class="steps">
                     <li>Backup auf dieser Seite herunterladen.</li>
-                    <li>Danach clearcontrol.de oeffnen.</li>
+                    <li>Danach clearcontrol.de öffnen.</li>
                     <li>Im Bereich "Gespeicherte Remotes" die JSON-Datei importieren.</li>
                 </ol>
 
-                <div id="status" class="status">Pruefe lokale Daten...</div>
+                <div id="status" class="status">Prüfe lokale Daten…</div>
 
                 <div class="actions">
                     <button id="download" class="primary" type="button">Backup herunterladen</button>
-                    <a class="button-link secondary" href="https://clearcontrol.de/configurator">clearcontrol.de oeffnen</a>
+                    <a class="button-link secondary" href="https://clearcontrol.de/configurator">clearcontrol.de öffnen</a>
                 </div>
 
                 <p class="small">
