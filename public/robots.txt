@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /og-image-lab
 
 Sitemap: https://clearcontrol.de/sitemap.xml

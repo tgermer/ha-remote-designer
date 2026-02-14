@@ -33,6 +33,11 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
+[[headers]]
+  for = "/og-image-lab"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive, nosnippet"
+
 [[redirects]]
   from = "https://ha-remote-designer.netlify.app/migrate"
   to = "/migrate/index.html"

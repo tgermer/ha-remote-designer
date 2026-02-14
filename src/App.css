@@ -173,6 +173,221 @@ main {
   grid-template-columns: 1fr;
 }
 
+.pageWrap--ogLab {
+  width: 100%;
+}
+
+.ogRoutePlain {
+  min-height: 100vh;
+  width: 100%;
+  background: #fff;
+}
+
+.ogLab {
+  min-height: 100vh;
+  display: grid;
+  place-items: center center;
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+
+.ogCanvas {
+  position: relative;
+  width: 1200px;
+  height: 600px;
+  /* border-radius: 26px; */
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 30px 72px rgba(20, 18, 44, 0.24);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+    radial-gradient(circle at 14% 8%, rgba(255, 255, 255, 0.28), transparent 55%),
+    radial-gradient(circle at 88% 4%, rgba(199, 188, 255, 0.28), transparent 45%),
+    linear-gradient(180deg, rgba(252, 251, 255, 0.96), rgba(241, 236, 249, 0.96));
+  background-size: 24px 24px, 24px 24px, auto, auto, auto;
+  background-repeat: repeat, repeat, no-repeat, no-repeat, no-repeat;
+  background-position: -1px -1px, -1px -1px, center, center, center;
+  color: var(--ink);
+  /* padding: 44px 46px 34px; */
+  padding: 4rem;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+}
+
+.ogCanvas__noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 10% 8%, rgba(255, 255, 255, 0.5), transparent 42%),
+    radial-gradient(circle at 85% 12%, rgba(109, 92, 198, 0.1), transparent 34%);
+  opacity: 0.52;
+}
+
+.ogHero {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.05rem;
+  height: 100%;
+}
+
+.ogLogo {
+  display: grid;
+  /* gap: 0.18rem; */
+  padding-left: 0;
+}
+
+.ogLogo__wordmark {
+  margin: 0;
+  margin-left: -.5rem;
+  margin-bottom: 0rem;
+  font-size: 4.7rem;
+  line-height: 0.86;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ogLogo__clear {
+  color: #1f214a;
+}
+
+.ogLogo__control {
+  color: #6a5bcb;
+}
+
+.ogLogo__tagline {
+  margin: 0;
+  font-size: 1.34rem;
+  color: var(--ink-muted);
+  letter-spacing: 0.01em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ogCanvas .homeHero__section {
+  align-items: center;
+  gap: 0rem;
+  height: 100%;
+}
+
+.ogHomeCopy {
+  gap: 0.85rem;
+  /* padding-left: 22px; */
+  padding-bottom: 24px;
+}
+
+.ogCanvas .page__kicker {
+  margin: 0;
+  font-size: 0.68rem;
+}
+
+.ogCanvas .homeHero__copy .page__title {
+  font-size: 3.05rem;
+  line-height: 1.02;
+  margin: 0;
+  padding-top: 7rem;
+}
+
+.ogCanvas .homeHero__copy .page__lead {
+  font-size: 1rem;
+  line-height: 1.42;
+  max-width: 31rem;
+  margin: 0;
+  color: rgba(75, 78, 106, 0.95);
+}
+
+.ogCanvas__cta {
+  justify-content: start !important;
+  gap: 0.52rem;
+  margin-top: 2rem;
+}
+
+.ogButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.62rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  transform: scale(1);
+}
+
+.ogButton--primary {
+  background: linear-gradient(180deg, #7d6de2, #6d5cc6);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(76, 61, 165, 0.26);
+}
+
+.ogButton--secondary {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(37, 37, 69, 0.2);
+  color: var(--ink);
+}
+
+.ogHomeVisual {
+  justify-content: flex-end;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  transform: scale(1.6);
+}
+
+.ogHomeStack {
+  width: min(100%, 520px);
+  height: 360px;
+}
+
+.ogHomeStack .homeRemoteCard {
+  width: 258px;
+}
+
+.ogHomeStack .homeRemoteCard--factory {
+  left: 31%;
+  top: 17%;
+  transform: translate(-50%, 0) scale(0.9);
+}
+
+.ogHomeStack .homeRemoteCard--custom {
+  left: 79%;
+  top: 2%;
+  transform: translate(-50%, -4%) scale(1);
+}
+
+.ogHomeStack .homeRemoteCard__title {
+  font-size: 0.57rem;
+}
+
+.ogHomeStack .homeRemoteCard__subtitle {
+  font-size: 0.67rem;
+  margin-bottom: 0.5rem;
+}
+
+.ogHomeStack .homeRemoteMock {
+  height: 185px;
+  padding: 12px;
+}
+
+.ogHomeStack .homeRemoteMock::before,
+.ogHomeStack .homeRemoteMock::after {
+  display: none;
+}
+
+.ogRemoteCard__label {
+  margin: 0;
+  display: none;
+}
+
+@media (max-width: 1320px) {
+  .ogLab {
+    place-items: start;
+  }
+}
+
 
 .header,
 .footer {

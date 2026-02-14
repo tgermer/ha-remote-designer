@@ -11,6 +11,7 @@ import { GalleryView } from "./components/GalleryView";
 import { HomePage } from "./components/HomePage";
 import { HelpPage } from "./components/HelpPage";
 import { CommunityRemotePage } from "./components/CommunityRemotePage";
+import { OgImageLabPage } from "./components/OgImageLabPage";
 import { MigrationNotice } from "./components/MigrationNotice";
 import { EditorLayout } from "./components/layout/EditorLayout";
 import { GalleryLayout } from "./components/layout/GalleryLayout";
@@ -192,7 +193,7 @@ function normalizeAppLanguage(input: string | undefined | null): "de" | "en" {
     return value.startsWith("de") ? "de" : "en";
 }
 
-type ViewKind = "home" | "configure" | "gallery" | "help" | "community";
+type ViewKind = "home" | "configure" | "gallery" | "help" | "community" | "ogImageLab";
 
 const VIEW_PATHS: Record<ViewKind, string> = {
     home: "/",
@@ -200,6 +201,7 @@ const VIEW_PATHS: Record<ViewKind, string> = {
     gallery: "/gallery",
     help: "/help",
     community: "/community",
+    ogImageLab: "/og-image-lab",
 };
 
 function normalizeRoutePath(path: string) {
@@ -234,7 +236,20 @@ function getViewFromPath(path: string): ViewKind {
     if (normalized === VIEW_PATHS.gallery) return "gallery";
     if (normalized === VIEW_PATHS.help) return "help";
     if (normalized === VIEW_PATHS.community) return "community";
+    if (normalized === VIEW_PATHS.ogImageLab) return "ogImageLab";
     return "home";
+}
+
+function upsertMetaTag(selector: string, create: { attr: "name" | "property"; key: string }, content: string) {
+    const head = document.head;
+    if (!head) return;
+    let node = head.querySelector<HTMLMetaElement>(selector);
+    if (!node) {
+        node = document.createElement("meta");
+        node.setAttribute(create.attr, create.key);
+        head.appendChild(node);
+    }
+    node.setAttribute("content", content);
 }
 
 function getPackedStateHash() {
@@ -344,6 +359,8 @@ export default function App() {
     const isHelp = view === "help";
     const isConfigure = view === "configure";
     const isCommunity = view === "community";
+    const isOgImageLab = view === "ogImageLab";
+    const navView: "home" | "configure" | "gallery" | "help" | "community" = isOgImageLab ? "home" : view;
     const [legalPage, setLegalPage] = useState<LegalPageState>(() => getUrlLegalPage());
     const isLegal = legalPage !== null;
     const initialCommunityState = useMemo(() => {
@@ -422,8 +439,17 @@ export default function App() {
             document.title = t("meta.communityTitle");
             return;
         }
+        if (view === "ogImageLab") {
+            document.title = "OG Image Lab - ClearControl.";
+            return;
+        }
         document.title = t("header.title");
     }, [legalPage, t, view]);
+
+    useEffect(() => {
+        const robotsContent = isOgImageLab ? "noindex, nofollow, noarchive, nosnippet" : "index, follow";
+        upsertMetaTag('meta[name="robots"]', { attr: "name", key: "robots" }, robotsContent);
+    }, [isOgImageLab]);
 
     useEffect(() => {
         if (!import.meta.env.PROD) return;
@@ -1729,6 +1755,14 @@ export default function App() {
           } as CSSProperties)
         : undefined;
 
+    if (isOgImageLab && !isLegal) {
+        return (
+            <div className="ogRoutePlain">
+                <OgImageLabPage remote={problemRemote} factoryState={problemFactoryState} layoutState={problemLayoutState} />
+            </div>
+        );
+    }
+
     return (
         <>
             <main className="app" style={previewSpacingStyle}>
@@ -1747,34 +1781,36 @@ export default function App() {
                     />
                 ) : (
                     <>
-                        <TopNav
-                            view={view}
-                            homeHref={getViewHref("home")}
-                            configureHref={getViewHref("configure")}
-                            galleryHref={getViewHref("gallery")}
-                            helpHref={getViewHref("help")}
-                            communityHref={getViewHref("community")}
-                            onGoHome={(event) => {
-                                event.preventDefault();
-                                goTo("home");
-                            }}
-                            onGoConfigure={(event) => {
-                                event.preventDefault();
-                                goTo("configure");
-                            }}
-                            onGoGallery={(event) => {
-                                event.preventDefault();
-                                goTo("gallery");
-                            }}
-                            onGoHelp={(event) => {
-                                event.preventDefault();
-                                goTo("help");
-                            }}
-                            onGoCommunity={(event) => {
-                                event.preventDefault();
-                                goTo("community");
-                            }}
-                        />
+                        {!isOgImageLab ? (
+                            <TopNav
+                                view={navView}
+                                homeHref={getViewHref("home")}
+                                configureHref={getViewHref("configure")}
+                                galleryHref={getViewHref("gallery")}
+                                helpHref={getViewHref("help")}
+                                communityHref={getViewHref("community")}
+                                onGoHome={(event) => {
+                                    event.preventDefault();
+                                    goTo("home");
+                                }}
+                                onGoConfigure={(event) => {
+                                    event.preventDefault();
+                                    goTo("configure");
+                                }}
+                                onGoGallery={(event) => {
+                                    event.preventDefault();
+                                    goTo("gallery");
+                                }}
+                                onGoHelp={(event) => {
+                                    event.preventDefault();
+                                    goTo("help");
+                                }}
+                                onGoCommunity={(event) => {
+                                    event.preventDefault();
+                                    goTo("community");
+                                }}
+                            />
+                        ) : null}
 
                         {isHome ? (
                             <div className="pageWrap">
