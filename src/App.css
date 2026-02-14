@@ -194,7 +194,7 @@ main {
 .ogCanvas {
   position: relative;
   width: 1200px;
-  height: 600px;
+  height: 630px;
   /* border-radius: 26px; */
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.55);
