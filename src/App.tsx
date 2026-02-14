@@ -551,17 +551,22 @@ export default function App() {
         template.appVersion = APP_VERSION;
         return template;
     }, [communityDraft]);
+    const hasCommunityDraftChanges = useMemo(() => {
+        const baseline = createCommunityDraft();
+        const currentComparable = createCommunityDraft({ ...communityDraft, id: undefined });
+        return JSON.stringify(currentComparable) !== JSON.stringify(baseline);
+    }, [communityDraft]);
 
     const remotes = useMemo(() => {
         const list = [...REMOTES, ...communityRemotes];
         const previewRemote = communityTemplate;
-        if (previewRemote) {
+        if (previewRemote && hasCommunityDraftChanges) {
             const existingIndex = list.findIndex((remote) => remote.id === previewRemote.id);
             if (existingIndex >= 0) list.splice(existingIndex, 1);
-            list.push(previewRemote);
+            list.unshift(previewRemote);
         }
         return list;
-    }, [communityRemotes, communityTemplate]);
+    }, [communityRemotes, communityTemplate, hasCommunityDraftChanges]);
     const normalize = useCallback((input: NormalizableState) => normalizeState(input, remotes), [remotes]);
 
     useEffect(() => {

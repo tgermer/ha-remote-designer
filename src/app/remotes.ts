@@ -408,53 +408,6 @@ const BASE_REMOTES: RemoteDefinition[] = [
         ],
         defaultExampleId: "default",
     },
-    {
-        template: {
-            id: "community_preview234",
-            name: "Test jetzt",
-            description: "Community submission (draft)",
-            isDraft: true,
-            isCommunity: true,
-            widthMm: 80,
-            heightMm: 60,
-            cornerMm: 4,
-            buttons: [
-                {
-                    id: "button_1",
-                    xMm: 4,
-                    yMm: 8,
-                    wMm: 32,
-                    hMm: 18,
-                    rMm: 2,
-                },
-                {
-                    id: "button_2",
-                    xMm: 4,
-                    yMm: 30,
-                    wMm: 32,
-                    hMm: 18,
-                    rMm: 2,
-                },
-            ],
-            cutoutElements: [],
-            previewElements: [],
-            links: [
-                {
-                    label: "Manufacturer",
-                    url: "https://bmw.de",
-                },
-                {
-                    label: "Image",
-                    url: "https://led-stores.de/images/product/2327-Tuya-Langaton-painike-2-osainen-valkoinen-1736888089-Tuya-P2OS-W.png",
-                },
-            ],
-        },
-        notes: "asfdv af asdg",
-        tags: ["community"],
-        manufacturerUrl: "https://bmw.de",
-        imageUrl: "https://led-stores.de/images/product/2327-Tuya-Langaton-painike-2-osainen-valkoinen-1736888089-Tuya-P2OS-W.png",
-        appVersion: "dev",
-    },
 ];
 
 const metadataMap = new Map<RemoteId, RemoteMetadata>();
