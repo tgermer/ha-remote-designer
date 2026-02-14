@@ -1295,6 +1295,7 @@ main {
   .communityButtons__row,
   .communityCutouts__row {
     grid-template-columns: 1fr;
+    min-width: 0;
   }
 
   .communityButtons__row--head,
@@ -1335,6 +1336,7 @@ main {
 
 
 @media (max-width: 720px) {
+  .communityButtons__row,
   .communityCutouts__row {
     grid-template-columns: 1fr 1fr;
   }
