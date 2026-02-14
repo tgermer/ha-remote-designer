@@ -2,22 +2,24 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type TopNavProps = {
-    view: "home" | "configure" | "gallery" | "help" | "community";
+    view: "home" | "configure" | "gallery" | "help" | "community" | "story";
     homeHref: string;
     configureHref: string;
     galleryHref: string;
     helpHref: string;
     communityHref: string;
+    storyHref: string;
     onGoHome: (event: React.MouseEvent<HTMLAnchorElement>) => void;
     onGoConfigure: (event: React.MouseEvent<HTMLAnchorElement>) => void;
     onGoGallery: (event: React.MouseEvent<HTMLAnchorElement>) => void;
     onGoHelp: (event: React.MouseEvent<HTMLAnchorElement>) => void;
     onGoCommunity: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+    onGoStory: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 };
 
 export function TopNav(props: TopNavProps) {
     const { t, i18n } = useTranslation();
-    const { view, homeHref, configureHref, galleryHref, helpHref, communityHref, onGoHome, onGoConfigure, onGoGallery, onGoHelp, onGoCommunity } = props;
+    const { view, homeHref, configureHref, galleryHref, helpHref, communityHref, storyHref, onGoHome, onGoConfigure, onGoGallery, onGoHelp, onGoCommunity, onGoStory } = props;
     const currentLanguage = (i18n.resolvedLanguage ?? i18n.language ?? "en").startsWith("de") ? "de" : "en";
     const items = [
         { id: "home", label: t("nav.home"), href: homeHref, onClick: onGoHome },
@@ -25,6 +27,7 @@ export function TopNav(props: TopNavProps) {
         { id: "gallery", label: t("nav.gallery"), href: galleryHref, onClick: onGoGallery },
         { id: "help", label: t("nav.help"), href: helpHref, onClick: onGoHelp },
         { id: "community", label: t("nav.community"), href: communityHref, onClick: onGoCommunity },
+        { id: "story", label: t("nav.story"), href: storyHref, onClick: onGoStory },
     ] as const;
     const activeIndex = Math.max(
         0,
