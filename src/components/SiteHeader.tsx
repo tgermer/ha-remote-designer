@@ -14,7 +14,7 @@ export function SiteHeader({ isAdmin = false }: SiteHeaderProps) {
     return (
         <header className={styles.header}>
             <div className={styles.title}>
-                <h1 className={styles.brandTitle}>
+                <div className={styles.brandTitle} role="heading" aria-level={1}>
                     {hasSplitTitle ? (
                         <>
                             <span>{titleLead}</span>
@@ -23,7 +23,7 @@ export function SiteHeader({ isAdmin = false }: SiteHeaderProps) {
                     ) : (
                         t("header.title")
                     )}
-                </h1>
+                </div>
                 <p className={styles.claim}>{t("header.claim")}</p>
             </div>
             {isAdmin && <span className={styles.badge}>{t("header.admin")}</span>}

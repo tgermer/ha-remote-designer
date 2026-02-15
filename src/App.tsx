@@ -26,7 +26,7 @@ import { ButtonsSection } from "./components/controls/ButtonsSection";
 import { PreviewPane } from "./components/PreviewPane";
 import { HelpSection } from "./components/HelpSection";
 import { HiddenExportRenderers } from "./components/HiddenExportRenderers";
-import { LegalPage } from "./components/LegalPage";
+import { LegalPage } from "./pages/LegalPage";
 import { ConfiguratorIntro } from "./components/ConfiguratorIntro";
 import { UiIcon } from "./components/UiIcon";
 import { Button } from "./components/ui/Button";
@@ -195,6 +195,8 @@ function normalizeAppLanguage(input: string | undefined | null): "de" | "en" {
 }
 
 type ViewKind = "home" | "configure" | "gallery" | "help" | "community" | "story" | "ogImageLab";
+type LegalPageKind = "impressum" | "datenschutz";
+type LegalPageState = LegalPageKind | null;
 
 const VIEW_PATHS: Record<ViewKind, string> = {
     home: "/",
@@ -204,6 +206,11 @@ const VIEW_PATHS: Record<ViewKind, string> = {
     community: "/community",
     story: "/story",
     ogImageLab: "/og-image-lab",
+};
+
+const LEGAL_PATHS: Record<LegalPageKind, string> = {
+    impressum: "/impressum",
+    datenschutz: "/datenschutz",
 };
 
 function normalizeRoutePath(path: string) {
@@ -283,19 +290,22 @@ function getUrlView(): ViewKind {
     return "home";
 }
 
-type LegalPageKind = "impressum" | "datenschutz";
-type LegalPageState = LegalPageKind | null;
-
 function getUrlLegalPage(): LegalPageState {
+    const normalizedPath = normalizeRoutePath(window.location.pathname).toLowerCase();
+    if (normalizedPath === LEGAL_PATHS.impressum || normalizedPath === "/imprint") return "impressum";
+    if (normalizedPath === LEGAL_PATHS.datenschutz || normalizedPath === "/privacy") return "datenschutz";
+
     const sp = new URLSearchParams(window.location.search);
     const page = sp.get("page");
-    if (page === "impressum" || page === "datenschutz") return page;
+    if (page === "impressum" || page === "imprint") return "impressum";
+    if (page === "datenschutz" || page === "privacy") return "datenschutz";
     return null;
 }
 
 function setUrlView(view: ViewKind) {
     const url = new URL(window.location.href);
     url.searchParams.delete("view");
+    url.searchParams.delete("page");
     const nextPath = VIEW_PATHS[view];
     const stateHash = getPackedStateHash();
     const nextHash = stateHash ? `#${stateHash}` : "";
@@ -314,22 +324,15 @@ function getViewHref(view: ViewKind) {
 }
 
 function setUrlLegalPage(page: LegalPageState) {
-    const url = new URL(window.location.href);
-    if (page) url.searchParams.set("page", page);
-    else url.searchParams.delete("page");
-    window.history.pushState(null, "", url.toString());
+    if (!page) {
+        window.history.pushState(null, "", VIEW_PATHS.home);
+        return;
+    }
+    window.history.pushState(null, "", LEGAL_PATHS[page]);
 }
 
 function getLegalHref(page: LegalPageKind) {
-    const url = new URL(window.location.href);
-    url.searchParams.set("page", page);
-    return url.toString();
-}
-
-function getAppHref() {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("page");
-    return url.toString();
+    return LEGAL_PATHS[page];
 }
 
 function readCommunityDrafts(): CommunityDraftEntry[] {
@@ -364,9 +367,9 @@ export default function App() {
     const isCommunity = view === "community";
     const isStory = view === "story";
     const isOgImageLab = view === "ogImageLab";
-    const navView: "home" | "configure" | "gallery" | "help" | "community" | "story" = isOgImageLab ? "home" : view;
     const [legalPage, setLegalPage] = useState<LegalPageState>(() => getUrlLegalPage());
     const isLegal = legalPage !== null;
+    const navView: "home" | "configure" | "gallery" | "help" | "community" | "story" | null = isLegal ? null : isOgImageLab ? "home" : view;
     const initialCommunityState = useMemo(() => {
         const drafts = readCommunityDrafts().sort((a, b) => b.updatedAt - a.updatedAt);
         const nextId = drafts[0]?.id ?? "";
@@ -477,6 +480,11 @@ export default function App() {
             url: window.location.href,
         });
     }, [view, legalPage]);
+
+    useEffect(() => {
+        if (!legalPage) return;
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }, [legalPage]);
 
     useEffect(() => {
         if (!import.meta.env.PROD) return;
@@ -652,6 +660,7 @@ export default function App() {
             refreshSavedDesigns();
         }
         setUrlView(next);
+        setLegalPage(null);
         setView(next);
     };
 
@@ -1781,55 +1790,46 @@ export default function App() {
             <main className="app" style={previewSpacingStyle}>
                 <SiteHeader isAdmin={isAdmin} />
 
-                {isLegal ? (
-                    <LegalPage
-                        kind={legalKind}
-                        contact={LEGAL_CONTACT}
-                        backHref={getAppHref()}
-                        onBack={(event) => {
+                {!isOgImageLab ? (
+                    <TopNav
+                        view={navView}
+                        homeHref={getViewHref("home")}
+                        configureHref={getViewHref("configure")}
+                        galleryHref={getViewHref("gallery")}
+                        helpHref={getViewHref("help")}
+                        communityHref={getViewHref("community")}
+                        storyHref={getViewHref("story")}
+                        onGoHome={(event) => {
                             event.preventDefault();
-                            setLegalPage(null);
-                            setUrlLegalPage(null);
+                            goTo("home");
+                        }}
+                        onGoConfigure={(event) => {
+                            event.preventDefault();
+                            goTo("configure");
+                        }}
+                        onGoGallery={(event) => {
+                            event.preventDefault();
+                            goTo("gallery");
+                        }}
+                        onGoHelp={(event) => {
+                            event.preventDefault();
+                            goTo("help");
+                        }}
+                        onGoCommunity={(event) => {
+                            event.preventDefault();
+                            goTo("community");
+                        }}
+                        onGoStory={(event) => {
+                            event.preventDefault();
+                            goTo("story");
                         }}
                     />
+                ) : null}
+
+                {isLegal ? (
+                    <LegalPage kind={legalKind} contact={LEGAL_CONTACT} />
                 ) : (
                     <>
-                        {!isOgImageLab ? (
-                            <TopNav
-                                view={navView}
-                                homeHref={getViewHref("home")}
-                                configureHref={getViewHref("configure")}
-                                galleryHref={getViewHref("gallery")}
-                                helpHref={getViewHref("help")}
-                                communityHref={getViewHref("community")}
-                                storyHref={getViewHref("story")}
-                                onGoHome={(event) => {
-                                    event.preventDefault();
-                                    goTo("home");
-                                }}
-                                onGoConfigure={(event) => {
-                                    event.preventDefault();
-                                    goTo("configure");
-                                }}
-                                onGoGallery={(event) => {
-                                    event.preventDefault();
-                                    goTo("gallery");
-                                }}
-                                onGoHelp={(event) => {
-                                    event.preventDefault();
-                                    goTo("help");
-                                }}
-                                onGoCommunity={(event) => {
-                                    event.preventDefault();
-                                    goTo("community");
-                                }}
-                                onGoStory={(event) => {
-                                    event.preventDefault();
-                                    goTo("story");
-                                }}
-                            />
-                        ) : null}
-
                         {isHome ? (
                             <div className="pageWrap">
                                 <HomePage
@@ -2044,6 +2044,7 @@ export default function App() {
                     onOpenLegal={(page) => {
                         setLegalPage(page);
                         setUrlLegalPage(page);
+                        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
                     }}
                 />
             </main>

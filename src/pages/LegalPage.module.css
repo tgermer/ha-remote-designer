@@ -1,0 +1,41 @@
+.page {
+  grid-column: 1 / -1;
+  padding: 0 0rem 2rem;
+  color: var(--ink);
+}
+
+.header {
+  margin-bottom: 1rem;
+}
+
+.hero {
+  padding: 0;
+}
+
+.content {
+  max-width: 760px;
+}
+
+.section {
+  margin: 1.4rem 0;
+}
+
+.section h2 {
+  font-size: 1.2rem;
+  margin: 0 0 0.5rem;
+}
+
+.section p {
+  margin: 0.25rem 0;
+  line-height: 1.6;
+}
+
+.blockLine {
+  display: block;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 0 1rem 1.5rem;
+  }
+}

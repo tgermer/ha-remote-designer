@@ -16,9 +16,9 @@ export function HelpPage({ configureHref, galleryHref, onGoConfigure, onGoGaller
 
     return (
         <section className="page" aria-label={t("helpPage.pageLabel")}>
-            <header className="page__hero">
-                <p className="page__kicker">{t("helpPage.kicker")}</p>
-                <h2 className="page__title">{t("helpPage.title")}</h2>
+            <header className="page__hero page__hero--compact">
+                <h1 className="page__title">{t("helpPage.kicker")}</h1>
+                <p className="page__lead">{t("helpPage.title")}</p>
                 <p className="page__lead">{t("helpPage.lead")}</p>
                 <div className="page__cta">
                     <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>

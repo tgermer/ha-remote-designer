@@ -167,7 +167,7 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                         <div key={section.id} className={`homeHero__section${isReversed ? " homeHero__section--reverse" : ""}`}>
                             <div className="homeHero__copy">
                                 <p className="page__kicker">{t("home.kicker")}</p>
-                                <h2 className="page__title">{section.title}</h2>
+                                {index === 0 ? <h1 className="page__title">{section.title}</h1> : <h2 className="page__title">{section.title}</h2>}
                                 <p className="page__lead">{section.lead}</p>
                                 {heroCta}
                                 {section.note ? <p className="page__note">{section.note}</p> : null}
@@ -182,7 +182,7 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                 {homeStorySections.map((section) => (
                     <div className="homeStatement" key={section.id}>
                         <p className="homeStatement__label">{section.label}</p>
-                        <h3>{section.title}</h3>
+                        <h3 className="text-highlight">{section.title}</h3>
                         <p>{section.description}</p>
                     </div>
                 ))}

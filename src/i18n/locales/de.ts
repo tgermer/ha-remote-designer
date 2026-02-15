@@ -134,8 +134,8 @@ export const deTranslation = {
     },
     storyPage: {
         pageLabel: "Die Story hinter ClearControl",
-        titleLine1: "Zu viele Tasten.",
-        titleLine2: "Zu wenig Klarheit.",
+        titleLine1: "Zu <hl>viele Tasten.</hl>",
+        titleLine2: "Zu <hl>wenig Klarheit.</hl>",
         lead: "Klarheit für Smart-Home-Steuerungen.",
         sections: [
             {
@@ -152,7 +152,7 @@ export const deTranslation = {
                     "Präsenz.",
                     "Zeitpläne.",
                     "Trigger.",
-                    "Aber wir vergessen oft etwas ganz Einfaches: Menschen brauchen Klarheit.",
+                    "Aber wir vergessen oft etwas ganz Einfaches: <hl>Menschen brauchen Klarheit.</hl>",
                     // "Menschen brauchen Klarheit."
                 ],
             },
@@ -165,15 +165,15 @@ export const deTranslation = {
                 eyebrow: "Der Name",
                 title: "Warum ClearControl?",
                 blocks: [
-                    "„Clear“ steht nicht für Design-Trends. – Sondern für Verstehen auf einen Blick.",
+                    "„Clear“ steht nicht für Design-Trends. – Sondern für <hl>Verstehen auf einen Blick.</hl>",
                     // "Sondern für Verstehen auf einen Blick.",
-                    "„Control“ steht nicht für Komplexität. – Sondern für Sicherheit und Vertrauen.",
+                    "„Control“ steht nicht für Komplexität. – Sondern für <hl>Sicherheit und Vertrauen.</hl>",
                     // "Sondern für Sicherheit und Vertrauen.",
                     "ClearControl steht für eine einfache Idee:",
-                    "Kontrolle durch Klarheit.",
+                    "<hl>Kontrolle durch Klarheit.</hl>",
                     "Nicht mehr Features.",
                     "Nicht mehr Automation.",
-                    "Nicht mehr Komplexität, sondern Klarheit.",
+                    "Nicht mehr Komplexität, <hl>sondern Klarheit.</hl>",
                     // "Sondern Klarheit.",
                 ],
             },

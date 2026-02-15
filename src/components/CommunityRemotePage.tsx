@@ -476,9 +476,9 @@ export function CommunityRemotePage(props: CommunityRemotePageProps) {
 
     return (
         <section className="page" aria-label={t("community.sectionLabel")}>
-            <header className="page__hero">
-                <p className="page__kicker">{t("community.kicker")}</p>
-                <h2 className="page__title">{t("community.title")}</h2>
+            <header className="page__hero page__hero--compact">
+                <h1 className="page__title">{t("community.kicker")}</h1>
+                <p className="page__lead">{t("community.title")}</p>
                 <p className="page__lead">{t("community.lead")}</p>
 
                 <div className="page__cta">

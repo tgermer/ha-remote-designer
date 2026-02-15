@@ -50,16 +50,37 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
     }, [t]);
 
     const hasGalleryLink = Boolean(galleryHref && onGoGallery);
+    const titleLine1 = t("storyPage.titleLine1");
+    const titleLine2 = t("storyPage.titleLine2");
+    let autoHighlightIndex = 0;
+    const renderInlineMarkup = (text: string) => {
+        const parts = text.split(/(<hl2>.*?<\/hl2>|<hl>.*?<\/hl>)/g).filter(Boolean);
+        return parts.map((part, index) => {
+            const matchDefault = part.match(/^<hl>(.*?)<\/hl>$/);
+            const matchAlt = part.match(/^<hl2>(.*?)<\/hl2>$/);
+            if (matchDefault || matchAlt) {
+                const content = (matchDefault?.[1] ?? matchAlt?.[1] ?? "").trim();
+                const useAlt = matchAlt ? true : autoHighlightIndex % 2 === 1;
+                autoHighlightIndex += 1;
+                return (
+                    <span key={`hl-${index}`} className={useAlt ? "text-highlight text-highlight--alt" : "text-highlight"}>
+                        {content}
+                    </span>
+                );
+            }
+            return <span key={`txt-${index}`}>{part}</span>;
+        });
+    };
 
     return (
         <section className="page storyPage" aria-label={t("storyPage.pageLabel")}>
             <div className="storyPage__container">
-                <header className="page__hero storyHero">
-                    <p className="page__kicker">{t("storyPage.pageLabel")}</p>
-                    <h1 className="page__title storyHero__title">
-                        <span>{t("storyPage.titleLine1")}</span>
-                        <span>{t("storyPage.titleLine2")}</span>
-                    </h1>
+                <header className="page__hero page__hero--compact storyHero">
+                    <h1 className="page__title">{t("storyPage.pageLabel")}</h1>
+                    <h2 className="storyHero__title">
+                        <span>{renderInlineMarkup(titleLine1)}</span>
+                        <span>{renderInlineMarkup(titleLine2)}</span>
+                    </h2>
                     <p className="page__lead storyHero__lead">{t("storyPage.lead")}</p>
                 </header>
 
@@ -80,7 +101,7 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                                         <div key={`${index}-group-${groupIndex}`} className={`storySection__group${group.every((line) => line.trim().length <= 24) ? " storySection__group--compact" : ""}`}>
                                             {group.map((line, lineIndex) => (
                                                 <p key={`${index}-${groupIndex}-${lineIndex}`} className="storySection__line">
-                                                    {line}
+                                                    {renderInlineMarkup(line)}
                                                 </p>
                                             ))}
                                         </div>

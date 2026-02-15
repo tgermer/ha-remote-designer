@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 type TopNavProps = {
-    view: "home" | "configure" | "gallery" | "help" | "community" | "story";
+    view: "home" | "configure" | "gallery" | "help" | "community" | "story" | null;
     homeHref: string;
     configureHref: string;
     galleryHref: string;
@@ -29,10 +29,7 @@ export function TopNav(props: TopNavProps) {
         { id: "community", label: t("nav.community"), href: communityHref, onClick: onGoCommunity },
         { id: "story", label: t("nav.story"), href: storyHref, onClick: onGoStory },
     ] as const;
-    const activeIndex = Math.max(
-        0,
-        items.findIndex((item) => item.id === view),
-    );
+    const activeIndex = items.findIndex((item) => item.id === view);
     const [menuOpen, setMenuOpen] = useState(false);
     const navRef = useRef<HTMLElement | null>(null);
     const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -53,8 +50,15 @@ export function TopNav(props: TopNavProps) {
 
     useLayoutEffect(() => {
         const nav = navRef.current;
+        if (activeIndex < 0) {
+            setActiveMetrics({ left: 0, width: 0, ready: false });
+            return;
+        }
         const activeLink = linkRefs.current[activeIndex];
-        if (!nav || !activeLink) return;
+        if (!nav || !activeLink) {
+            setActiveMetrics({ left: 0, width: 0, ready: false });
+            return;
+        }
         const navRect = nav.getBoundingClientRect();
         const linkRect = activeLink.getBoundingClientRect();
         setActiveMetrics({ left: linkRect.left - navRect.left, width: linkRect.width, ready: true });
@@ -64,8 +68,15 @@ export function TopNav(props: TopNavProps) {
         const nav = navRef.current;
         if (!nav) return;
         const update = () => {
+            if (activeIndex < 0) {
+                setActiveMetrics({ left: 0, width: 0, ready: false });
+                return;
+            }
             const activeLink = linkRefs.current[activeIndex];
-            if (!activeLink) return;
+            if (!activeLink) {
+                setActiveMetrics({ left: 0, width: 0, ready: false });
+                return;
+            }
             const navRect = nav.getBoundingClientRect();
             const linkRect = activeLink.getBoundingClientRect();
             setActiveMetrics({ left: linkRect.left - navRect.left, width: linkRect.width, ready: true });

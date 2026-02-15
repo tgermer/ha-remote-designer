@@ -16,7 +16,7 @@ export function EditorLayout(props: EditorLayoutProps) {
         <div className="workspace">
             <section className="controls">
                 <header className="editor__header">
-                    <h2 className="editor__title">{title}</h2>
+                    <h1 className="editor__title">{title}</h1>
                     {subtitle ? <p className="editor__subtitle">{subtitle}</p> : null}
                 </header>
                 {intro}

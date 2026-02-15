@@ -134,8 +134,8 @@ export const enTranslation = {
     },
     storyPage: {
         pageLabel: "The Story behind ClearControl",
-        titleLine1: "Too many buttons.",
-        titleLine2: "Not enough clarity.",
+        titleLine1: "Too <hl>many buttons.</hl>",
+        titleLine2: "Not <hl>enough clarity.</hl>",
         lead: "Clarity for smart home controls.",
         sections: [
             {
@@ -146,7 +146,7 @@ export const enTranslation = {
             {
                 eyebrow: "Why this happens",
                 title: "Smart homes got smarter. Controls didn’t.",
-                blocks: ["We optimize brightness.", "Color temperature.", "Presence.", "Schedules.", "Triggers.", "But we often forget something simple: people need clarity."],
+                blocks: ["We optimize brightness.", "Color temperature.", "Presence.", "Schedules.", "Triggers.", "But we often forget something simple: <hl>people need clarity.</hl>"],
             },
             {
                 eyebrow: "What clarity changes",
@@ -156,7 +156,7 @@ export const enTranslation = {
             {
                 eyebrow: "The name",
                 title: "Why ClearControl?",
-                blocks: ["“Clear” isn’t about design trends. It’s about understanding at a glance.", "“Control” isn’t about complexity. It’s about confidence and trust.", "ClearControl stands for one simple idea:", "Control through clarity.", "Not more features.", "Not more automation.", "Not more complexity, just clarity."],
+                blocks: ["“Clear” isn’t about design trends. It’s about <hl>understanding at a glance.</hl>", "“Control” isn’t about complexity. It’s about <hl>confidence and trust.</hl>", "ClearControl stands for one simple idea:", "<hl>Control through clarity.</hl>", "Not more features.", "Not more automation.", "Not more complexity, <hl>just clarity.</hl>"],
             },
             {
                 eyebrow: "In the end",

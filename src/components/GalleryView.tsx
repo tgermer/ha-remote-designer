@@ -287,7 +287,7 @@ export function GalleryView(props: GalleryViewProps) {
     return (
         <section className="gallery" aria-label={t("gallery.sectionLabel")}>
             <header className="gallery__header">
-                <h2 className="gallery__title">{t("gallery.title")}</h2>
+                <h1 className="gallery__title">{t("gallery.title")}</h1>
                 <p className="gallery__subtitle">{t("gallery.subtitle")}</p>
                 {iconLoadStatus ? (
                     <p className="gallery__status" role="status" aria-live="polite">
