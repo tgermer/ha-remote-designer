@@ -1,3 +1,4 @@
+import { IconLifebuoy, IconMailFast } from "@tabler/icons-react";
 import { UiIcon } from "./UiIcon";
 import { Button } from "./ui/Button";
 import { LinkButton } from "./ui/LinkButton";
@@ -20,11 +21,11 @@ export function ConfiguratorIntro({ helpHref, onGoHelp, onSendConfig }: Configur
             </div>
             <div className="configIntro__actions">
                 <Button variant="primary" type="button" onClick={onSendConfig}>
-                    <UiIcon name="mdi:email-fast-outline" className="icon" />
+                    <UiIcon icon={IconMailFast} className="icon" />
                     {t("configIntro.send")}
                 </Button>
                 <LinkButton href={helpHref} onClick={onGoHelp}>
-                    <UiIcon name="mdi:lifebuoy" className="icon" />
+                    <UiIcon icon={IconLifebuoy} className="icon" />
                     {t("configIntro.openHelp")}
                 </LinkButton>
             </div>

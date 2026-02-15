@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { IconTrash, IconX } from "@tabler/icons-react";
 import { getMdiPath, getFullMdiLoadedSnapshot, isMdiInHomeSet, listFullMdiIcons, listHomeMdiIcons, preloadFullMdi, subscribeFullMdi } from "../app/mdi";
 import { UiIcon } from "./UiIcon";
 import { FEATURES } from "../app/featureFlags";
@@ -291,7 +292,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                     aria-label={t("iconPicker.deleteIcon")}
                     title={t("iconPicker.deleteIcon")}
                 >
-                    <UiIcon name="mdi:delete-outline" className="icon" />
+                    <UiIcon icon={IconTrash} className="icon" />
                 </button>
             </div>
 
@@ -336,7 +337,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                             </span>
                         </div>
                         <button type="button" className="iconpicker__btn" onClick={() => setBrowser(null)} aria-label={t("iconPicker.closeMdiBrowser")}>
-                            <UiIcon name="mdi:close-circle-outline" className="icon" />
+                            <UiIcon icon={IconX} className="icon" />
                             {t("iconPicker.close")}
                         </button>
                     </header>
@@ -404,7 +405,7 @@ export function IconPicker({ value, onChange, placeholder }: { value: string | u
                             <span className="iconpicker__panelCount">({allHueIcons.length})</span>
                         </div>
                         <button type="button" className="iconpicker__btn" onClick={() => setBrowser(null)} aria-label={t("iconPicker.closeHueBrowser")}>
-                            <UiIcon name="mdi:close-circle-outline" className="icon" />
+                            <UiIcon icon={IconX} className="icon" />
                             {t("iconPicker.close")}
                         </button>
                     </header>

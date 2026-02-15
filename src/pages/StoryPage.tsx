@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { IconAdjustments, IconPhoto } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { RemoteTemplate } from "../app/remotes";
 import type { DesignState } from "../app/types";
@@ -154,12 +155,12 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                                         <p className="storyPage__ctaTitle">{t("storyPage.cta.title")}</p>
                                         <div className="page__cta storyPage__ctaActions">
                                             <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
-                                                <UiIcon name="mdi:tune-variant" className="icon" />
+                                                <UiIcon icon={IconAdjustments} className="icon" />
                                                 {t("storyPage.cta.primary")}
                                             </LinkButton>
                                             {hasGalleryLink ? (
                                                 <LinkButton href={galleryHref} onClick={onGoGallery}>
-                                                    <UiIcon name="mdi:image-multiple-outline" className="icon" />
+                                                    <UiIcon icon={IconPhoto} className="icon" />
                                                     {t("storyPage.cta.secondary")}
                                                 </LinkButton>
                                             ) : null}
@@ -175,12 +176,12 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                     <p className="storyPage__ctaTitle">{t("storyPage.cta.title")}</p>
                     <div className="page__cta storyPage__ctaActions">
                         <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
-                            <UiIcon name="mdi:tune-variant" className="icon" />
+                            <UiIcon icon={IconAdjustments} className="icon" />
                             {t("storyPage.cta.primary")}
                         </LinkButton>
                         {hasGalleryLink ? (
                             <LinkButton href={galleryHref} onClick={onGoGallery}>
-                                <UiIcon name="mdi:image-multiple-outline" className="icon" />
+                                <UiIcon icon={IconPhoto} className="icon" />
                                 {t("storyPage.cta.secondary")}
                             </LinkButton>
                         ) : null}

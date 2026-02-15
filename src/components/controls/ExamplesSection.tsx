@@ -1,4 +1,5 @@
 import type { RemoteExample } from "../../app/remotes";
+import { IconCheck, IconEye, IconEyeOff } from "@tabler/icons-react";
 import { UiIcon } from "../UiIcon";
 import { Button } from "../ui/Button";
 import { useTranslation } from "react-i18next";
@@ -39,12 +40,12 @@ export function ExamplesSection(props: ExamplesSectionProps) {
             <div className="row">
                 <div className="row">
                     <Button type="button" disabled={!selectedExample} onClick={onTogglePreview}>
-                        <UiIcon name={previewExampleOn ? "mdi:eye-off-outline" : "mdi:eye-outline"} className="icon" />
+                        <UiIcon icon={previewExampleOn ? IconEyeOff : IconEye} className="icon" />
                         {previewExampleOn ? t("controls.examples.stopPreview") : t("controls.examples.preview")}
                     </Button>
 
                     <Button type="button" disabled={!selectedExample} onClick={onApplyExample}>
-                        <UiIcon name="mdi:check-bold" className="icon" />
+                        <UiIcon icon={IconCheck} className="icon" />
                         {t("controls.examples.apply")}
                     </Button>
                 </div>

@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { IconDeviceFloppy, IconFileExport, IconFileImport, IconFolderOpen, IconTrash } from "@tabler/icons-react";
 import { UiIcon } from "../UiIcon";
 import { Button } from "../ui/Button";
 import type { SavedDesign } from "../../app/savedDesigns";
@@ -71,11 +72,11 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
 
             <div className="row row--spaced">
                 <Button type="button" onClick={onSaveActive} disabled={!activeSavedId || !hasUnsavedChanges || !saveName.trim() || !!saveNameError}>
-                    <UiIcon name="mdi:content-save" className="icon" />
+                    <UiIcon icon={IconDeviceFloppy} className="icon" />
                     {t("controls.saved.save")}
                 </Button>
                 <Button type="button" onClick={onSaveAsNew} disabled={!saveName.trim()}>
-                    <UiIcon name="mdi:content-save-plus-outline" className="icon" />
+                    <UiIcon icon={IconDeviceFloppy} className="icon" />
                     {t("controls.saved.saveAs")}
                 </Button>
             </div>
@@ -106,11 +107,11 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
 
             <div className="row row--spaced">
                 <Button type="button" onClick={onLoadSelected} disabled={!selectedSavedId}>
-                    <UiIcon name="mdi:folder-open-outline" className="icon" />
+                    <UiIcon icon={IconFolderOpen} className="icon" />
                     {t("controls.saved.load")}
                 </Button>
                 <Button variant="danger" type="button" onClick={onDeleteSelected} disabled={!selectedSavedId} aria-label={t("controls.saved.deleteSaved")} title={t("controls.saved.deleteSaved")}>
-                    <UiIcon name="mdi:delete-outline" className="icon" />
+                    <UiIcon icon={IconTrash} className="icon" />
                 </Button>
             </div>
 
@@ -118,11 +119,11 @@ export function SavedDesignsSection(props: SavedDesignsSectionProps) {
                 <div className="savedDesigns__ioTitle">{t("controls.saved.backupTitle")}</div>
                 <div className="row row--spaced" style={{ marginTop: "0.25rem" }}>
                     <Button type="button" onClick={onExportAll} disabled={!savedDesigns.length}>
-                        <UiIcon name="mdi:file-export-outline" className="icon" />
+                        <UiIcon icon={IconFileExport} className="icon" />
                         {t("controls.saved.exportAll")}
                     </Button>
                     <Button type="button" onClick={() => importInputRef.current?.click()}>
-                        <UiIcon name="mdi:file-import-outline" className="icon" />
+                        <UiIcon icon={IconFileImport} className="icon" />
                         {t("controls.saved.import")}
                     </Button>
                     <input

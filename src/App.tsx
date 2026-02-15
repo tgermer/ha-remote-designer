@@ -1,5 +1,6 @@
 import { type CSSProperties, useMemo, useState, useEffect, useRef, useSyncExternalStore, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { IconX } from "@tabler/icons-react";
 import "./App.css";
 
 import { type DesignState, type StrikeStyle, type TapType } from "./app/types";
@@ -2061,7 +2062,7 @@ export default function App() {
                                   >
                                       <div className="previewOverlay__handle" aria-hidden="true" />
                                       <Button type="button" className="previewOverlay__close" aria-label={t("app.closePreview")} onClick={() => setPreviewOpen(false)}>
-                                          <UiIcon name="mdi:close" className="icon" />
+                                          <UiIcon icon={IconX} className="icon" />
                                       </Button>
                                   </div>
                                   <PreviewPane template={template} state={previewState} showWatermark={showWatermark} watermarkText={watermarkText} watermarkOpacity={watermarkOpacity} isStickerSheet={isStickerSheet} pageIndex={stickerPageIndexSafe} pages={stickerPages} onChangePage={setStickerPageIndex} onSelectButton={jumpToButtonConfig} className="preview--overlay" showMissingIconPlaceholder={!!iconLoadStatus} />
@@ -2088,7 +2089,7 @@ export default function App() {
                               <div className="sharePrompt__header">
                                   <h2>{t("app.shareTitle")}</h2>
                                   <Button type="button" className="sharePrompt__close" onClick={() => setSendConfigOpen(false)} aria-label={t("app.close")}>
-                                      <UiIcon name="mdi:close" className="icon" />
+                                      <UiIcon icon={IconX} className="icon" />
                                   </Button>
                               </div>
                               <div className="sharePrompt__body">

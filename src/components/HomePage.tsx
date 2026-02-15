@@ -1,6 +1,7 @@
 import type { RemoteTemplate } from "../app/remotes";
 import type { DesignState } from "../app/types";
 import type { ReactNode } from "react";
+import { IconAdjustments, IconLibraryPhoto } from "@tabler/icons-react";
 import { RemoteSvg } from "../render/RemoteSvg";
 import { UiIcon } from "./UiIcon";
 import { LinkButton } from "./ui/LinkButton";
@@ -94,15 +95,15 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
     const heroCta = (
         <div className="page__cta">
             <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
-                <UiIcon name="mdi:tune-variant" className="icon" />
+                <UiIcon icon={IconAdjustments} className="icon" />
                 {t("home.ctaStart")}
             </LinkButton>
             <LinkButton href={galleryHref} onClick={onGoGallery}>
-                <UiIcon name="mdi:image-multiple-outline" className="icon" />
+                <UiIcon icon={IconLibraryPhoto} className="icon" />
                 {t("home.ctaGallery")}
             </LinkButton>
             {/* <LinkButton href={helpHref} onClick={onGoHelp}>
-                <UiIcon name="mdi:lifebuoy" className="icon" />
+                <UiIcon icon={IconLifebuoy} className="icon" />
                 Get help
             </LinkButton> */}
         </div>

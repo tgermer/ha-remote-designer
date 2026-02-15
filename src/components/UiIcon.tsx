@@ -1,19 +1,21 @@
-import { getMdiPath } from "../app/mdi";
+import type { Icon } from "@tabler/icons-react";
 
 type UiIconProps = {
-    name: string;
+    icon: Icon;
     size?: number;
     className?: string;
     title?: string;
 };
-
-export function UiIcon({ name, size = 18, className, title }: UiIconProps) {
-    const d = getMdiPath(name);
-    if (!d) return null;
+export function UiIcon({ icon: IconComponent, size = 18, className, title }: UiIconProps) {
 
     return (
-        <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-label={title ?? name} role="img">
-            <path d={d} fill="currentColor" />
-        </svg>
+        <IconComponent
+            size={size}
+            stroke="currentColor"
+            strokeWidth={2.1}
+            className={className}
+            aria-label={title}
+            role="img"
+        />
     );
 }

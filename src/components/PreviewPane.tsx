@@ -1,5 +1,6 @@
 import type { DesignState } from "../app/types";
 import type { RemoteTemplate } from "../app/remotes";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { RemoteSvg } from "../render/RemoteSvg";
 import { UiIcon } from "./UiIcon";
 import { useTranslation } from "react-i18next";
@@ -33,7 +34,7 @@ export function PreviewPane(props: PreviewPaneProps) {
             {showPager && (
                 <div className="preview__pager">
                     <button type="button" className="preview__pagerBtn" onClick={() => onChangePage?.(Math.max(0, currentPage - 1))} disabled={currentPage <= 0}>
-                        <UiIcon name="mdi:chevron-left" className="icon" />
+                        <UiIcon icon={IconChevronLeft} className="icon" />
                         <span>{t("preview.prev")}</span>
                     </button>
                     <span>
@@ -49,7 +50,7 @@ export function PreviewPane(props: PreviewPaneProps) {
                     </span>
                     <button type="button" className="preview__pagerBtn" onClick={() => onChangePage?.(Math.min(pages - 1, currentPage + 1))} disabled={currentPage >= pages - 1}>
                         <span>{t("preview.next")}</span>
-                        <UiIcon name="mdi:chevron-right" className="icon" />
+                        <UiIcon icon={IconChevronRight} className="icon" />
                     </button>
                 </div>
             )}

@@ -1,3 +1,4 @@
+import { IconBraces, IconCopy, IconFileTypePdf, IconFileZip, IconLink, IconMail, IconPhoto } from "@tabler/icons-react";
 import { UiIcon } from "../UiIcon";
 import { Button } from "../ui/Button";
 import { useTranslation } from "react-i18next";
@@ -34,7 +35,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
 
             <p className="share">
                 <Button type="button" onClick={onCopyShareLink}>
-                    <UiIcon name="mdi:link-variant" className="icon" />
+                    <UiIcon icon={IconLink} className="icon" />
                     {t("controls.shareExport.copyLink")}
                 </Button>
                 {shareStatus === "copied" && (
@@ -54,7 +55,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
             {onSendConfig ? (
                 <p className="share">
                     <Button type="button" onClick={onSendConfig}>
-                        <UiIcon name="mdi:email-outline" className="icon" />
+                        <UiIcon icon={IconMail} className="icon" />
                         {t("controls.shareExport.sendToDeveloper")}
                     </Button>
                 </p>
@@ -63,7 +64,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
             {onExportRemoteJson ? (
                 <div className="row row--spaced">
                     <Button onClick={onExportRemoteJson}>
-                        <UiIcon name="mdi:code-json" className="icon" />
+                        <UiIcon icon={IconBraces} className="icon" />
                         {t("controls.shareExport.exportJson")}
                     </Button>
                 </div>
@@ -71,12 +72,12 @@ export function ShareExportSection(props: ShareExportSectionProps) {
 
             <div className="row row--spaced">
                 <Button onClick={onExportRemoteSvg}>
-                    <UiIcon name="mdi:file-image-outline" className="icon" />
+                    <UiIcon icon={IconPhoto} className="icon" />
                     {t("controls.shareExport.exportSvg")}
                 </Button>
                 {showSvgAllPages && onExportAllPagesSvgZip ? (
                     <Button onClick={onExportAllPagesSvgZip}>
-                        <UiIcon name="mdi:folder-zip-outline" className="icon" />
+                        <UiIcon icon={IconFileZip} className="icon" />
                         {t("controls.shareExport.exportAllSvgZip")}
                     </Button>
                 ) : null}
@@ -85,7 +86,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
             {showA4Pdf && onExportA4Pdf ? (
                 <p>
                     <Button onClick={onExportA4Pdf}>
-                        <UiIcon name="mdi:file-pdf-box" className="icon" />
+                        <UiIcon icon={IconFileTypePdf} className="icon" />
                         {t("controls.shareExport.exportPdf")}
                     </Button>
                 </p>
@@ -96,7 +97,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                     {onCopyRemoteExample ? (
                         <div className="exportRow">
                             <Button onClick={onCopyRemoteExample}>
-                                <UiIcon name="mdi:content-copy" className="icon" />
+                                <UiIcon icon={IconCopy} className="icon" />
                                 {t("controls.shareExport.copyRemoteExample")}
                             </Button>
                             {remoteExampleStatus === "copied" && <span className="exportRow__status">{t("controls.shareExport.copied")}</span>}
@@ -105,7 +106,7 @@ export function ShareExportSection(props: ShareExportSectionProps) {
                     ) : null}
                     <div className="exportRow">
                         <Button onClick={onExportZip} disabled={isZipping}>
-                            <UiIcon name="mdi:folder-zip-outline" className="icon" />
+                            <UiIcon icon={IconFileZip} className="icon" />
                             {isZipping ? t("controls.shareExport.creatingZip") : t("controls.shareExport.exportPngs")}
                         </Button>
 

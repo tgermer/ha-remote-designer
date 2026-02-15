@@ -1,3 +1,4 @@
+import { IconLink, IconRestore } from "@tabler/icons-react";
 import { UiIcon } from "../UiIcon";
 import { Button } from "../ui/Button";
 import { useTranslation } from "react-i18next";
@@ -21,7 +22,7 @@ export function ShareSection(props: ShareSectionProps) {
 
             <p className="share">
                 <Button type="button" onClick={onCopyShareLink}>
-                    <UiIcon name="mdi:link-variant" className="icon" />
+                    <UiIcon icon={IconLink} className="icon" />
                     {t("controls.share.copyLink")}
                 </Button>
                 {shareStatus === "copied" && (
@@ -40,7 +41,7 @@ export function ShareSection(props: ShareSectionProps) {
 
             <p>
                 <Button type="button" onClick={onReset}>
-                    <UiIcon name="mdi:backup-restore" className="icon" />
+                    <UiIcon icon={IconRestore} className="icon" />
                     {t("controls.share.startFromScratch")}
                 </Button>
             </p>

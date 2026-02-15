@@ -61,6 +61,35 @@ export function LegalPage({ kind, contact }: Props) {
                     </section>
 
                     <section className={styles.section}>
+                        <h2>Open-Source-Lizenzen</h2>
+                        <p>Diese Website verwendet Open-Source-Komponenten mit den folgenden Lizenzen:</p>
+                        <p>
+                            Tabler Icons: Copyright (c) Paweł Kuna, Lizenz MIT. Quelle:{" "}
+                            <a href="https://github.com/tabler/tabler-icons" target="_blank" rel="noreferrer">
+                                github.com/tabler/tabler-icons
+                            </a>
+                        </p>
+                        <p>
+                            Material Design Icons (MDI): Lizenz Apache License 2.0. Quelle:{" "}
+                            <a href="https://pictogrammers.com/library/mdi/" target="_blank" rel="noreferrer">
+                                pictogrammers.com/library/mdi
+                            </a>
+                        </p>
+                        <p>
+                            Philips Hue Icons (hass-hue-icons): Lizenz Apache License 2.0. Quelle:{" "}
+                            <a href="https://github.com/arallsopp/hass-hue-icons" target="_blank" rel="noreferrer">
+                                github.com/arallsopp/hass-hue-icons
+                            </a>
+                        </p>
+                        <p>
+                            IBM Plex Sans (Fontsource): Lizenz SIL Open Font License 1.1 (OFL-1.1). Quelle:{" "}
+                            <a href="https://fontsource.org/fonts/ibm-plex-sans" target="_blank" rel="noreferrer">
+                                fontsource.org/fonts/ibm-plex-sans
+                            </a>
+                        </p>
+                    </section>
+
+                    <section className={styles.section}>
                         <h2>Verantwortlich für Inhalte</h2>
                         <p>{contact.name}</p>
                         <p>

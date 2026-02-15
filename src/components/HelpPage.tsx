@@ -1,3 +1,4 @@
+import { IconAdjustments, IconDroplet, IconLibraryPhoto, IconPrinter } from "@tabler/icons-react";
 import { HelpSection } from "./HelpSection";
 import { MigrationNotice } from "./MigrationNotice";
 import { UiIcon } from "./UiIcon";
@@ -22,11 +23,11 @@ export function HelpPage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                 <p className="page__lead">{t("helpPage.lead")}</p>
                 <div className="page__cta">
                     <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
-                        <UiIcon name="mdi:tune-variant" className="icon" />
+                        <UiIcon icon={IconAdjustments} className="icon" />
                         {t("helpPage.ctaStart")}
                     </LinkButton>
                     <LinkButton href={galleryHref} onClick={onGoGallery}>
-                        <UiIcon name="mdi:image-multiple-outline" className="icon" />
+                        <UiIcon icon={IconLibraryPhoto} className="icon" />
                         {t("helpPage.ctaGallery")}
                     </LinkButton>
                 </div>
@@ -83,7 +84,7 @@ export function HelpPage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                     <div className="page__printer-grid">
                         <article className="page__printer-card">
                             <div className="page__printer-card-icon page__printer-card-icon--inkjet">
-                                <UiIcon name="mdi:water" className="icon" />
+                                <UiIcon icon={IconDroplet} className="icon" />
                             </div>
                             <h5>{t("helpPage.inkjet")}</h5>
                             <ul className="page__list">
@@ -95,7 +96,7 @@ export function HelpPage({ configureHref, galleryHref, onGoConfigure, onGoGaller
                         </article>
                         <article className="page__printer-card">
                             <div className="page__printer-card-icon page__printer-card-icon--laser">
-                                <UiIcon name="mdi:printer" className="icon" />
+                                <UiIcon icon={IconPrinter} className="icon" />
                             </div>
                             <h5>{t("helpPage.laser")}</h5>
                             <ul className="page__list">

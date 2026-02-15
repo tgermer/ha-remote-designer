@@ -1,4 +1,5 @@
 import type { RemoteTemplate } from "../../app/remotes";
+import { IconRestore } from "@tabler/icons-react";
 import { UiIcon } from "../UiIcon";
 import { Button } from "../ui/Button";
 import { useTranslation } from "react-i18next";
@@ -79,7 +80,7 @@ export function RemoteSection(props: RemoteSectionProps) {
             ) : null}
             <div className="row row--spaced">
                 <Button type="button" onClick={onResetRemote}>
-                    <UiIcon name="mdi:backup-restore" className="icon" />
+                    <UiIcon icon={IconRestore} className="icon" />
                     {t("controls.remote.reset")}
                 </Button>
             </div>
