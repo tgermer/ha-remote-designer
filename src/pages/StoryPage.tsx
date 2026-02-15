@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { RemoteTemplate } from "../app/remotes";
 import type { DesignState } from "../app/types";
-import { RemoteSvg } from "../render/RemoteSvg";
+// import { RemoteSvg } from "../render/RemoteSvg";
 import { UiIcon } from "../components/UiIcon";
 import { LinkButton } from "../components/ui/LinkButton";
 import "./StoryPage.css";
