@@ -52,7 +52,7 @@
   box-shadow: 0 2px 6px rgba(25, 25, 50, 0.08);
 }
 
-@media (max-width: 800px) {
+@media (max-width: 880px) {
   .header {
     justify-content: center;
   }

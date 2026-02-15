@@ -546,7 +546,7 @@ main {
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 880px) {
   .topnav {
     justify-content: space-between;
     margin: 0 auto;

@@ -24,27 +24,13 @@ type StorySection = {
 };
 
 const STORY_BLOCK_GROUPS: number[][][] = [
-    [
-        [0, 1],
-        [2],
-        [3, 4, 5, 6],
-        [7, 8, 9, 10],
-        [11, 12],
-    ],
-    [
-        [0, 1, 2, 3, 4],
-        [5],
-    ],
+    [[0, 1], [2], [3, 4, 5, 6], [7, 8, 9, 10], [11, 12]],
+    [[0, 1, 2, 3, 4], [5]],
     [
         [0, 1, 2],
         [3, 4, 5, 6],
     ],
-    [
-        [0],
-        [1],
-        [2, 3],
-        [4, 5, 6],
-    ],
+    [[0], [1], [2, 3], [4, 5, 6]],
     [[0, 1]],
 ];
 
@@ -52,9 +38,7 @@ function groupStoryBlocks(blocks: string[], sectionIndex: number) {
     const pattern = STORY_BLOCK_GROUPS[sectionIndex];
     if (!pattern) return blocks.map((line) => [line]);
 
-    return pattern
-        .map((group) => group.map((blockIndex) => blocks[blockIndex]).filter((line) => typeof line === "string"))
-        .filter((group) => group.length > 0);
+    return pattern.map((group) => group.map((blockIndex) => blocks[blockIndex]).filter((line) => typeof line === "string")).filter((group) => group.length > 0);
 }
 
 export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref, onGoConfigure, onGoGallery, problemRemote, problemFactoryState, problemLayoutState }) => {
@@ -93,10 +77,7 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                             <div className="storySection__content">
                                 <div className="storySection__blocks">
                                     {groupStoryBlocks(section.blocks, index).map((group, groupIndex) => (
-                                        <div
-                                            key={`${index}-group-${groupIndex}`}
-                                            className={`storySection__group${group.every((line) => line.trim().length <= 24) ? " storySection__group--compact" : ""}`}
-                                        >
+                                        <div key={`${index}-group-${groupIndex}`} className={`storySection__group${group.every((line) => line.trim().length <= 24) ? " storySection__group--compact" : ""}`}>
                                             {group.map((line, lineIndex) => (
                                                 <p key={`${index}-${groupIndex}-${lineIndex}`} className="storySection__line">
                                                     {line}
@@ -106,7 +87,7 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                                     ))}
                                 </div>
 
-                                {index === 0 && problemRemote && problemFactoryState && problemLayoutState ? (
+                                {/* {index === 0 && problemRemote && problemFactoryState && problemLayoutState ? (
                                     <aside className="storySection__compare" aria-label={t("storyPage.beforeAfter.ariaLabel")}>
                                         <div className="storyPreviewCard storyPreviewCard--factory">
                                             <h3 className="storyCompareCard__title">{t("storyPage.beforeAfter.factory")}</h3>
@@ -145,13 +126,31 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                                             </div>
                                         </div>
                                     </aside>
+                                ) : null} */}
+
+                                {index === 4 && problemRemote && problemFactoryState && problemLayoutState ? (
+                                    <aside className="storyPage__cta" aria-label={t("storyPage.cta.title")}>
+                                        <p className="storyPage__ctaTitle">{t("storyPage.cta.title")}</p>
+                                        <div className="page__cta storyPage__ctaActions">
+                                            <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
+                                                <UiIcon name="mdi:tune-variant" className="icon" />
+                                                {t("storyPage.cta.primary")}
+                                            </LinkButton>
+                                            {hasGalleryLink ? (
+                                                <LinkButton href={galleryHref} onClick={onGoGallery}>
+                                                    <UiIcon name="mdi:image-multiple-outline" className="icon" />
+                                                    {t("storyPage.cta.secondary")}
+                                                </LinkButton>
+                                            ) : null}
+                                        </div>
+                                    </aside>
                                 ) : null}
                             </div>
                         </section>
                     ))}
                 </div>
 
-                <section className="storyPage__cta" aria-label={t("storyPage.cta.title")}>
+                {/* <section className="storyPage__cta" aria-label={t("storyPage.cta.title")}>
                     <p className="storyPage__ctaTitle">{t("storyPage.cta.title")}</p>
                     <div className="page__cta storyPage__ctaActions">
                         <LinkButton variant="primary" href={configureHref} onClick={onGoConfigure}>
@@ -165,7 +164,7 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                             </LinkButton>
                         ) : null}
                     </div>
-                </section>
+                </section> */}
             </div>
         </section>
     );

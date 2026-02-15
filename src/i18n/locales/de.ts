@@ -133,7 +133,7 @@ export const deTranslation = {
         storyTitle: "Story - ClearControl.",
     },
     storyPage: {
-        pageLabel: "Story",
+        pageLabel: "Die Story hinter ClearControl",
         titleLine1: "Zu viele Tasten.",
         titleLine2: "Zu wenig Klarheit.",
         lead: "Klarheit für Smart-Home-Steuerungen.",

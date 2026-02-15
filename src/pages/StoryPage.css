@@ -31,8 +31,10 @@
 
 .storyHero__lead {
   margin: 0;
-  font-size: clamp(1.1rem, 2vw, 1.45rem);
-  line-height: 1.45;
+  /* font-size: clamp(1.1rem, 2vw, 1.45rem); */
+  font-size: 1.05rem;
+  /* line-height: 1.45; */
+  line-height: 1.5;
   color: var(--ink-muted);
   max-width: 40rem;
 }
@@ -169,7 +171,8 @@
 }
 
 .storyPage__cta {
-  margin: 3.7rem 1.5rem 0;
+  /* margin: 3.7rem 1.5rem 0; */
+  margin-top: 2.5rem;
   padding: 1.25rem 1.35rem;
   border: 1px solid rgba(109, 92, 198, 0.24);
   border-radius: 16px;
@@ -216,6 +219,6 @@
   }
 
   .storyPage__cta {
-    margin: 2.7rem 1rem 0;
+    /* margin: 2.7rem 1rem 0; */
   }
 }
