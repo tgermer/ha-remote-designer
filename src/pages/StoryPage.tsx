@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { IconAdjustments, IconPhoto } from "@tabler/icons-react";
+import { IconAdjustments, IconLibraryPhoto } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import type { RemoteTemplate } from "../app/remotes";
 import type { DesignState } from "../app/types";
@@ -160,7 +160,7 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                                             </LinkButton>
                                             {hasGalleryLink ? (
                                                 <LinkButton href={galleryHref} onClick={onGoGallery}>
-                                                    <UiIcon icon={IconPhoto} className="icon" />
+                                                    <UiIcon icon={IconLibraryPhoto} className="icon" />
                                                     {t("storyPage.cta.secondary")}
                                                 </LinkButton>
                                             ) : null}
@@ -181,7 +181,7 @@ export const StoryPage: React.FC<StoryPageProps> = ({ configureHref, galleryHref
                         </LinkButton>
                         {hasGalleryLink ? (
                             <LinkButton href={galleryHref} onClick={onGoGallery}>
-                                <UiIcon icon={IconPhoto} className="icon" />
+                                <UiIcon icon={IconLibraryPhoto} className="icon" />
                                 {t("storyPage.cta.secondary")}
                             </LinkButton>
                         ) : null}
