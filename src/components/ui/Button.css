@@ -46,24 +46,24 @@ button.btn {
 .btn--danger {
   color: var(--danger);
   border-color: var(--danger-border);
-  background: linear-gradient(180deg, var(--surface-white), #ffeef0);
+  background: linear-gradient(180deg, var(--surface-white), var(--secondary-surface));
 }
 
 .btn--primary {
   color: var(--surface-white);
-  border-color: rgba(99, 82, 178, 0.6);
-  background: linear-gradient(180deg, #9c89e0, #7766c9);
-  box-shadow: 0 10px 20px rgba(90, 72, 160, 0.22);
+  border-color: var(--accent-line-strong);
+  background: linear-gradient(180deg, var(--accent-strong), var(--accent));
+  box-shadow: var(--shadow-accent);
   font-weight: var(--font-weight-semibold);
 }
 
 button:hover,
 .btn:hover {
-  background: linear-gradient(180deg, var(--surface-white), rgba(236, 235, 252, 0.95));
+  background: linear-gradient(180deg, var(--surface-white), var(--surface-elevated-strong));
 }
 
 .btn.btn--primary:hover {
-  background: linear-gradient(180deg, #a898e6, #6f5fc2);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 72%, var(--surface-white)), var(--accent));
 }
 
 button:disabled {

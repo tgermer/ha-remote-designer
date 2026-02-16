@@ -357,6 +357,29 @@ function writeCommunityDrafts(drafts: CommunityDraftEntry[]) {
     }
 }
 
+function buildHighlightDataUrl(color: string, variant: "default" | "alt") {
+    const accent = color || "#00a003";
+    const svg =
+        variant === "default"
+            ? `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 28' preserveAspectRatio='none'><path d='M3 15 C 24 20, 50 9, 77 14 C 103 19, 129 10, 157 13' fill='none' stroke='${accent}' stroke-opacity='0.53' stroke-width='8' stroke-linecap='round'/><path d='M4 16 C 26 21, 52 10, 78 15 C 105 19, 131 11, 156 14' fill='none' stroke='${accent}' stroke-opacity='0.3' stroke-width='5.5' stroke-linecap='round'/></svg>`
+            : `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 28' preserveAspectRatio='none'><path d='M3 16 C 22 11, 49 21, 77 15 C 104 10, 131 20, 157 14' fill='none' stroke='${accent}' stroke-opacity='0.46' stroke-width='7' stroke-linecap='round'/><path d='M4 17 C 24 12, 50 22, 78 16 C 106 11, 132 21, 156 15' fill='none' stroke='${accent}' stroke-opacity='0.24' stroke-width='5' stroke-linecap='round'/></svg>`;
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
+function resolveCssColorValue(varName: string, fallback = "#00a003") {
+    if (typeof document === "undefined") return fallback;
+    const probe = document.createElement("span");
+    probe.style.color = `var(${varName})`;
+    probe.style.position = "absolute";
+    probe.style.visibility = "hidden";
+    probe.style.pointerEvents = "none";
+    probe.style.inset = "0";
+    document.body.appendChild(probe);
+    const resolved = getComputedStyle(probe).color.trim();
+    probe.remove();
+    return resolved || fallback;
+}
+
 /* --------------------------------- App ---------------------------------- */
 
 export default function App() {
@@ -416,6 +439,24 @@ export default function App() {
         document.addEventListener("click", onDocumentClick);
         return () => {
             document.removeEventListener("click", onDocumentClick);
+        };
+    }, []);
+
+    useEffect(() => {
+        const root = document.documentElement;
+        const applyHighlights = () => {
+            const accent = resolveCssColorValue("--accent", "#00a003");
+            root.style.setProperty("--text-highlight-svg", buildHighlightDataUrl(accent, "default"));
+            root.style.setProperty("--text-highlight-alt-svg", buildHighlightDataUrl(accent, "alt"));
+        };
+
+        applyHighlights();
+
+        const observer = new MutationObserver(() => applyHighlights());
+        observer.observe(root, { attributes: true, attributeFilter: ["class", "style"] });
+
+        return () => {
+            observer.disconnect();
         };
     }, []);
 

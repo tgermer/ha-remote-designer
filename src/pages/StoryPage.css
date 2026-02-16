@@ -127,11 +127,11 @@
 }
 
 .storyPreviewCard {
-  border: 1px solid rgba(37, 37, 69, 0.14);
+  border: 1px solid var(--stroke);
   border-radius: 14px;
   padding: var(--space-6);
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 8px 18px rgba(25, 25, 50, 0.08);
+  background: var(--surface);
+  box-shadow: var(--shadow-tight);
 }
 
 .storyPreviewCard--clarified {
@@ -157,8 +157,8 @@
 .storyPreviewCard__remote {
   height: 188px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(37, 37, 69, 0.1);
+  background: var(--surface-border);
+  border: 1px solid var(--stroke-soft);
   display: flex;
   align-items: center;
   justify-content: center;
