@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://clearcontrol.de/</loc>
+    <loc>https://clearcontrol.de</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -26,12 +26,17 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://clearcontrol.de/?page=impressum</loc>
+    <loc>https://clearcontrol.de/story</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://clearcontrol.de/impressum</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://clearcontrol.de/?page=datenschutz</loc>
+    <loc>https://clearcontrol.de/datenschutz</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
