@@ -173,11 +173,10 @@ textarea:focus-visible {
   Breakpoint map
   - 1320px: OG-Lab alignment
   - 1080px: Community grid -> single column
-  - 960px: Home hero collapses
   - 900px: Main workspace + mobile preview overlay
-  - 880px: Top navigation mobile menu
+  - 900px: Top navigation and home hero collapse
   - 720px: Form/table/content compaction
-  - 550px: Home remote stack (vertical)
+  - 720px: Home remote stack (vertical)
   - 480px: Iconpicker compact controls
 */
 
@@ -593,7 +592,7 @@ main {
   }
 }
 
-@media (max-width: 880px) {
+@media (max-width: 900px) {
   .topnav {
     justify-content: space-between;
     margin: 0 auto;
@@ -617,7 +616,7 @@ main {
     padding: 0.5rem;
     border-radius: 16px;
     border: 1px solid var(--stroke);
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--surface-elevated);
     box-shadow: 0 12px 24px rgba(25, 25, 50, 0.15);
     z-index: 10030;
   }
@@ -665,9 +664,9 @@ main {
   }
 
   .topnav__link:hover {
-  background: var(--accent);
-  color: white
-}
+    background: var(--accent);
+    color: var(--surface-white);
+  }
 }
 
 /* Pages */
@@ -894,7 +893,7 @@ main {
 
 
 
-@media (max-width: 960px) {
+@media (max-width: 900px) {
   .homeHero {
     padding: 3rem 1.75rem;
   }
@@ -954,7 +953,7 @@ main {
   }
 }
 
-@media (max-width: 550px) {
+@media (max-width: 720px) {
 
   .homeRemoteStack {
     width: 100%;
@@ -1284,16 +1283,6 @@ main {
   letter-spacing: 0.08em;
   color: var(--ink-muted);
   padding: 0.2rem;
-}
-
-@media (max-width: 720px) {
-  .communityButtons__row {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .communityButtons__row--head {
-    display: none;
-  }
 }
 
 .communityDraftHeader {
