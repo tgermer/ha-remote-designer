@@ -1235,9 +1235,13 @@ main {
 .page__list {
   margin: var(--space-0);
   padding-left: 1.1rem;
-  color: var(--ink-muted);
+  color: var(--ink);
   display: grid;
   gap: 0.35rem;
+}
+
+.page__list li::marker {
+  color: currentColor;
 }
 
 .communityGrid {
