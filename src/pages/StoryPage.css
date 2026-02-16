@@ -13,14 +13,14 @@
   display: grid;
   gap: 1.1rem;
   margin-bottom: 2.2rem;
-  padding: 0;
+  padding: var(--space-0);
 }
 
 .storyHero__title {
   display: grid;
   gap: 0.35rem;
-  margin: 0;
-  font-size: clamp(1.45rem, 2.7vw, 2.05rem);
+  margin: var(--space-0);
+  font-size: var(--text-display-md);
   line-height: 1.14;
   letter-spacing: -0.02em;
 }
@@ -31,9 +31,9 @@
 }
 
 .storyHero__lead {
-  margin: 0;
+  margin: var(--space-0);
   /* font-size: clamp(1.1rem, 2vw, 1.45rem); */
-  font-size: 1.05rem;
+  font-size: var(--text-body);
   /* line-height: 1.45; */
   line-height: 1.5;
   color: var(--ink-muted);
@@ -43,7 +43,7 @@
 .storyPage__sections {
   display: grid;
   gap: 2.8rem;
-  padding: 0;
+  padding: var(--space-0);
 }
 
 .storySection {
@@ -61,7 +61,7 @@
 }
 
 .storySection__index {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   letter-spacing: 0.16em;
   color: color-mix(in srgb, var(--accent) 56%, white);
   font-weight: var(--font-weight-semibold);
@@ -69,8 +69,8 @@
 }
 
 .storySection__eyebrow {
-  margin: 0;
-  font-size: 0.72rem;
+  margin: var(--space-0);
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--accent);
@@ -78,8 +78,8 @@
 }
 
 .storySection__title {
-  margin: 0;
-  font-size: clamp(1.35rem, 2.2vw, 1.95rem);
+  margin: var(--space-0);
+  font-size: var(--text-display-md);
   line-height: 1.12;
   letter-spacing: -0.02em;
 }
@@ -108,8 +108,8 @@
 }
 
 .storySection__line {
-  margin: 0;
-  font-size: 1.03rem;
+  margin: var(--space-0);
+  font-size: var(--text-body);
   line-height: 1.56;
   color: color-mix(in srgb, var(--ink) 92%, white);
   max-width: 42rem;
@@ -129,7 +129,7 @@
 .storyPreviewCard {
   border: 1px solid rgba(37, 37, 69, 0.14);
   border-radius: 14px;
-  padding: 0.85rem 0.95rem 0.95rem;
+  padding: var(--space-6);
   background: rgba(255, 255, 255, 0.72);
   box-shadow: 0 8px 18px rgba(25, 25, 50, 0.08);
 }
@@ -141,7 +141,7 @@
 
 .storyCompareCard__title {
   margin: 0 0 0.35rem;
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-muted);
@@ -149,7 +149,7 @@
 
 .storyCompareCard__body {
   margin: 0 0 0.55rem;
-  font-size: 0.92rem;
+  font-size: var(--text-base);
   line-height: 1.45;
   color: var(--ink-muted);
 }
@@ -183,8 +183,8 @@
 }
 
 .storyPage__ctaTitle {
-  margin: 0;
-  font-size: clamp(1.16rem, 2.1vw, 1.45rem);
+  margin: var(--space-0);
+  font-size: var(--text-display-sm);
 }
 
 .storyPage__ctaActions {
@@ -198,7 +198,7 @@
 
   .storyHero,
   .storyPage__sections {
-    padding: 0;
+    padding: var(--space-0);
   }
 
   .storyHero {

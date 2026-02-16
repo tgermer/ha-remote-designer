@@ -3,7 +3,7 @@
   border-top: 1px solid var(--stroke);
   padding-top: 0.75rem;
   margin-top: 0.5rem;
-  font-size: 0.9rem;
+  font-size: var(--text-base);
   color: var(--ink-muted);
 }
 
@@ -16,7 +16,7 @@
 
 .small {
   margin-top: 0.25rem;
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   opacity: 0.85;
 }
 

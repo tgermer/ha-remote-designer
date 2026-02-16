@@ -10,7 +10,7 @@ button {
   min-height: 36px;
   line-height: 1;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: var(--text-base);
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.003em;
 }
@@ -29,7 +29,7 @@ button {
   cursor: pointer;
   min-height: 36px;
   font-family: inherit;
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   line-height: 1.1;
   font-weight: var(--font-weight-medium);
   letter-spacing: 0.003em;

@@ -9,7 +9,7 @@
 }
 
 .hero {
-  padding: 0;
+  padding: var(--space-0);
 }
 
 .content {
@@ -21,7 +21,7 @@
 }
 
 .section h2 {
-  font-size: 1.2rem;
+  font-size: var(--text-lg);
   margin: 0 0 0.5rem;
 }
 
@@ -36,6 +36,6 @@
 
 @media (max-width: 720px) {
   .page {
-    padding: 0 1rem 1.5rem;
+    padding: var(--space-0) var(--space-0) 1.5rem;
   }
 }
