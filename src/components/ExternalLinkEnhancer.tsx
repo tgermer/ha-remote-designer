@@ -38,9 +38,18 @@ function markExternalLinks(root: ParentNode) {
                 .split(/\s+/)
                 .map((part) => part.trim())
                 .filter(Boolean);
-            if (!relParts.includes("noopener")) relParts.push("noopener");
-            if (!relParts.includes("noreferrer")) relParts.push("noreferrer");
-            anchor.setAttribute("rel", relParts.join(" "));
+            let changed = false;
+            if (!relParts.includes("noopener")) {
+                relParts.push("noopener");
+                changed = true;
+            }
+            if (!relParts.includes("noreferrer")) {
+                relParts.push("noreferrer");
+                changed = true;
+            }
+            if (changed) {
+                anchor.setAttribute("rel", relParts.join(" "));
+            }
         }
     });
 }
