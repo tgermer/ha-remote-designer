@@ -766,6 +766,7 @@ main {
 
 .page__hero--compact {
   padding: var(--space-0);
+  margin-bottom: var(--space-6);
 }
 
 .homeHero {
@@ -1545,6 +1546,7 @@ main {
 
   .page__hero--compact {
     padding: var(--space-0);
+    margin-bottom: var(--space-6);
   }
 
   .page__steps {
