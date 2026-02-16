@@ -63,6 +63,9 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
                     long: "mdi:lightbulb-off-outline",
                 },
             },
+            options: {
+                showTapMarkersAlways: false,
+            },
         },
         {
             meta: {
@@ -204,7 +207,7 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
                     },
                 },
                 options: {
-                    showTapMarkersAlways: true,
+                    showTapMarkersAlways: false,
                     showTapDividers: true,
                     showRemoteOutline: true,
                     showButtonOutlines: true,
