@@ -1,17 +1,17 @@
 button {
   padding: 0 0.75rem;
   border-radius: 999px;
-  border: 1px solid rgba(37, 37, 69, 0.16);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 244, 255, 0.85));
+  border: 1px solid var(--stroke-muted);
+  background: linear-gradient(180deg, var(--surface-elevated), var(--surface-elevated-soft));
   color: var(--ink);
-  box-shadow: 0 6px 16px rgba(25, 25, 50, 0.14);
+  box-shadow: var(--shadow-button);
   backdrop-filter: blur(10px) saturate(130%);
   cursor: pointer;
   min-height: 36px;
   line-height: 1;
   font-family: inherit;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   letter-spacing: 0.003em;
 }
 
@@ -21,17 +21,17 @@ button {
   gap: 0.35rem;
   padding: 0 0.75rem;
   border-radius: 999px;
-  border: 1px solid rgba(37, 37, 69, 0.16);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 244, 255, 0.85));
+  border: 1px solid var(--stroke-muted);
+  background: linear-gradient(180deg, var(--surface-elevated), var(--surface-elevated-soft));
   color: var(--ink);
-  box-shadow: 0 6px 16px rgba(25, 25, 50, 0.14);
+  box-shadow: var(--shadow-button);
   backdrop-filter: blur(10px) saturate(130%);
   cursor: pointer;
   min-height: 36px;
   font-family: inherit;
   font-size: 0.85rem;
   line-height: 1.1;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   letter-spacing: 0.003em;
   text-decoration: none;
 }
@@ -44,22 +44,22 @@ button.btn {
 }
 
 .btn--danger {
-  color: #b1262b;
-  border-color: rgba(177, 38, 43, 0.35);
-  background: linear-gradient(180deg, #ffffff, #ffeef0);
+  color: var(--danger);
+  border-color: var(--danger-border);
+  background: linear-gradient(180deg, var(--surface-white), #ffeef0);
 }
 
 .btn--primary {
-  color: #fff;
+  color: var(--surface-white);
   border-color: rgba(99, 82, 178, 0.6);
   background: linear-gradient(180deg, #9c89e0, #7766c9);
   box-shadow: 0 10px 20px rgba(90, 72, 160, 0.22);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 button:hover,
 .btn:hover {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(236, 235, 252, 0.95));
+  background: linear-gradient(180deg, var(--surface-white), rgba(236, 235, 252, 0.95));
 }
 
 .btn.btn--primary:hover {

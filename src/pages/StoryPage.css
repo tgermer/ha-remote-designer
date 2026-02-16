@@ -51,7 +51,7 @@
   grid-template-columns: minmax(200px, 0.6fr) minmax(0, 1fr);
   gap: 1.8rem;
   align-items: start;
-  border-top: 1px solid rgba(37, 37, 69, 0.11);
+  border-top: 1px solid var(--stroke);
   padding-top: 1.95rem;
 }
 
@@ -99,12 +99,12 @@
   display: grid;
   gap: 0.42rem;
   padding: 0.2rem 0 0.2rem 0.9rem;
-  border-left: 2px solid rgba(109, 92, 198, 0.18);
+  border-left: 2px solid var(--accent-line-soft);
 }
 
 .storySection__group--compact {
   gap: 0.26rem;
-  border-left-color: rgba(109, 92, 198, 0.35);
+  border-left-color: var(--accent-line-strong);
 }
 
 .storySection__line {
@@ -135,7 +135,7 @@
 }
 
 .storyPreviewCard--clarified {
-  border-color: rgba(109, 92, 198, 0.28);
+  border-color: var(--accent-border-muted);
   background: color-mix(in srgb, var(--accent-soft) 22%, white);
 }
 
@@ -175,9 +175,9 @@
   /* margin: 3.7rem 1.5rem 0; */
   margin-top: 2.5rem;
   padding: 1.25rem 1.35rem;
-  border: 1px solid rgba(109, 92, 198, 0.24);
+  border: 1px solid var(--accent-border-soft);
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.84) 0%, rgba(109, 92, 198, 0.08) 120%);
+  background: linear-gradient(180deg, var(--surface-strong) 0%, var(--accent-tint-soft) 120%);
   display: grid;
   gap: 0.95rem;
 }
