@@ -15,6 +15,7 @@ import { CommunityRemotePage } from "./components/CommunityRemotePage";
 import { OgImageLabPage } from "./components/OgImageLabPage";
 import { StoryPage } from "./pages/StoryPage";
 import { MigrationNotice } from "./components/MigrationNotice";
+import { ExternalLinkEnhancer } from "./components/ExternalLinkEnhancer";
 import { EditorLayout } from "./components/layout/EditorLayout";
 import { GalleryLayout } from "./components/layout/GalleryLayout";
 import { ControlsLayout } from "./components/layout/ControlsLayout";
@@ -1839,6 +1840,7 @@ export default function App() {
 
     return (
         <>
+            <ExternalLinkEnhancer />
             <main className="app" style={previewSpacingStyle}>
                 <SiteHeader isAdmin={isAdmin} />
 
@@ -2091,8 +2093,18 @@ export default function App() {
                 )}
 
                 <SiteFooter
+                    homeHref={getViewHref("home")}
+                    configureHref={getViewHref("configure")}
+                    galleryHref={getViewHref("gallery")}
+                    helpHref={getViewHref("help")}
+                    communityHref={getViewHref("community")}
+                    storyHref={getViewHref("story")}
                     impressumHref={getLegalHref("impressum")}
                     datenschutzHref={getLegalHref("datenschutz")}
+                    onOpenView={(next) => {
+                        goTo(next);
+                        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+                    }}
                     onOpenLegal={(page) => {
                         setLegalPage(page);
                         setUrlLegalPage(page);
