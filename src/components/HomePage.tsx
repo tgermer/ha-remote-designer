@@ -180,6 +180,7 @@ export function HomePage({ configureHref, galleryHref, onGoConfigure, onGoGaller
             </header>
 
             <section className="homeStory">
+                <h2 className="visually-hidden">{t("home.story.sectionTitle")}</h2>
                 {homeStorySections.map((section) => (
                     <div className="homeStatement" key={section.id}>
                         <p className="homeStatement__label">{section.label}</p>

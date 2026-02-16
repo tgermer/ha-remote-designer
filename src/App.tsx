@@ -34,8 +34,6 @@ import { Button } from "./components/ui/Button";
 
 import { loadFromHash, saveToHash } from "./app/urlState";
 import { serializeSvg, downloadTextFile } from "./app/exportSvg";
-import { svgTextToPngBlobMm, downloadBlob } from "./app/exportPng";
-import { downloadPdfFromSvg, downloadPdfFromSvgs } from "./app/exportPdf";
 import { readSavedDesigns, writeSavedDesigns, newId, nameExistsForRemote, withTimestamp, normalizeName, encodeSavedDesignsExport, parseSavedDesignsImport, type SavedDesign } from "./app/savedDesigns";
 import { A4_SIZE_MM, LETTER_SIZE_MM, getStickerSheetLayout } from "./app/stickerSheet";
 
@@ -46,7 +44,6 @@ import { initial, normalizeState, buildStateFromExample, tapLabel, stateUsesHueI
 import { createCommunityDraft, buildCommunityTemplate, buildCommunityPayload } from "./app/communityUtils";
 import type { CommunityButtonDraft, CommunityDraft, CommunityDraftEntry } from "./app/communityUtils";
 
-import JSZip from "jszip";
 import { init as plausibleInit, track as plausibleTrack } from "@plausible-analytics/tracker";
 import { useTranslation } from "react-i18next";
 
@@ -183,6 +180,10 @@ const COMMUNITY_DRAFTS_KEY = "ha-remote-designer:saved-community-drafts:v1";
 const LANGUAGE_SESSION_EVENT_KEY = "ha-remote-designer:plausible-language-session:v1";
 const LANGUAGE_SOURCE_KEY = "ha-remote-designer:lang-source";
 const LANGUAGE_CHANGE_SOURCE_KEY = "ha-remote-designer:lang-change-source";
+
+const loadPngExportModule = () => import("./app/exportPng");
+const loadPdfExportModule = () => import("./app/exportPdf");
+const loadJSZip = () => import("jszip").then((module) => module.default);
 
 /* ------------------------------- helpers -------------------------------- */
 
@@ -1573,30 +1574,35 @@ export default function App() {
     const exportZip = async () => {
         if (isZipping) return;
         setIsZipping(true);
+        try {
+            const JSZip = await loadJSZip();
+            const { svgTextToPngBlobMm, downloadBlob } = await loadPngExportModule();
+            const zip = new JSZip();
+            const folder = zip.folder(exportBase) ?? zip;
 
-        const zip = new JSZip();
-        const folder = zip.folder(exportBase) ?? zip;
+            for (const id of buttonIds) {
+                setExportButtonId(id);
+                await nextFrame();
+                await nextFrame();
 
-        for (const id of buttonIds) {
-            setExportButtonId(id);
-            await nextFrame();
-            await nextFrame();
+                const svg = exportButtonHostRef.current?.querySelector("svg");
+                if (!svg) continue;
 
-            const svg = exportButtonHostRef.current?.querySelector("svg");
-            if (!svg) continue;
+                const png = await svgTextToPngBlobMm({
+                    svgText: serializeSvg(svg),
+                    size: { widthMm: labelWidthMm, heightMm: labelHeightMm, dpi },
+                });
 
-            const png = await svgTextToPngBlobMm({
-                svgText: serializeSvg(svg),
-                size: { widthMm: labelWidthMm, heightMm: labelHeightMm, dpi },
-            });
+                folder.file(`${id}.png`, png);
+            }
 
-            folder.file(`${id}.png`, png);
+            setExportButtonId(null);
+            downloadBlob(`${exportBase}-labels.zip`, await zip.generateAsync({ type: "blob" }));
+            trackEvent("export", { type: "labels_zip", remote_id: state.remoteId });
+        } finally {
+            setExportButtonId(null);
+            setIsZipping(false);
         }
-
-        setExportButtonId(null);
-        downloadBlob(`${exportBase}-labels.zip`, await zip.generateAsync({ type: "blob" }));
-        setIsZipping(false);
-        trackEvent("export", { type: "labels_zip", remote_id: state.remoteId });
     };
 
     const exportButton = exportButtonId ? (isStickerSheet ? { id: exportButtonId, xMm: 0, yMm: 0, wMm: o.labelWidthMm, hMm: o.labelHeightMm, rMm: o.labelCornerMm } : (template.buttons.find((b) => b.id === exportButtonId) ?? null)) : null;
@@ -1606,6 +1612,7 @@ export default function App() {
             const svg = exportRemoteHostRef.current?.querySelector("svg");
             if (!svg) return;
             const svgText = serializeSvg(svg).replace(/^<\?xml[^>]*>\s*/i, "");
+            const { downloadPdfFromSvg } = await loadPdfExportModule();
             await downloadPdfFromSvg({
                 filename: `${exportBase}-a4`,
                 svgText,
@@ -1633,6 +1640,7 @@ export default function App() {
         setStickerPageIndex(prevPage);
 
         if (!svgTexts.length) return;
+        const { downloadPdfFromSvgs } = await loadPdfExportModule();
         await downloadPdfFromSvgs({
             filename: `${exportBase}-${o.sheetSize.toLowerCase()}`,
             svgTexts,
@@ -1647,6 +1655,8 @@ export default function App() {
         const layout = stickerLayout;
         if (!layout || layout.maxCount <= 0 || layout.pages <= 1) return;
 
+        const JSZip = await loadJSZip();
+        const { downloadBlob } = await loadPngExportModule();
         const totalPages = Math.max(1, layout.pages);
         const zip = new JSZip();
         const folder = zip.folder(exportBase) ?? zip;

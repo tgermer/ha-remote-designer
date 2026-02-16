@@ -45,6 +45,7 @@ export const enTranslation = {
             customCardSubtitle: "Your clarified layout",
         },
         story: {
+            sectionTitle: "Why ClearControl",
             whatDesignTitle: "Design for clarity",
             whatDesignDescription: "Create structured, easy-to-read labels for switches, remotes, and scenes — tailored to your real setup.",
             howWorksTitle: "Simple process",
