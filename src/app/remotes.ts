@@ -364,11 +364,11 @@ const BASE_REMOTES: RemoteDefinition[] = [
     {
         id: "shelly_blu_wall_4_button",
         name: "Shelly BLU Wall 4 Button",
-        description: "Community submission",
+        description: "Community submission by Manfred",
         isDraft: false,
         isCommunity: true,
         tags: ["community", "Shelly"],
-        notes: "Shelly BLU Wall Switch 4",
+        notes: "Shelly BLU Wall Switch 4. Community submission by Manfred.",
         manufacturerUrl: "https://www.shelly.com/de/products/shelly-blu-wall-switch-4-stand-alone-bundle",
         imageUrl: null,
         appVersion: "dev",
