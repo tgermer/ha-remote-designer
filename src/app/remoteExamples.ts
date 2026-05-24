@@ -646,6 +646,166 @@ export const REMOTE_EXAMPLES: Partial<Record<RemoteId, ExampleEntry[]>> = {
             },
         },
     ],
+    "HmIP-WRC6": [
+        {
+            meta: {
+                id: "8e7f39ee-e316-4547-8f03-c4c59fe4ad1e",
+                userExample: true,
+                allowGallery: true,
+                savedName: null,
+                savedId: null,
+                exportedAt: "2026-04-10T18:07:58.027Z",
+                consentId: "consent_8e7f39ee-e316-4547-8f03-c4c59fe4ad1e",
+                appVersion: "dev",
+                stateSig:
+                    '{"remoteId":"HmIP-WRC6","tapsEnabled":["single"],"buttonConfigs":{"button_1":{"icons":{"single":"mdi:window-shutter-open"},"texts":{},"strike":{},"iconColors":{}},"button_2":{"icons":{"single":"mdi:window-shutter"},"texts":{},"strike":{},"iconColors":{}},"button_3":{"icons":{"single":"mdi:arrow-up-bold-outline"},"texts":{},"strike":{},"iconColors":{}},"button_4":{"icons":{"single":"mdi:arrow-down-bold-outline"},"texts":{},"strike":{},"iconColors":{}},"button_5":{"icons":{"single":"mdi:lightbulb-group-outline"},"texts":{},"strike":{},"iconColors":{}},"button_6":{"icons":{"single":"mdi:lightbulb-group"},"texts":{},"strike":{},"iconColors":{}}},"options":{"showTapMarkersAlways":false,"showTapDividers":true,"showRemoteOutline":true,"showButtonOutlines":true,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":true,"fixedIconMm":6.5,"iconColor":"#000000","tapMarkerFill":"outline","tapMarkerColorMode":"icon","labelOutlineColor":"#bdbdbd","labelOutlineStrokeMm":0.2,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
+            },
+            state: {
+                remoteId: "HmIP-WRC6",
+                tapsEnabled: ["single"],
+                buttonConfigs: {
+                    button_1: {
+                        icons: {
+                            single: "mdi:window-shutter-open",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                    button_2: {
+                        icons: {
+                            single: "mdi:window-shutter",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                    button_3: {
+                        icons: {
+                            single: "mdi:arrow-up-bold-outline",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                    button_4: {
+                        icons: {
+                            single: "mdi:arrow-down-bold-outline",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                    button_5: {
+                        icons: {
+                            single: "mdi:lightbulb-group-outline",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                    button_6: {
+                        icons: {
+                            single: "mdi:lightbulb-group",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                },
+                options: {
+                    showTapMarkersAlways: false,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showCutouts: true,
+                    showGuides: false,
+                    showScaleBar: true,
+                    autoIconSizing: true,
+                    fixedIconMm: 6.5,
+                    iconColor: "#000000",
+                    tapMarkerFill: "outline",
+                    tapMarkerColorMode: "icon",
+                    labelOutlineColor: "#bdbdbd",
+                    labelOutlineStrokeMm: 0.2,
+                },
+            },
+        },
+    ],
+    shelly_blu_wall_4_button: [
+        {
+            meta: {
+                id: "e2bd7a7d-4936-4c81-98a7-44d76877e679",
+                userExample: true,
+                allowGallery: true,
+                savedName: "Shelly BLU Wall Button 4",
+                savedId: "866ac9ee-3c58-464f-8894-6f2aef5a250a",
+                exportedAt: "2026-05-23T18:03:04.939Z",
+                consentId: "consent_e2bd7a7d-4936-4c81-98a7-44d76877e679",
+                appVersion: "dev",
+                stateSig:
+                    '{"remoteId":"shelly_blu_wall_4_button","tapsEnabled":["single","double","long"],"buttonConfigs":{"button_1":{"icons":{"single":"mdi:window-shutter-alert","double":"mdi:window-shutter-open","long":"mdi:window-shutter"},"texts":{},"strike":{},"iconColors":{}},"button_2":{"icons":{"single":"mdi:window-close","double":"mdi:window-open","long":"mdi:window-closed"},"texts":{},"strike":{},"iconColors":{}},"button_4":{"icons":{},"texts":{},"strike":{},"iconColors":{}},"button_3":{"icons":{"single":"mdi:window-close","double":"mdi:window-open","long":"mdi:window-closed"},"texts":{},"strike":{},"iconColors":{}}},"options":{"showTapMarkersAlways":true,"showTapDividers":true,"showRemoteOutline":false,"showButtonOutlines":false,"showCutouts":true,"showGuides":false,"showScaleBar":true,"autoIconSizing":false,"fixedIconMm":8,"iconColor":"#000000","tapMarkerFill":"outline","tapMarkerColorMode":"icon","labelOutlineColor":"#ccc","labelOutlineStrokeMm":0.1,"labelWidthMm":40,"labelHeightMm":30,"labelCornerMm":2,"labelCount":6,"sheetSize":"A4","sheetMarginXMm":8,"sheetMarginYMm":8,"sheetGapMm":3}}',
+            },
+            state: {
+                remoteId: "shelly_blu_wall_4_button",
+                tapsEnabled: ["single", "double", "long"],
+                buttonConfigs: {
+                    button_1: {
+                        icons: {
+                            single: "mdi:window-shutter-alert",
+                            double: "mdi:window-shutter-open",
+                            long: "mdi:window-shutter",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                    button_2: {
+                        icons: {
+                            single: "mdi:window-close",
+                            double: "mdi:window-open",
+                            long: "mdi:window-closed",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                    button_4: {
+                        icons: {},
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                    button_3: {
+                        icons: {
+                            single: "mdi:window-close",
+                            double: "mdi:window-open",
+                            long: "mdi:window-closed",
+                        },
+                        texts: {},
+                        strike: {},
+                        iconColors: {},
+                    },
+                },
+                options: {
+                    showTapMarkersAlways: true,
+                    showTapDividers: true,
+                    showRemoteOutline: true,
+                    showButtonOutlines: true,
+                    showCutouts: true,
+                    showGuides: false,
+                    showScaleBar: true,
+                    autoIconSizing: false,
+                    fixedIconMm: 8,
+                    iconColor: "#000000",
+                    tapMarkerFill: "outline",
+                    tapMarkerColorMode: "icon",
+                    labelOutlineColor: "#ccc",
+                    labelOutlineStrokeMm: 0.1,
+                },
+            },
+        },
+    ],
     tuya_ts0044: [
         {
             id: "factory",
