@@ -132,9 +132,9 @@ function getIconName(icon: string) {
 const LEGAL_CONTACT = {
     projectName: "ClearControl.",
     name: "Tristan Germer",
-    addressLines: ["Petrarcatraße 32", "80933 München", "Deutschland"],
+    addressLines: ["Petrarcastraße 32", "80933 München", "Deutschland"],
     email: "info@clearcontrol.de",
-    updatedAt: "25. Januar 2026",
+    updatedAt: "31. Mai 2026",
 };
 
 const SHARE_MAIL_SUBJECT = "Shared remote configuration";
