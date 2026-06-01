@@ -360,10 +360,7 @@ function writeCommunityDrafts(drafts: CommunityDraftEntry[]) {
 
 function buildHighlightDataUrl(color: string, variant: "default" | "alt") {
     const accent = color || "#00a003";
-    const svg =
-        variant === "default"
-            ? `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 28' preserveAspectRatio='none'><path d='M3 15 C 24 20, 50 9, 77 14 C 103 19, 129 10, 157 13' fill='none' stroke='${accent}' stroke-opacity='0.53' stroke-width='8' stroke-linecap='round'/><path d='M4 16 C 26 21, 52 10, 78 15 C 105 19, 131 11, 156 14' fill='none' stroke='${accent}' stroke-opacity='0.3' stroke-width='5.5' stroke-linecap='round'/></svg>`
-            : `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 28' preserveAspectRatio='none'><path d='M3 16 C 22 11, 49 21, 77 15 C 104 10, 131 20, 157 14' fill='none' stroke='${accent}' stroke-opacity='0.46' stroke-width='7' stroke-linecap='round'/><path d='M4 17 C 24 12, 50 22, 78 16 C 106 11, 132 21, 156 15' fill='none' stroke='${accent}' stroke-opacity='0.24' stroke-width='5' stroke-linecap='round'/></svg>`;
+    const svg = variant === "default" ? `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 28' preserveAspectRatio='none'><path d='M3 15 C 24 20, 50 9, 77 14 C 103 19, 129 10, 157 13' fill='none' stroke='${accent}' stroke-opacity='0.53' stroke-width='8' stroke-linecap='round'/><path d='M4 16 C 26 21, 52 10, 78 15 C 105 19, 131 11, 156 14' fill='none' stroke='${accent}' stroke-opacity='0.3' stroke-width='5.5' stroke-linecap='round'/></svg>` : `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 28' preserveAspectRatio='none'><path d='M3 16 C 22 11, 49 21, 77 15 C 104 10, 131 20, 157 14' fill='none' stroke='${accent}' stroke-opacity='0.46' stroke-width='7' stroke-linecap='round'/><path d='M4 17 C 24 12, 50 22, 78 16 C 106 11, 132 21, 156 15' fill='none' stroke='${accent}' stroke-opacity='0.24' stroke-width='5' stroke-linecap='round'/></svg>`;
     return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
@@ -1123,7 +1120,7 @@ export default function App() {
             });
         }
         setState((s) => {
-            // If user sets a double/long icon, auto-enable that tap mode globally
+            // If user sets content for an additional tap mode, auto-enable it globally.
             let nextTapsEnabled = s.tapsEnabled;
             if (icon && !s.tapsEnabled.includes(tap)) {
                 nextTapsEnabled = [...s.tapsEnabled, tap];
