@@ -1599,10 +1599,10 @@ export default function App() {
     const exportRemoteHostRef = useRef<HTMLDivElement | null>(null);
     const exportButtonHostRef = useRef<HTMLDivElement | null>(null);
 
-    const exportRemoteSvg = () => {
+    const exportRemoteSvg = async () => {
         const svg = exportRemoteHostRef.current?.querySelector("svg");
         if (!svg) return;
-        downloadTextFile(`${exportBase}-remote.svg`, serializeSvg(svg), "image/svg+xml");
+        downloadTextFile(`${exportBase}-remote.svg`, await serializeSvg(svg), "image/svg+xml");
         trackEvent("export", { type: "remote_svg", remote_id: state.remoteId });
     };
 
@@ -1628,7 +1628,7 @@ export default function App() {
                 if (!svg) continue;
 
                 const png = await svgTextToPngBlobMm({
-                    svgText: serializeSvg(svg),
+                    svgText: await serializeSvg(svg),
                     size: { widthMm: labelWidthMm, heightMm: labelHeightMm, dpi },
                 });
 
@@ -1650,7 +1650,7 @@ export default function App() {
         if (!isStickerSheet) {
             const svg = exportRemoteHostRef.current?.querySelector("svg");
             if (!svg) return;
-            const svgText = serializeSvg(svg).replace(/^<\?xml[^>]*>\s*/i, "");
+            const svgText = (await serializeSvg(svg)).replace(/^<\?xml[^>]*>\s*/i, "");
             const { downloadPdfFromSvg } = await loadPdfExportModule();
             await downloadPdfFromSvg({
                 filename: `${exportBase}-a4`,
@@ -1674,7 +1674,7 @@ export default function App() {
             await nextFrame();
             const svg = exportRemoteHostRef.current?.querySelector("svg");
             if (!svg) continue;
-            svgTexts.push(serializeSvg(svg).replace(/^<\?xml[^>]*>\s*/i, ""));
+            svgTexts.push((await serializeSvg(svg)).replace(/^<\?xml[^>]*>\s*/i, ""));
         }
         setStickerPageIndex(prevPage);
 
@@ -1707,7 +1707,7 @@ export default function App() {
             await nextFrame();
             const svg = exportRemoteHostRef.current?.querySelector("svg");
             if (!svg) continue;
-            const svgText = serializeSvg(svg);
+            const svgText = await serializeSvg(svg);
             folder.file(`page-${page + 1}.svg`, svgText);
         }
         setStickerPageIndex(prevPage);

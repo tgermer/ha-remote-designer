@@ -2,6 +2,7 @@ import type { ButtonDef } from "../app/remotes";
 import { TAP_ORDER, type DesignState, type StrikeStyle, type TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
 import { TapMarker } from "./TapMarker";
+import { SVG_TEXT_FONT_FAMILY } from "./fonts";
 
 type CornerRadii = { tl: number; tr: number; br: number; bl: number };
 
@@ -48,7 +49,6 @@ function getMarkerSizing(iconMm: number, autoIconSizing: boolean) {
 
 const BUTTON_TEXT_PADDING_X_MM = 1.2;
 const BUTTON_TEXT_PADDING_Y_MM = 1.1;
-const BUTTON_TEXT_FONT = "IBM Plex Sans";
 const BUTTON_TEXT_LINE_HEIGHT = 1.15;
 
 function normalizeTapTextLines(text: string | undefined) {
@@ -162,7 +162,7 @@ function renderTapContent(params: {
                 )
             : null;
         return (
-            <g fill={color || "black"} fontSize={fontSize} fontWeight={600} fontFamily={BUTTON_TEXT_FONT}>
+            <g fill={color || "black"} fontSize={fontSize} fontWeight={600} fontFamily={SVG_TEXT_FONT_FAMILY}>
                 {lines.map((line, i) => (
                     <text key={`${line}-${i}`} x={cx} y={cy - blockHeight / 2 + i * lineAdvance} textAnchor="middle" dominantBaseline="middle">
                         {line}
@@ -386,7 +386,7 @@ export function ButtonLabelSvg({ state, button, labelWidthMm, labelHeightMm, sho
             {/* Watermark */}
             {wmEnabled ? (
                 <g opacity={wmOpacity} pointerEvents="none">
-                    <text x={labelWidthMm / 2} y={labelHeightMm / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(5, Math.min(12, labelWidthMm / 3))} fontFamily="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" fill="black" transform={`rotate(-30 ${labelWidthMm / 2} ${labelHeightMm / 2})`}>
+                    <text x={labelWidthMm / 2} y={labelHeightMm / 2} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(5, Math.min(12, labelWidthMm / 3))} fontFamily={SVG_TEXT_FONT_FAMILY} fill="black" transform={`rotate(-30 ${labelWidthMm / 2} ${labelHeightMm / 2})`}>
                         {watermarkText}
                     </text>
                 </g>
