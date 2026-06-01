@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const LEGACY_MIGRATE_URL = "https://ha-remote-designer.netlify.app/migrate";
@@ -11,34 +11,33 @@ type MigrationNoticeProps = {
     className?: string;
 };
 
+function getInitialVisible() {
+    const url = new URL(window.location.href);
+    const fromLegacy = url.searchParams.get(LEGACY_QUERY_KEY) === LEGACY_QUERY_VALUE;
+
+    if (fromLegacy) {
+        try {
+            window.sessionStorage.setItem(LEGACY_SESSION_KEY, "1");
+        } catch {
+            // ignore sessionStorage errors
+        }
+        url.searchParams.delete(LEGACY_QUERY_KEY);
+        const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+        window.history.replaceState(null, "", nextUrl);
+        return true;
+    }
+
+    try {
+        return window.sessionStorage.getItem(LEGACY_SESSION_KEY) === "1";
+    } catch {
+        return false;
+    }
+}
+
 export function MigrationNotice({ variant = "default", className }: MigrationNoticeProps) {
     const { t } = useTranslation();
-    const [visible, setVisible] = useState(false);
+    const [visible] = useState(getInitialVisible);
     const classes = ["migrationNotice", variant !== "default" ? `migrationNotice--${variant}` : "", className].filter(Boolean).join(" ");
-
-    useEffect(() => {
-        const url = new URL(window.location.href);
-        const fromLegacy = url.searchParams.get(LEGACY_QUERY_KEY) === LEGACY_QUERY_VALUE;
-
-        if (fromLegacy) {
-            try {
-                window.sessionStorage.setItem(LEGACY_SESSION_KEY, "1");
-            } catch {
-                // ignore sessionStorage errors
-            }
-            url.searchParams.delete(LEGACY_QUERY_KEY);
-            const nextUrl = `${url.pathname}${url.search}${url.hash}`;
-            window.history.replaceState(null, "", nextUrl);
-            setVisible(true);
-            return;
-        }
-
-        try {
-            setVisible(window.sessionStorage.getItem(LEGACY_SESSION_KEY) === "1");
-        } catch {
-            setVisible(false);
-        }
-    }, []);
 
     if (!visible) return null;
 

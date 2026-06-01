@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 
 type TopNavProps = {
@@ -17,6 +17,22 @@ type TopNavProps = {
     onGoStory: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 };
 
+type ActiveMetrics = {
+    left: number;
+    width: number;
+    ready: boolean;
+};
+
+const INACTIVE_METRICS: ActiveMetrics = { left: 0, width: 0, ready: false };
+
+function getActiveMetrics(nav: HTMLElement | null, activeLink: HTMLAnchorElement | null | undefined): ActiveMetrics {
+    if (!nav || !activeLink) return INACTIVE_METRICS;
+
+    const navRect = nav.getBoundingClientRect();
+    const linkRect = activeLink.getBoundingClientRect();
+    return { left: linkRect.left - navRect.left, width: linkRect.width, ready: true };
+}
+
 export function TopNav(props: TopNavProps) {
     const { t, i18n } = useTranslation();
     const { view, homeHref, configureHref, galleryHref, helpHref, communityHref, storyHref, onGoHome, onGoConfigure, onGoGallery, onGoHelp, onGoCommunity, onGoStory } = props;
@@ -34,7 +50,7 @@ export function TopNav(props: TopNavProps) {
     const navRef = useRef<HTMLElement | null>(null);
     const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
     const previousView = useRef(view);
-    const [activeMetrics, setActiveMetrics] = useState({ left: 0, width: 0, ready: false });
+    const metricsCache = useRef<{ key: string; value: ActiveMetrics }>({ key: "0:0:false", value: INACTIVE_METRICS });
 
     useEffect(() => {
         if (previousView.current === view) {
@@ -48,45 +64,47 @@ export function TopNav(props: TopNavProps) {
         return () => window.cancelAnimationFrame(handle);
     }, [view, menuOpen]);
 
-    useLayoutEffect(() => {
-        const nav = navRef.current;
-        if (activeIndex < 0) {
-            setActiveMetrics({ left: 0, width: 0, ready: false });
-            return;
-        }
-        const activeLink = linkRefs.current[activeIndex];
-        if (!nav || !activeLink) {
-            setActiveMetrics({ left: 0, width: 0, ready: false });
-            return;
-        }
-        const navRect = nav.getBoundingClientRect();
-        const linkRect = activeLink.getBoundingClientRect();
-        setActiveMetrics({ left: linkRect.left - navRect.left, width: linkRect.width, ready: true });
-    }, [activeIndex]);
+    const activeMetrics = useSyncExternalStore(
+        (onStoreChange) => {
+            let animationFrame = 0;
+            const update = () => {
+                window.cancelAnimationFrame(animationFrame);
+                animationFrame = window.requestAnimationFrame(onStoreChange);
+            };
 
-    useLayoutEffect(() => {
+            const nav = navRef.current;
+            const observer = nav && typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+            if (nav) observer?.observe(nav);
+            window.addEventListener("resize", update);
+            update();
+
+            return () => {
+                window.cancelAnimationFrame(animationFrame);
+                observer?.disconnect();
+                window.removeEventListener("resize", update);
+            };
+        },
+        () => {
+            const activeLink = activeIndex >= 0 ? linkRefs.current[activeIndex] : null;
+            const nextMetrics = getActiveMetrics(navRef.current, activeLink);
+            const nextKey = `${nextMetrics.left}:${nextMetrics.width}:${nextMetrics.ready}`;
+            if (metricsCache.current.key !== nextKey) {
+                metricsCache.current = { key: nextKey, value: nextMetrics };
+            }
+            return metricsCache.current.value;
+        },
+        () => INACTIVE_METRICS,
+    );
+
+    useEffect(() => {
         const nav = navRef.current;
         if (!nav) return;
-        const update = () => {
-            if (activeIndex < 0) {
-                setActiveMetrics({ left: 0, width: 0, ready: false });
-                return;
-            }
-            const activeLink = linkRefs.current[activeIndex];
-            if (!activeLink) {
-                setActiveMetrics({ left: 0, width: 0, ready: false });
-                return;
-            }
-            const navRect = nav.getBoundingClientRect();
-            const linkRect = activeLink.getBoundingClientRect();
-            setActiveMetrics({ left: linkRect.left - navRect.left, width: linkRect.width, ready: true });
-        };
+        const update = () => window.dispatchEvent(new Event("resize"));
         const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
-        observer?.observe(nav);
-        window.addEventListener("resize", update);
+        const activeLink = activeIndex >= 0 ? linkRefs.current[activeIndex] : null;
+        if (activeLink) observer?.observe(activeLink);
         return () => {
             observer?.disconnect();
-            window.removeEventListener("resize", update);
         };
     }, [activeIndex]);
 
