@@ -1,6 +1,7 @@
 import type { ButtonDef, CutoutElement, PreviewElement, RemoteTemplate } from "../app/remotes";
 import { TAP_ORDER, type DesignState, type StrikeStyle, type TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
+import { TapMarker } from "./TapMarker";
 
 type CornerRadii = { tl: number; tr: number; br: number; bl: number };
 
@@ -56,30 +57,6 @@ function getCutoutRadiiMm(element: Extract<CutoutElement, { kind: "rect" }>): Co
 
 function isUniformRadii(r: CornerRadii) {
     return r.tl === r.tr && r.tr === r.br && r.br === r.bl;
-}
-
-function TapMarker({ tap, sizeMm = 3, fillMode = "outline", color = "black" }: { tap: TapType; sizeMm?: number; fillMode?: "outline" | "filled"; color?: string }) {
-    const stroke = 0.35;
-    const r = sizeMm / 2 - stroke;
-    const fill = fillMode === "filled" ? color : "none";
-
-    if (tap === "single") {
-        return <circle cx="0" cy="0" r={r} fill={fill} stroke={color} strokeWidth={stroke} />;
-    }
-
-    if (tap === "double") {
-        const dx = r + 0.6;
-        return (
-            <g>
-                <circle cx={-dx} cy="0" r={r} fill={fill} stroke={color} strokeWidth={stroke} />
-                <circle cx={dx} cy="0" r={r} fill={fill} stroke={color} strokeWidth={stroke} />
-            </g>
-        );
-    }
-
-    const h = sizeMm * 0.7;
-    const w = sizeMm * 2.3;
-    return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} fill={fill} stroke={color} strokeWidth={stroke} />;
 }
 
 function getMarkerSizing(iconMm: number, autoIconSizing: boolean) {

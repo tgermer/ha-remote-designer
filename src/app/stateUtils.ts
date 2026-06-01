@@ -79,6 +79,7 @@ export function normalizeState(input: NormalizableState, remotes: RemoteTemplate
 export function tapLabel(t: TapType) {
     if (t === "single") return "Tap";
     if (t === "double") return "Double Tap";
+    if (t === "triple") return "Triple Tap";
     return "Long Press";
 }
 

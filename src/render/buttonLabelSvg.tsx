@@ -1,6 +1,7 @@
 import type { ButtonDef } from "../app/remotes";
 import { TAP_ORDER, type DesignState, type StrikeStyle, type TapType } from "../app/types";
 import { renderHaIconAtMm } from "./renderHaIcon";
+import { TapMarker } from "./TapMarker";
 
 type CornerRadii = { tl: number; tr: number; br: number; bl: number };
 
@@ -33,32 +34,6 @@ function getButtonRadii(button: ButtonDef): CornerRadii {
 
 function isUniformRadii(r: CornerRadii) {
     return r.tl === r.tr && r.tr === r.br && r.br === r.bl;
-}
-
-function TapMarker({ tap, sizeMm = 3, fillMode = "outline", color = "black" }: { tap: TapType; sizeMm?: number; fillMode?: "outline" | "filled"; color?: string }) {
-    const stroke = 0.35;
-    const rr = sizeMm / 2 - stroke;
-    const fill = fillMode === "filled" ? color : "none";
-
-    if (tap === "single") {
-        return <circle cx="0" cy="0" r={rr} fill={fill} stroke={color} strokeWidth={stroke} />;
-    }
-
-    if (tap === "double") {
-        const dx = rr + 0.6;
-        return (
-            <g>
-                <circle cx={-dx} cy="0" r={rr} fill={fill} stroke={color} strokeWidth={stroke} />
-                <circle cx={dx} cy="0" r={rr} fill={fill} stroke={color} strokeWidth={stroke} />
-            </g>
-        );
-    }
-
-    // Long press: rounded capsule that supports outline vs filled
-    const h = sizeMm * 0.8;
-    const w = sizeMm * 2.6;
-
-    return <rect x={-w / 2} y={-h / 2} width={w} height={h} rx={h / 2} ry={h / 2} fill={fill} stroke={color} strokeWidth={stroke} />;
 }
 
 function getMarkerSizing(iconMm: number, autoIconSizing: boolean) {

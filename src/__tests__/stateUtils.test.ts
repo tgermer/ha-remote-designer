@@ -8,6 +8,7 @@ import {
     remotesUseHueIcons,
     stateUsesFullMdi,
     remotesUseFullMdi,
+    tapLabel,
 } from "../app/stateUtils";
 
 const minimalRemote: RemoteTemplate = {
@@ -20,6 +21,13 @@ const minimalRemote: RemoteTemplate = {
 };
 
 describe("stateUtils", () => {
+    it("labels all tap types", () => {
+        expect(tapLabel("single")).toBe("Tap");
+        expect(tapLabel("double")).toBe("Double Tap");
+        expect(tapLabel("triple")).toBe("Triple Tap");
+        expect(tapLabel("long")).toBe("Long Press");
+    });
+
     it("falls back to the first remote and clamps option values", () => {
         const normalized = normalizeState(
             {
@@ -43,9 +51,9 @@ describe("stateUtils", () => {
         const example: RemoteExample = {
             id: "example",
             name: "Example",
-            tapsEnabled: ["single", "double"] as TapType[],
+            tapsEnabled: ["single", "double", "triple"] as TapType[],
             buttonIcons: {
-                on: { single: "mdi:power", double: "mdi:lightbulb" },
+                on: { single: "mdi:power", double: "mdi:lightbulb", triple: "mdi:palette" },
                 off: {},
             },
             buttonStrike: {
@@ -67,7 +75,9 @@ describe("stateUtils", () => {
         } as const;
 
         const state = buildStateFromExample({ remoteId: "foo", example });
+        expect(state.tapsEnabled).toContain("triple");
         expect(state.buttonConfigs.on.icons.single).toBe("mdi:power");
+        expect(state.buttonConfigs.on.icons.triple).toBe("mdi:palette");
         expect(state.buttonConfigs.on.iconColors?.single).toBe("#ff00ff");
         expect(state.buttonConfigs.off.strike?.single).toBe(true);
         expect(state.buttonConfigs.on.buttonFill).toBe("#111111");

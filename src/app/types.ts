@@ -1,6 +1,6 @@
 import type { RemoteId } from "./remotes";
 
-export type TapType = "single" | "double" | "long";
+export type TapType = "single" | "double" | "triple" | "long";
 export type StrikeStyle = "diagonal" | "straight";
 
 export type ButtonConfig = {
@@ -50,4 +50,4 @@ export type DesignState = {
     options: DesignOptions;
 };
 
-export const TAP_ORDER: TapType[] = ["single", "double", "long"];
+export const TAP_ORDER: TapType[] = ["single", "double", "triple", "long"];
